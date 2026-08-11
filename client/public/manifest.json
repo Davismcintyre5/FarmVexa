@@ -1,0 +1,16 @@
+{
+    "name": "FarmVexa",
+    "short_name": "FarmVexa",
+    "description": "AI-Powered Farm Intelligence",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2d6a4f",
+    "icons": [
+        {
+            "src": "/logo.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}
