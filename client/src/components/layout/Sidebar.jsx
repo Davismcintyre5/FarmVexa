@@ -1,20 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Wheat, Camera, MessageCircle, Bell, Cpu, User, Menu, X, Activity } from 'lucide-react';
-
-const links = [
-    { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/farms', icon: Wheat, label: 'Farms' },
-    { to: '/scan', icon: Camera, label: 'Scan Crop' },
-    { to: '/ai-chat', icon: MessageCircle, label: 'AI Chat' },
-    { to: '/sensors', icon: Activity, label: 'Sensors' },
-    { to: '/alerts', icon: Bell, label: 'Alerts' },
-    { to: '/devices', icon: Cpu, label: 'Devices' },
-    { to: '/profile', icon: User, label: 'Profile' },
-];
+import { LayoutDashboard, Wheat, Camera, Activity, Cpu, CloudSun, FolderOpen, MessageCircle, Settings, Menu, X } from 'lucide-react';
+import axios from 'axios';
 
 export default function Sidebar() {
     const [open, setOpen] = useState(false);
+    const [showAI, setShowAI] = useState(true);
+
+    useEffect(() => {
+        axios.get(`${import.meta.env.VITE_API_URL || '/api'}/admin/public/settings`)
+            .then((res) => setShowAI(res.data.data?.showAI ?? true))
+            .catch(() => {});
+    }, []);
+
+    const mainLinks = [
+        { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+        { to: '/farms', icon: Wheat, label: 'Farms' },
+        { to: '/scan', icon: Camera, label: 'Scan Crop' },
+        { to: '/sensors', icon: Activity, label: 'Sensors' },
+        { to: '/devices', icon: Cpu, label: 'Devices' },
+        { to: '/weather', icon: CloudSun, label: 'Weather' },
+        { to: '/operations', icon: FolderOpen, label: 'Farm Operations' },
+    ];
 
     return (
         <>
@@ -25,22 +32,18 @@ export default function Sidebar() {
                 {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
-            {open && (
-                <div className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setOpen(false)} />
-            )}
+            {open && <div className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setOpen(false)} />}
 
-            <aside className={`
-                fixed md:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col transition-transform duration-300
-                ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-            `}>
+            <aside className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
                 <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                     <h1 className="text-xl font-bold text-primary-500">🌾 FarmVexa</h1>
                     <button onClick={() => setOpen(false)} className="md:hidden p-1 text-gray-400 hover:text-gray-600">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
+
                 <nav className="flex-1 p-3 space-y-1">
-                    {links.map(({ to, icon: Icon, label }) => (
+                    {mainLinks.map(({ to, icon: Icon, label }) => (
                         <NavLink
                             key={to}
                             to={to}
@@ -58,6 +61,39 @@ export default function Sidebar() {
                         </NavLink>
                     ))}
                 </nav>
+
+                <div className="p-3 border-t border-gray-200 dark:border-gray-800 space-y-1">
+                    {showAI && (
+                        <NavLink
+                            to="/ai-chat"
+                            onClick={() => setOpen(false)}
+                            className={({ isActive }) =>
+                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                                    isActive
+                                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                }`
+                            }
+                        >
+                            <MessageCircle className="w-5 h-5" />
+                            AI Chat
+                        </NavLink>
+                    )}
+                    <NavLink
+                        to="/settings"
+                        onClick={() => setOpen(false)}
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                                isActive
+                                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                }`
+                        }
+                    >
+                        <Settings className="w-5 h-5" />
+                        Settings
+                    </NavLink>
+                </div>
             </aside>
         </>
     );

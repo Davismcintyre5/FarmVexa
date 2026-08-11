@@ -64,7 +64,7 @@ export default function Header() {
                 <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
                     {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                 </button>
-                <button onClick={() => { setAlertCount(0); navigate('/alerts'); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 relative">
+                <button onClick={() => { navigate('/alerts'); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 relative">
                     <Bell className="w-5 h-5" />
                     {alertCount > 0 && (
                         <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1 animate-pulse">
@@ -95,13 +95,9 @@ export default function Header() {
                                 <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
                             </div>
                             <div className="p-1">
-                                <Link to="/profile" onClick={() => setDropdownOpen(false)}
+                                <Link to="/settings" onClick={() => setDropdownOpen(false)}
                                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <User className="w-4 h-4" /> Profile
-                                </Link>
-                                <Link to="/change-password" onClick={() => setDropdownOpen(false)}
-                                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <Settings className="w-4 h-4" /> Change Password
+                                    <Settings className="w-4 h-4" /> Settings
                                 </Link>
                             </div>
                             <div className="p-1 border-t border-gray-200 dark:border-gray-700">

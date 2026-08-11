@@ -13,8 +13,8 @@ import { CropScan, ScanResult, ScanHistory } from '../pages/scan/scan';
 import { DeviceList, DeviceDetail, DeviceRegister } from '../pages/devices/devices';
 import { AlertList } from '../pages/alerts/alerts';
 import { SensorReadings } from '../pages/sensors/sensors';
-import { FarmerProfile, ChangePassword } from '../pages/profile/profile';
 import AIAssistant from '../pages/ai/AIAssistant';
+import Settings from '../pages/settings/Settings';
 import NotFound from '../pages/NotFound';
 
 const AppRoutes = () => {
@@ -57,24 +57,24 @@ const AppRoutes = () => {
                 <Route path="/fields/:fieldId/scans" element={<ScanHistory />} />
                 <Route path="/scan" element={<CropScan />} />
                 <Route path="/scan/result/:imageId" element={<ScanResult />} />
-                <Route path="/ai-chat" element={<AIAssistant />} />
                 <Route path="/sensors" element={<SensorReadings />} />
                 <Route path="/devices" element={<DeviceList />} />
                 <Route path="/devices/register" element={<DeviceRegister />} />
                 <Route path="/devices/:deviceId" element={<DeviceDetail />} />
+                <Route path="/ai-chat" element={<AIAssistant />} />
                 <Route path="/alerts" element={<AlertList />} />
-                <Route path="/profile" element={<FarmerProfile />} />
-                <Route path="/change-password" element={<ChangePassword />} />
+                <Route path="/settings" element={<Settings />} />
             </Route>
 
             <Route element={isAuthenticated ? <MobileLayout /> : <Navigate to="/login" />}>
                 <Route path="/m/" element={<FarmerDashboard />} />
                 <Route path="/m/farms" element={<FarmList />} />
                 <Route path="/m/scan" element={<CropScan />} />
-                <Route path="/m/ai-chat" element={<AIAssistant />} />
                 <Route path="/m/sensors" element={<SensorReadings />} />
+                <Route path="/m/devices" element={<DeviceList />} />
+                <Route path="/m/ai-chat" element={<AIAssistant />} />
                 <Route path="/m/alerts" element={<AlertList />} />
-                <Route path="/m/profile" element={<FarmerProfile />} />
+                <Route path="/m/settings" element={<Settings />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/dashboard" />} />
