@@ -14,18 +14,8 @@ class AIService {
         try {
             const response = await axios.post(
                 `${this.baseUrl}/api/analyze/sensors`,
-                {
-                    task: 'sensor_analysis',
-                    readings,
-                    historicalData,
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': this.apiKey,
-                    },
-                    timeout: 30000,
-                }
+                { task: 'sensor_analysis', readings, historicalData },
+                { headers: { 'Content-Type': 'application/json', 'x-api-key': this.apiKey }, timeout: 30000 }
             );
             return response.data;
         } catch (error) {
@@ -45,13 +35,7 @@ class AIService {
             const response = await axios.post(
                 `${this.baseUrl}/api/analyze/crop`,
                 formData,
-                {
-                    headers: {
-                        ...formData.getHeaders(),
-                        'x-api-key': this.apiKey,
-                    },
-                    timeout: 60000,
-                }
+                { headers: { ...formData.getHeaders(), 'x-api-key': this.apiKey }, timeout: 60000 }
             );
             return response.data;
         } catch (error) {
@@ -60,18 +44,12 @@ class AIService {
         }
     }
 
-    async farmerChat(message, history = []) {
+    async farmerChat(message, systemPrompt = '') {
         try {
             const response = await axios.post(
                 `${this.baseUrl}/api/chat`,
-                { message, history },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': this.apiKey,
-                    },
-                    timeout: 30000,
-                }
+                { message, systemPrompt, history: [] },
+                { headers: { 'Content-Type': 'application/json', 'x-api-key': this.apiKey }, timeout: 30000 }
             );
             return response.data;
         } catch (error) {
@@ -82,13 +60,9 @@ class AIService {
 
     async getModelDetails() {
         try {
-            const response = await axios.get(
-                `${this.baseUrl}/api/models/details`,
-                {
-                    headers: { 'x-api-key': this.apiKey },
-                    timeout: 10000,
-                }
-            );
+            const response = await axios.get(`${this.baseUrl}/api/models/details`, {
+                headers: { 'x-api-key': this.apiKey }, timeout: 10000,
+            });
             return response.data;
         } catch (error) {
             logger.error(`Get model details failed: ${error.message}`);
@@ -101,13 +75,7 @@ class AIService {
             const response = await axios.post(
                 `${this.baseUrl}/api/models/train`,
                 trainingData,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': this.apiKey,
-                    },
-                    timeout: 30000,
-                }
+                { headers: { 'Content-Type': 'application/json', 'x-api-key': this.apiKey }, timeout: 30000 }
             );
             return response.data;
         } catch (error) {
@@ -116,27 +84,14 @@ class AIService {
         }
     }
 
- async checkHealth() {
-    try {
-        const response = await axios.get(`${this.baseUrl}/api/health`, {
-            timeout: 5000,
-        });
-        const data = response.data;
-        return {
-            status: 'connected',
-            server: data.server || {},
-            ai: data.ai || {},
-            mern_server: data.mern_server || {},
-        };
-    } catch (error) {
-        return {
-            status: 'offline',
-            server: {},
-            ai: {},
-            mern_server: {},
-        };
+    async checkHealth() {
+        try {
+            const response = await axios.get(`${this.baseUrl}/api/health`, { timeout: 5000 });
+            return response.data;
+        } catch (error) {
+            return { status: 'offline', error: error.message };
+        }
     }
-}
 }
 
 module.exports = new AIService();

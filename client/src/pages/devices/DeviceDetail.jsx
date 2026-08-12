@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { getDevice, deleteDevice } from '../../api/devices';
 import { getDeviceReadings } from '../../api/sensors';
 import Card from '../../components/ui/Card';
@@ -12,6 +13,9 @@ import { ArrowLeft, Battery, Wifi, Trash2 } from 'lucide-react';
 export default function DeviceDetail() {
     const { deviceId } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const canManage = ['farmer', 'manager'].includes(user?.role);
+
     const [device, setDevice] = useState(null);
     const [readings, setReadings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -26,19 +30,24 @@ export default function DeviceDetail() {
 
     return (
         <div className="page-container max-w-lg mx-auto space-y-6">
-            <Link to="/devices" className="flex items-center gap-2 text-gray-500"><ArrowLeft className="w-4 h-4" /> Back</Link>
+            <Link to="/devices" className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><ArrowLeft className="w-4 h-4" /> Back</Link>
             <Card>
-                <div className="flex justify-between items-start mb-4"><div><h1 className="text-xl font-bold">{device.deviceId}</h1><p className="text-gray-500">Field: {device.field?.name || 'Unassigned'}</p></div><Badge status={device.status} /></div>
+                <div className="flex justify-between items-start mb-4">
+                    <div><h1 className="text-xl font-bold">{device.deviceId}</h1><p className="text-gray-500">Field: {device.field?.name || 'Unassigned'}</p></div>
+                    <Badge status={device.status} />
+                </div>
                 <div className="grid grid-cols-2 gap-3 mb-4">
                     <div className="flex items-center gap-2"><Battery className="w-4 h-4 text-green-500" /><span>{device.batteryLevel || '?'}%</span></div>
                     <div className="flex items-center gap-2"><Wifi className="w-4 h-4 text-blue-500" /><span>{device.status === 'online' ? 'Connected' : 'Offline'}</span></div>
                 </div>
                 <p className="text-sm text-gray-400">Last seen: {formatDate(device.lastSeen)}</p>
                 <p className="text-sm text-gray-400">Firmware: {device.firmwareVersion || 'N/A'}</p>
-                <div className="mt-4 flex gap-2">
-                    <Button variant="outline" onClick={() => navigate('/devices')}>Back</Button>
-                    <Button variant="ghost" onClick={async () => { if (confirm('Delete?')) { await deleteDevice(deviceId); navigate('/devices'); } }} className="text-red-500"><Trash2 className="w-4 h-4" /></Button>
-                </div>
+                {canManage && (
+                    <div className="mt-4 flex gap-2">
+                        <Button variant="outline" onClick={() => navigate('/devices')}>Back</Button>
+                        <Button variant="ghost" onClick={async () => { if (confirm('Delete?')) { await deleteDevice(deviceId); navigate('/devices'); } }} className="text-red-500"><Trash2 className="w-4 h-4" /></Button>
+                    </div>
+                )}
             </Card>
             {readings.length > 0 && (
                 <Card title="Recent Readings">

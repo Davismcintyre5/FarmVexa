@@ -14,19 +14,19 @@ import { DeviceList, DeviceDetail, DeviceRegister } from '../pages/devices/devic
 import { AlertList } from '../pages/alerts/alerts';
 import { SensorReadings } from '../pages/sensors/sensors';
 import AIAssistant from '../pages/ai/AIAssistant';
+import Operations from '../pages/operations/Operations';
+import Weather from '../pages/weather/Weather';
 import Settings from '../pages/settings/Settings';
 import NotFound from '../pages/NotFound';
 
 const AppRoutes = () => {
     const { user, isAuthenticated, isLoading } = useAuth();
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-                <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-        );
-    }
+    if (isLoading) return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+            <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+    );
 
     return (
         <Routes>
@@ -37,11 +37,7 @@ const AppRoutes = () => {
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
             </Route>
 
-            <Route path="/pending" element={
-                isAuthenticated && user?.approvalStatus === 'pending'
-                    ? <PendingApproval />
-                    : <Navigate to="/dashboard" />
-            } />
+            <Route path="/pending" element={isAuthenticated && user?.approvalStatus === 'pending' ? <PendingApproval /> : <Navigate to="/dashboard" />} />
 
             <Route element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />}>
                 <Route path="/dashboard" element={<FarmerDashboard />} />
@@ -63,6 +59,8 @@ const AppRoutes = () => {
                 <Route path="/devices/:deviceId" element={<DeviceDetail />} />
                 <Route path="/ai-chat" element={<AIAssistant />} />
                 <Route path="/alerts" element={<AlertList />} />
+                <Route path="/operations" element={<Operations />} />
+                <Route path="/weather" element={<Weather />} />
                 <Route path="/settings" element={<Settings />} />
             </Route>
 
@@ -74,6 +72,8 @@ const AppRoutes = () => {
                 <Route path="/m/devices" element={<DeviceList />} />
                 <Route path="/m/ai-chat" element={<AIAssistant />} />
                 <Route path="/m/alerts" element={<AlertList />} />
+                <Route path="/m/operations" element={<Operations />} />
+                <Route path="/m/weather" element={<Weather />} />
                 <Route path="/m/settings" element={<Settings />} />
             </Route>
 

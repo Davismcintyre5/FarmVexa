@@ -1,9 +1,9 @@
 export const formatDate = (date, format = 'full') => {
     const d = new Date(date);
     const options = {
-        full: { dateStyle: 'full', timeStyle: 'short' },
-        date: { dateStyle: 'medium' },
-        time: { timeStyle: 'short' },
+        full: { dateStyle: 'full', timeStyle: 'short', timeZone: 'Africa/Nairobi' },
+        date: { dateStyle: 'medium', timeZone: 'Africa/Nairobi' },
+        time: { timeStyle: 'short', timeZone: 'Africa/Nairobi' },
         relative: null,
     };
 
@@ -14,7 +14,7 @@ export const formatDate = (date, format = 'full') => {
         if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
         if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
         if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-        return d.toLocaleDateString();
+        return d.toLocaleDateString('en-KE', { timeZone: 'Africa/Nairobi' });
     }
 
     return d.toLocaleString('en-KE', options[format] || options.full);

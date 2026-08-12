@@ -2,13 +2,14 @@ const router = require('express').Router();
 const { createFarm, getMyFarms, getFarmById, updateFarm, deleteFarm } = require('../../controllers/farm/farmController');
 const farmerAuth = require('../../middleware/farm/auth');
 const { ownsFarm } = require('../../middleware/farm/farm');
+const { isFarmer } = require('../../middleware/farm/farmRole');
 
 router.use(farmerAuth);
 
-router.post('/', createFarm);
 router.get('/', getMyFarms);
 router.get('/:id', getFarmById);
-router.put('/:id', ownsFarm, updateFarm);
-router.delete('/:id', ownsFarm, deleteFarm);
+router.post('/', isFarmer, createFarm);
+router.put('/:id', ownsFarm, isFarmer, updateFarm);
+router.delete('/:id', ownsFarm, isFarmer, deleteFarm);
 
 module.exports = router;

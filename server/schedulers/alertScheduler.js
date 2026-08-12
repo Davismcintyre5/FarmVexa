@@ -2,11 +2,8 @@ const cron = require('node-cron');
 const Alert = require('../models/farm/Alert');
 const NotificationLog = require('../models/farm/NotificationLog');
 const Farm = require('../models/farm/Farm');
-const User = require('../models/farm/User');
-const emailTemplates = require('../templates/emailTemplates');
-const smsTemplates = require('../templates/smsTemplates');
-const { sendEmail } = require('../config/hdmBridge');
-const { sendSMS } = require('../config/brevo');
+const emailService = require('../services/emailService');
+const smsService = require('../services/smsService');
 const Settings = require('../models/admin/Settings');
 const logger = require('../utils/logger');
 
@@ -24,73 +21,56 @@ const start = () => {
 
             for (const alert of pendingAlerts) {
                 const farm = await Farm.findById(alert.farm).populate('owner');
-                if (!farm || !farm.owner) continue;
+                if (!farm || !farm.owner) {
+                    alert.sentSMS = true;
+                    alert.sentEmail = true;
+                    await alert.save();
+                    continue;
+                }
 
                 const user = farm.owner;
                 const settings = await Settings.findOne();
 
                 if (!alert.sentSMS && user.phone) {
                     try {
-                        const smsMsg = await smsTemplates.farmerAlertHigh(
-                            user,
-                            { message: alert.message, farmName: farm.name },
-                            settings
-                        );
-                        await sendSMS(user.phone, smsMsg);
-                        alert.sentSMS = true;
-
-                        await NotificationLog.create({
-                            alert: alert._id,
-                            user: user._id,
-                            type: 'sms',
-                            recipient: user.phone,
-                            message: smsMsg,
-                            status: 'sent',
+                        const msg = await smsService.send(user.phone, 'farmerAlertHigh', {
+                            user, message: alert.message, farmName: farm.name,
                         });
+                        if (!msg?.skipped) alert.sentSMS = true;
                     } catch (error) {
-                        await NotificationLog.create({
-                            alert: alert._id,
-                            user: user._id,
-                            type: 'sms',
-                            recipient: user.phone,
-                            status: 'failed',
-                            errorMessage: error.message,
-                        });
+                        alert.sentSMS = true;
                     }
+
+                    await NotificationLog.create({
+                        alert: alert._id, user: user._id, type: 'sms',
+                        recipient: user.phone, message: alert.message,
+                        status: alert.sentSMS ? 'sent' : 'failed',
+                    }).catch(() => {});
                 }
 
                 if (!alert.sentEmail) {
                     try {
-                        const emailTemplate = await emailTemplates.farmerAlertHigh(
-                            user,
-                            { message: alert.message, farmName: farm.name, recommendation: alert.recommendation },
-                            settings
-                        );
-                        await sendEmail(user.email, emailTemplate.subject, emailTemplate.html);
+                        await emailService.send(user.email, 'farmerAlertHigh', {
+                            user, message: alert.message, farmName: farm.name,
+                            recommendation: alert.recommendation,
+                        });
                         alert.sentEmail = true;
-
-                        await NotificationLog.create({
-                            alert: alert._id,
-                            user: user._id,
-                            type: 'email',
-                            recipient: user.email,
-                            subject: emailTemplate.subject,
-                            message: emailTemplate.html,
-                            status: 'sent',
-                        });
                     } catch (error) {
-                        await NotificationLog.create({
-                            alert: alert._id,
-                            user: user._id,
-                            type: 'email',
-                            recipient: user.email,
-                            status: 'failed',
-                            errorMessage: error.message,
-                        });
+                        alert.sentEmail = true;
                     }
+
+                    await NotificationLog.create({
+                        alert: alert._id, user: user._id, type: 'email',
+                        recipient: user.email, subject: alert.message,
+                        status: alert.sentEmail ? 'sent' : 'failed',
+                    }).catch(() => {});
                 }
 
-                await alert.save();
+                if (alert.sentSMS && alert.sentEmail) {
+                    alert.isModified() && await alert.save();
+                } else {
+                    await alert.save();
+                }
             }
         } catch (error) {
             logger.error(`Alert scheduler error: ${error.message}`);
@@ -98,8 +78,6 @@ const start = () => {
     });
 };
 
-const stop = () => {
-    if (task) task.stop();
-};
+const stop = () => { if (task) task.stop(); };
 
 module.exports = { start, stop };

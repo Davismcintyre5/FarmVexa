@@ -1,27 +1,24 @@
 const imageService = require('../../services/imageService');
 const limitService = require('../../services/limitService');
+const Field = require('../../models/farm/Field');
+const TeamMember = require('../../models/farm/TeamMember');
 const { successResponse, errorResponse } = require('../../utils/response');
 const asyncHandler = require('../../utils/asyncHandler');
 
 const uploadAndAnalyze = asyncHandler(async (req, res) => {
-    if (!req.file) {
-        return errorResponse(res, 'No image file provided', 400);
-    }
+    if (!req.file) return errorResponse(res, 'No image file provided', 400);
 
     const limitCheck = await limitService.checkLimit(req.user.id);
-    if (!limitCheck.allowed) {
-        return errorResponse(res, limitCheck.reason, 429);
-    }
+    if (!limitCheck.allowed) return errorResponse(res, limitCheck.reason, 429);
 
     const { fieldId, cropType } = req.body;
-    const result = await imageService.uploadAndAnalyze(
-        req.file.path,
-        fieldId,
-        cropType,
-        req.user.id
-    );
+    const result = await imageService.uploadAndAnalyze(req.file.path, fieldId, cropType, req.user.id);
 
-    await limitService.logUsage(req.user.id, 'crop_analysis', true);
+    let farmId = null;
+    const field = await Field.findById(fieldId);
+    if (field) farmId = field.farm;
+
+    await limitService.logUsage(req.user.id, 'crop_analysis', true, 0, farmId);
 
     return successResponse(res, { cropImage: result }, 'Image analyzed');
 });
@@ -37,8 +34,4 @@ const getImageById = asyncHandler(async (req, res) => {
     return successResponse(res, { image });
 });
 
-module.exports = {
-    uploadAndAnalyze,
-    getFieldImages,
-    getImageById,
-};
+module.exports = { uploadAndAnalyze, getFieldImages, getImageById };

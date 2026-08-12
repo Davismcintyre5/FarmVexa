@@ -7,26 +7,33 @@ const SocketContext = createContext(null);
 const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 export const SocketProvider = ({ children }) => {
-    const { token } = useAuth();
+    const { token, isAuthenticated } = useAuth();
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
     const [newAlert, setNewAlert] = useState(null);
 
     useEffect(() => {
-        if (!token) return;
+        if (!token || !isAuthenticated) return;
 
         const s = io(API_URL, {
             auth: { token },
-            transports: ['websocket', 'polling'],
+            transports: ['polling', 'websocket'],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 3000,
         });
 
         s.on('connect', () => setIsConnected(true));
         s.on('disconnect', () => setIsConnected(false));
+        s.on('connect_error', () => {}); // Silently handle
         s.on('newAlert', (alert) => setNewAlert(alert));
 
         setSocket(s);
-        return () => s.close();
-    }, [token]);
+
+        return () => {
+            s.close();
+        };
+    }, [token, isAuthenticated]);
 
     return (
         <SocketContext.Provider value={{ socket, isConnected, newAlert, setNewAlert }}>

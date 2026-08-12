@@ -4,9 +4,7 @@ import uuid
 from fastapi import APIRouter, File, UploadFile, Form, Header, HTTPException
 from config.settings import settings
 from config.model_config import model_config
-from services.inference_service import inference_service
 from services.gemini_service import gemini_service
-from services.hdm_ai_service import hdm_ai_service
 from services.rule_engine_service import rule_engine_service
 from utils.validator import validate_request_api_key, validate_task, validate_image_file
 from utils.response_formatter import success_response, error_response
@@ -29,7 +27,6 @@ async def analyze_crop(
         validate_task(task)
         await validate_image_file(cropImage)
 
-        # Save temp image
         os.makedirs(settings.TEMP_DIR, exist_ok=True)
         file_ext = os.path.splitext(cropImage.filename or "image.jpg")[1] or ".jpg"
         temp_filename = f"{uuid.uuid4()}{file_ext}"
@@ -39,15 +36,9 @@ async def analyze_crop(
         with open(temp_path, "wb") as f:
             f.write(contents)
 
-        # Image analysis
-        if settings.AI_USED == "gemini":
-            image_result = gemini_service.analyze(temp_path, cropType)
-        elif settings.AI_USED == "hdm":
-            image_result = await hdm_ai_service.analyze(temp_path, cropType)
-        else:
-            image_result = inference_service.predict(temp_path, cropType)
+        # Crop images always use Gemini
+        image_result = gemini_service.analyze(temp_path, cropType)
 
-        # Combined analysis (if sensor data provided)
         combined_result = None
         if task == "combined_analysis" and sensorData:
             sensor_info = json.loads(sensorData)
@@ -61,7 +52,6 @@ async def analyze_crop(
                 "health_score": None
             }
 
-        # Cleanup temp file
         os.remove(temp_path)
 
         return success_response(combined_result, "Crop analysis complete")

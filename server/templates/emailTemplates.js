@@ -60,8 +60,109 @@ const farmerDeviceOffline = async (user, data, settings) => ({
 
 // ============ FARMER — REPORTS ============
 
-const farmerDailyReport = async (user, data, settings) => ({
-    subject: `📊 Daily Farm Report - ${data.farmName || 'Your Farm'}`, html: baseTemplate(`<h2>📊 Daily Report</h2><div class="data-row"><span class="data-label">🌡️ Temp:</span><span class="data-value">${data.avgTemp || 'N/A'}°C</span></div><div class="data-row"><span class="data-label">💧 Humidity:</span><span class="data-value">${data.avgHumidity || 'N/A'}%</span></div><div class="data-row"><span class="data-label">🌱 Soil:</span><span class="data-value">${data.avgSoilMoisture || 'N/A'}%</span></div><div class="data-row"><span class="data-label">⚠️ Alerts:</span><span class="data-value">${data.alertsCount || 0}</span></div><a href="${process.env.CLIENT_URL}/dashboard" class="button">View Dashboard</a>`, settings) });
+const farmerDailyReport = async (user, data, settings) => {
+    const phone = settings?.system?.supportPhone || '+254700000000';
+    const milkChange = data.yesterdayMilk > 0 ? ((data.todayMilk - data.yesterdayMilk) / data.yesterdayMilk * 100).toFixed(1) : 0;
+    const eggChange = data.yesterdayEggs > 0 ? ((data.todayEggs - data.yesterdayEggs) / data.yesterdayEggs * 100).toFixed(1) : 0;
+
+    return {
+        subject: `📊 Daily Farm Report — ${data.farmName || 'Your Farm'}`,
+        html: baseTemplate(`
+            <h2>📊 Daily Farm Report</h2>
+            <p>Your farm summary for ${new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            
+            <div style="background:#f0fdf4;padding:16px;border-radius:8px;margin:16px 0;">
+                <h3 style="margin:0 0 8px 0;">🌤️ Weather</h3>
+                <div class="data-row"><span class="data-label">Temperature:</span><span class="data-value">${data.avgTemp || 'N/A'}°C</span></div>
+                <div class="data-row"><span class="data-label">Humidity:</span><span class="data-value">${data.avgHumidity || 'N/A'}%</span></div>
+            </div>
+
+            <div style="background:#eff6ff;padding:16px;border-radius:8px;margin:16px 0;">
+                <h3 style="margin:0 0 8px 0;">🥛 Production Today</h3>
+                <div class="data-row"><span class="data-label">🥛 Milk:</span><span class="data-value">${data.todayMilk || 0}L ${Number(milkChange) >= 0 ? '↑' : '↓'} ${Math.abs(milkChange)}% vs yesterday</span></div>
+                <div class="data-row"><span class="data-label">🥚 Eggs:</span><span class="data-value">${data.todayEggs || 0} pcs ${Number(eggChange) >= 0 ? '↑' : '↓'} ${Math.abs(eggChange)}% vs yesterday</span></div>
+            </div>
+
+            <div style="background:#fefce8;padding:16px;border-radius:8px;margin:16px 0;">
+                <h3 style="margin:0 0 8px 0;">📡 Farm Overview</h3>
+                <div class="data-row"><span class="data-label">🐄 Animals:</span><span class="data-value">${data.animalCount || 0} active</span></div>
+                <div class="data-row"><span class="data-label">⚠️ Alerts:</span><span class="data-value">${data.alertsCount || 0} unread</span></div>
+                <div class="data-row"><span class="data-label">🟢 Health Score:</span><span class="data-value">${data.healthScore || 'N/A'}%</span></div>
+            </div>
+
+            ${data.deviceList && data.deviceList.length > 0 ? `
+            <div style="background:#f8fafc;padding:16px;border-radius:8px;margin:16px 0;">
+                <h3 style="margin:0 0 8px 0;">📡 Devices (${data.onlineDevices || 0}/${data.totalDevices || 0} online)</h3>
+                ${data.deviceList.map((d) => `
+                    <div class="data-row">
+                        <span class="data-label">${d.name}</span>
+                        <span class="data-value" style="color:${d.status === 'online' ? '#059669' : '#dc2626'}">
+                            ${d.status === 'online' ? '🟢 Online' : '🔴 Offline'} ${d.battery ? '· ' + d.battery + '%' : ''}
+                            ${d.lastSeen && d.status !== 'online' ? ' · Last seen: ' + new Date(d.lastSeen).toLocaleString('en-KE') : ''}
+                        </span>
+                    </div>
+                `).join('')}
+            </div>` : ''}
+
+            ${data.sensorReadings ? `
+            <div style="background:#f5f3ff;padding:16px;border-radius:8px;margin:16px 0;">
+                <h3 style="margin:0 0 8px 0;">🌱 Sensor Readings (Latest)</h3>
+                <div class="data-row"><span class="data-label">🌡️ Temperature:</span><span class="data-value">${data.sensorReadings.temperature || 'N/A'}°C</span></div>
+                <div class="data-row"><span class="data-label">💧 Humidity:</span><span class="data-value">${data.sensorReadings.humidity || 'N/A'}%</span></div>
+                <div class="data-row"><span class="data-label">🌱 Soil Moisture:</span><span class="data-value">${data.sensorReadings.soilMoisture || 'N/A'}%</span></div>
+                <div class="data-row"><span class="data-label">☀️ Light Level:</span><span class="data-value">${data.sensorReadings.lightLevel || 'N/A'}</span></div>
+            </div>` : ''}
+
+            <a href="${process.env.CLIENT_URL}/dashboard" class="button">View Full Dashboard</a>
+            <p style="margin-top:15px;font-size:13px;color:#777">Need help? 📞 ${phone}</p>
+        `, settings),
+    };
+};
+
+const farmerReminderUpcoming = async (user, data, settings) => {
+    const phone = settings?.system?.supportPhone || '+254700000000';
+    return {
+        subject: `⏰ Upcoming Reminders — ${data.farmName || 'Your Farm'} (${data.count || 0} items)`,
+        html: baseTemplate(`
+            <h2>⏰ Upcoming Reminders</h2>
+            <p>These items need your attention in the next 3 days on <strong>${data.farmName || 'your farm'}</strong>:</p>
+            
+            ${(data.reminders || []).map((r) => `
+                <div style="background:#fef9e7;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #f59e0b;">
+                    <strong>${r.title}</strong>
+                    <p style="margin:4px 0;font-size:13px;">${r.description || ''}</p>
+                    <span style="font-size:12px;color:#f59e0b;">Due: ${new Date(r.dueDate).toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} (${r.days} day${r.days > 1 ? 's' : ''} remaining)</span>
+                </div>
+            `).join('')}
+
+            <a href="${process.env.CLIENT_URL}/operations" class="button">View Details</a>
+            <p style="margin-top:15px;font-size:13px;color:#777">Need help? 📞 ${phone}</p>
+        `, settings),
+    };
+};
+
+const farmerReminderFinal = async (user, data, settings) => {
+    const phone = settings?.system?.supportPhone || '+254700000000';
+    return {
+        subject: `🔴 Action Required TODAY — ${data.farmName || 'Your Farm'} (${data.count || 0} items)`,
+        html: baseTemplate(`
+            <h2>🔴 Action Required Today</h2>
+            <p>These items are due <strong>TODAY</strong> on <strong>${data.farmName || 'your farm'}</strong>:</p>
+            
+            ${(data.reminders || []).map((r) => `
+                <div style="background:#fdf0ef;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #e74c3c;">
+                    <strong>${r.title}</strong>
+                    <p style="margin:4px 0;font-size:13px;">${r.description || ''}</p>
+                    <span style="font-size:12px;color:#e74c3c;">⚠️ Due Today — ${new Date(r.dueDate).toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                </div>
+            `).join('')}
+
+            <p style="font-weight:bold;color:#e74c3c;">Please take action immediately.</p>
+            <a href="${process.env.CLIENT_URL}/operations" class="button">View Details</a>
+            <p style="margin-top:15px;font-size:13px;color:#777">Need help? 📞 ${phone}</p>
+        `, settings),
+    };
+};
 
 const farmerWeeklyReport = async (user, data, settings) => ({
     subject: `📈 Weekly Farm Report - ${data.farmName || 'Your Farm'}`, html: baseTemplate(`<h2>📈 Weekly Report</h2><div class="data-row"><span class="data-label">🟢 Health:</span><span class="data-value">${data.avgHealthScore || 'N/A'}%</span></div><div class="data-row"><span class="data-label">⚠️ Alerts:</span><span class="data-value">${data.totalAlerts || 0}</span></div><div class="data-row"><span class="data-label">📸 Scans:</span><span class="data-value">${data.cropScans || 0}</span></div><a href="${process.env.CLIENT_URL}/dashboard" class="button">View Report</a>`, settings) });
@@ -148,4 +249,6 @@ module.exports = {
     adminNewFarmer, adminSystemCritical, adminGeminiEightyPercent,
     adminGeminiExceeded, adminPythonOffline, adminDeviceOffline24h,
     adminTrainingComplete, adminNewAdmin, adminWeeklyReport,
+    farmerReminderUpcoming,farmerReminderFinal,
+
 };

@@ -28,3 +28,99 @@
         display: none;
     }
 }
+
+@media print {
+    /* Hide everything except the print area */
+    header, footer, nav, aside, button, .no-print,
+    .sidebar, .header, .footer-nav, .bottom-nav {
+        display: none !important;
+    }
+
+    /* Show only print area */
+    .print-area {
+        display: block !important;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 20px;
+    }
+
+    /* Print table styles */
+    .print-area table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .print-area th {
+        background: #f3f4f6;
+        text-align: left;
+        padding: 8px 12px;
+        border-bottom: 2px solid #d1d5db;
+        font-weight: 600;
+    }
+
+    .print-area td {
+        padding: 6px 12px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .print-header {
+        margin-bottom: 24px;
+    }
+
+    .print-header h2 {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+
+    .print-header p {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 2px 0;
+    }
+
+    .print-footer {
+        margin-top: 24px;
+        text-align: center;
+        font-size: 12px;
+        color: #9ca3af;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 16px;
+    }
+
+    .print-summary {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .print-summary-card {
+        flex: 1;
+        text-align: center;
+        padding: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+    }
+
+    .print-summary-card .label {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .print-summary-card .value {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    /* Remove dark mode colors in print */
+    .dark .print-area,
+    .dark .print-area * {
+        background: white !important;
+        color: black !important;
+    }
+
+    body {
+        background: white !important;
+    }
+}
