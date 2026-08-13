@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌾 FarmVexa — Business Card</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%232d6a4f'/%3E%3Ctext x='256' y='220' text-anchor='middle' fill='white' font-size='140'%3E🌾%3C/text%3E%3C/svg%3E">
+    <style>
+        :root {
+            --green-900: #1b5e20;
+            --green-700: #2d6a4f;
+            --green-500: #4ade80;
+            --green-100: #c8e6c9;
+            --blue-500: #3b82f6;
+            --white: #ffffff;
+            --gray-700: #374151;
+            --gray-500: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--white);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* Left Panel */
+        .left {
+            background: linear-gradient(160deg, #1b5e20 0%, #2d6a4f 40%, #1b5e20 100%);
+            color: var(--white);
+            padding: 48px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .left::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .left::after {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            left: -40px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .left .brand {
+            position: relative;
+            z-index: 1;
+        }
+
+        .left .logo-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .left h1 {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
+        }
+
+        .left .tagline {
+            font-size: 14px;
+            color: var(--blue-500);
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .left .description {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        .left .contact {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            position: relative;
+            z-index: 1;
+            line-height: 1.8;
+        }
+
+        .left .contact strong {
+            color: var(--white);
+        }
+
+        /* Right Panel */
+        .right {
+            padding: 48px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .section h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gray-500);
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .section p {
+            font-size: 13px;
+            color: var(--gray-700);
+            line-height: 1.7;
+        }
+
+        .problem-box {
+            background: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+            color: #991b1b;
+            line-height: 1.6;
+        }
+
+        .solution-box {
+            background: #f0fdf4;
+            border-left: 4px solid #16a34a;
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+            color: #14532d;
+            line-height: 1.6;
+        }
+
+        .sensors {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .sensor-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f0fdf4;
+            color: #14532d;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid #bbf7d0;
+        }
+
+        .modules {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--gray-700);
+        }
+
+        .modules span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .modules span::before {
+            content: '▸';
+            color: var(--green-700);
+            font-size: 10px;
+        }
+
+        .url {
+            display: inline-block;
+            background: var(--green-700);
+            color: var(--white);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .url:hover {
+            background: #1b5e20;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                grid-template-columns: 1fr;
+            }
+            .left {
+                padding: 32px 24px;
+            }
+            .right {
+                padding: 32px 24px;
+            }
+        }
+
+        @media print {
+            body {
+                background: var(--white);
+                padding: 0;
+            }
+            .card {
+                box-shadow: none;
+                max-width: 100%;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+
+    <!-- LEFT PANEL — Brand & Contact -->
+    <div class="left">
+        <div class="brand">
+            <div class="logo-icon">🌾</div>
+            <h1>FarmVexa</h1>
+            <p class="tagline">See. Sense. Predict. Grow.</p>
+        </div>
+
+        <p class="description">
+            An AI-powered farm intelligence platform combining IoT sensors, computer vision, and artificial intelligence to help farmers monitor, understand, and respond to farm conditions in real time.
+        </p>
+
+        <div class="contact">
+            <strong>🌐</strong> farmvexa.pxxl.click<br>
+            <strong>📧</strong> support@farmvexa.com<br>
+            <strong>📞</strong> +254 768 784 909<br>
+            <strong>©</strong> 2026 HDM — Davis Okoth
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL — Details -->
+    <div class="right">
+
+        <!-- Problem -->
+        <div class="section">
+            <h3>⚠️ The Problem</h3>
+            <div class="problem-box">
+                Farmers discover crop diseases, soil problems, and livestock issues <strong>after damage has already occurred</strong>. Manual monitoring misses subtle changes. No historical data for decisions. Reactive farming leads to losses.
+            </div>
+        </div>
+
+        <!-- Solution -->
+        <div class="section">
+            <h3>✅ How FarmVexa Solves It</h3>
+            <div class="solution-box">
+                <strong>See</strong> — Computer vision scans crops for diseases.<br>
+                <strong>Sense</strong> — IoT sensors monitor soil &amp; environment 24/7.<br>
+                <strong>Predict</strong> — AI analyzes trends and predicts risks.<br>
+                <strong>Grow</strong> — Data-driven decisions for better yields.
+            </div>
+        </div>
+
+        <!-- Sensors -->
+        <div class="section">
+            <h3>📡 Sensors & Hardware</h3>
+            <div class="sensors">
+                <span class="sensor-chip">🌡️ DHT22 Temp/Humidity</span>
+                <span class="sensor-chip">💧 Soil Moisture</span>
+                <span class="sensor-chip">☀️ LDR Light Sensor</span>
+                <span class="sensor-chip">🌧️ Rain Sensor</span>
+                <span class="sensor-chip">📸 Phone Camera</span>
+                <span class="sensor-chip">⚡ ESP32 WiFi</span>
+            </div>
+        </div>
+
+        <!-- Modules -->
+        <div class="section">
+            <h3>🧩 What It Does</h3>
+            <div class="modules">
+                <span>AI Crop Scanning</span>
+                <span>IoT Monitoring</span>
+                <span>Livestock Mgmt</span>
+                <span>Health &amp; Vaccines</span>
+                <span>Production Tracking</span>
+                <span>Stock &amp; Inventory</span>
+                <span>Finance &amp; Sales</span>
+                <span>Weather Forecasts</span>
+                <span>AI Chat (EN/SW)</span>
+                <span>Team &amp; Tasks</span>
+                <span>Reports &amp; Alerts</span>
+                <span>M-Pesa Payments</span>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <a href="https://farmvexa.pxxl.click" class="url">🚀 farmvexa.pxxl.click</a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

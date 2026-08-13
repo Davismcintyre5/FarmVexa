@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmVexa — User Documentation</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%232d6a4f'/%3E%3Ctext x='256' y='220' text-anchor='middle' fill='white' font-size='140'%3E🌾%3C/text%3E%3C/svg%3E">
+    <style>
+        :root{--primary:#2d6a4f;--accent:#4ade80;--text:#1a1a2e;--text-light:#555;--bg:#fff;--bg-alt:#f8f9fa;--border:#e0e0e0;--radius:8px;--blue:#3b82f6}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text);line-height:1.8;background:var(--bg)}
+        .container{max-width:1000px;margin:0 auto;padding:0 24px}
+        .cover{background:linear-gradient(135deg,#1b5e20,#2d6a4f,#4ade80);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;page-break-after:always}
+        .cover h1{font-size:42px;font-weight:800;margin:20px 0 10px}
+        .cover .tagline{font-size:20px;color:var(--blue);margin-bottom:40px;font-weight:500}
+        .cover .meta{font-size:14px;color:rgba(255,255,255,.85);line-height:2.2}
+        .cover .meta strong{color:#fff}
+        .page-break{page-break-after:always}
+        h1{font-size:2em;color:var(--primary);border-bottom:3px solid var(--accent);padding-bottom:10px;margin:40px 0 20px}
+        h2{font-size:1.5em;color:var(--primary);margin:30px 0 15px;padding-left:12px;border-left:4px solid var(--accent)}
+        h3{font-size:1.15em;color:var(--primary);margin:20px 0 10px}
+        p{font-size:15px;color:var(--text-light);margin-bottom:14px}
+        ul,ol{margin:0 0 16px 24px;color:var(--text-light)}
+        li{margin-bottom:6px;font-size:14px}
+        .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin:20px 0}
+        .info-card{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px}
+        .info-card h3{margin-top:0;font-size:1em}
+        table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+        th{background:var(--primary);color:#fff;padding:12px 16px;text-align:left}
+        td{padding:10px 14px;border-bottom:1px solid var(--border)}
+        tr:nth-child(even) td{background:var(--bg-alt)}
+        code{background:#f1f3f5;padding:2px 6px;border-radius:4px;font-size:.9em}
+        .note{background:#f0fdf4;border-left:4px solid var(--accent);padding:14px 18px;border-radius:0 var(--radius)var(--radius)0;margin:16px 0;font-size:.9em}
+        .note-danger{background:#fef2f2;border-left-color:#dc2626}
+        .steps{counter-reset:step}
+        .steps li{counter-increment:step;list-style:none;margin-bottom:12px;padding-left:32px;position:relative;font-size:14px}
+        .steps li::before{content:counter(step);position:absolute;left:0;top:0;width:22px;height:22px;background:var(--accent);color:var(--primary);border-radius:50%;text-align:center;font-size:12px;font-weight:700;line-height:22px}
+        .toc{background:var(--bg-alt);border-radius:var(--radius);padding:24px;margin:20px 0}
+        .toc ol{list-style:none;margin-left:0}
+        .toc li{margin:6px 0}
+        .toc-l2{margin-left:20px;font-size:.9em;color:var(--text-light)}
+        .footer{text-align:center;padding:30px;margin-top:60px;border-top:2px solid var(--border);color:var(--text-light);font-size:.85em}
+        @media(max-width:768px){.cover h1{font-size:32px}}
+        @media print{body{font-size:11px}}
+    </style>
+</head>
+<body>
+
+<!-- COVER -->
+<section class="cover">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="140" height="140">
+        <circle cx="256" cy="256" r="240" fill="rgba(255,255,255,0.1)"/>
+        <text x="256" y="200" text-anchor="middle" fill="white" font-size="120">🌾</text>
+        <text x="256" y="310" text-anchor="middle" fill="white" font-size="48" font-weight="bold" font-family="Arial">FarmVexa</text>
+        <text x="256" y="345" text-anchor="middle" fill="#3b82f6" font-size="18" font-family="Arial">See. Sense. Predict. Grow.</text>
+    </svg>
+    <h1>FarmVexa User Guide</h1>
+    <p class="tagline">See. Sense. Predict. Grow.</p>
+    <div class="meta">
+        <span><strong>Version:</strong> 1.0.0</span><br>
+        <span><strong>Developer:</strong> Davis Okoth (HDM)</span><br>
+        <span><strong>Date:</strong> August 2026</span><br>
+        <span><strong>Website:</strong> farmvexa.pxxl.click</span>
+    </div>
+</section>
+
+<!-- DEVELOPER -->
+<div class="container page-break">
+    <h1>Company & Developer Information</h1>
+    <div class="info-grid">
+        <div class="info-card"><h3>🏢 Company</h3><p><strong>Name:</strong> HDM</p><p><strong>Website:</strong> hdmdevelopers.pxxl.click</p><p><strong>Email:</strong> davismcintyre5@gmail.com</p><p><strong>Phone:</strong> +254 768 784 909</p></div>
+        <div class="info-card"><h3>👨‍💻 Developer</h3><p><strong>Name:</strong> Davis Okoth</p><p><strong>Role:</strong> Full Stack Developer & Founder</p><p><strong>Email:</strong> davismcintyre5@gmail.com</p></div>
+    </div>
+    <h2>About HDM</h2>
+    <p>HDM is a software development company based in Kenya, building modern solutions for agriculture and business. FarmVexa is our AI-powered farm intelligence platform.</p>
+</div>
+
+<!-- SUPPORT -->
+<div class="container page-break">
+    <h1>Support Contact</h1>
+    <div class="info-grid">
+        <div class="info-card"><h3>📞 Phone</h3><p>+254 768 784 909</p></div>
+        <div class="info-card"><h3>📧 Email</h3><p>support@farmvexa.com</p></div>
+        <div class="info-card"><h3>💬 WhatsApp</h3><p>+254 768 784 909</p></div>
+        <div class="info-card"><h3>🌐 Website</h3><p>farmvexa.pxxl.click</p></div>
+    </div>
+    <div class="info-card"><strong>🕐 Response Time:</strong> Within 24 hours<br><strong>📅 Hours:</strong> Monday – Saturday, 8AM – 6PM EAT</div>
+</div>
+
+<!-- ACKNOWLEDGMENTS -->
+<div class="container page-break">
+    <h1>Acknowledgments</h1>
+    <p>We extend our sincere gratitude to the farming community whose challenges inspired this platform. Special thanks to agricultural extension officers, early adopters, and the open-source community.</p>
+</div>
+
+<!-- DEDICATION -->
+<div class="container page-break">
+    <h1>Dedication</h1>
+    <p style="font-size:18px;font-style:italic;text-align:center;padding:40px;color:var(--primary)">"To every farmer who rises before the sun, who works the land with calloused hands, and who feeds the world with quiet dignity — this platform is for you."</p>
+</div>
+
+<!-- LICENSE -->
+<div class="container page-break">
+    <h1>License</h1>
+    <div style="background:#f0fdf4;padding:30px;border-radius:12px;border:2px solid var(--primary);margin:20px 0">
+        <h3 style="color:var(--primary)">MIT License — Proprietary Extension</h3>
+        <p><strong>Copyright © 2026 HDM</strong></p>
+        <p>All proprietary components including the FarmVexa brand, logo, and tagline remain the exclusive intellectual property of HDM.</p>
+    </div>
+</div>
+
+<!-- PREFACE -->
+<div class="container page-break">
+    <h1>Preface</h1>
+    <p>Welcome to the FarmVexa User Documentation. This guide will help you understand and effectively use every feature of the FarmVexa AI-Powered Farm Intelligence Platform.</p>
+    <p>Whether you are a small-scale farmer, commercial farmer, farm worker, veterinarian, farm manager, or a buyer browsing the Farmers Market — this manual will walk you through every step.</p>
+    <h2>How to Use This Manual</h2>
+    <ul>
+        <li><strong>New users:</strong> Start with Getting Started.</li>
+        <li><strong>Farm owners:</strong> Review User Roles and Settings.</li>
+        <li><strong>Specific tasks:</strong> Jump to the relevant module.</li>
+    </ul>
+</div>
+
+<!-- TOC -->
+<div class="container page-break">
+    <h1>Table of Contents</h1>
+    <div class="toc">
+        <ol>
+            <li>Getting Started</li>
+            <li>User Roles & Permissions</li>
+            <li>Module Guides
+                <ol class="toc-l2">
+                    <li>Dashboard</li>
+                    <li>Farms & Fields</li>
+                    <li>IoT & Sensors</li>
+                    <li>Livestock</li>
+                    <li>Health</li>
+                    <li>Production</li>
+                    <li>Inventory & Stock</li>
+                    <li>Finance</li>
+                    <li>Weather</li>
+                    <li>Team & Tasks</li>
+                    <li>Farmers Market</li>
+                    <li>Reports</li>
+                    <li>AI Chat</li>
+                    <li>Alerts & Notifications</li>
+                    <li>Settings</li>
+                </ol>
+            </li>
+            <li>Mobile Access</li>
+            <li>Frequently Asked Questions</li>
+        </ol>
+    </div>
+</div>
+
+<!-- GETTING STARTED -->
+<div class="container page-break">
+    <h1>Getting Started</h1>
+    <h2>System Requirements</h2>
+    <table>
+        <tr><th>Platform</th><th>Requirements</th></tr>
+        <tr><td>Web App</td><td>Chrome 90+, Firefox 88+, Edge 90+, Safari 14+</td></tr>
+        <tr><td>Desktop</td><td>Windows 10+, macOS 12+, Ubuntu 20.04+</td></tr>
+        <tr><td>Android</td><td>Android 8.0 or later</td></tr>
+    </table>
+    <h2>Accessing FarmVexa</h2>
+    <p>Available via web browser at farmvexa.pxxl.click, desktop applications for Windows/macOS/Linux, and Android APK.</p>
+    <h2>Registration</h2>
+    <ol class="steps">
+        <li>Visit farmvexa.pxxl.click.</li>
+        <li>Click Register or Get Access.</li>
+        <li>Fill in your details: name, email, phone, password, county, sub-county.</li>
+        <li>Agree to terms and submit.</li>
+        <li>Wait for admin approval (within 24 hours).</li>
+        <li>Receive welcome email with login instructions.</li>
+    </ol>
+    <p class="note"><strong>Note:</strong> If self-registration is disabled, use the Get Access page to request an account.</p>
+    <h2>Creating Your First Farm</h2>
+    <ol class="steps">
+        <li>Login to your account.</li>
+        <li>Click Create Farm.</li>
+        <li>Enter farm name, county, sub-county, and size.</li>
+        <li>Your farm is ready.</li>
+    </ol>
+</div>
+
+<!-- ROLES -->
+<div class="container page-break">
+    <h1>User Roles & Permissions</h1>
+    <table>
+        <tr><th>Role</th><th>Modules</th><th>Permissions</th></tr>
+        <tr><td>Farmer</td><td>All 15 modules</td><td>Full CRUD, team management, finances, market, settings</td></tr>
+        <tr><td>Manager</td><td>8 modules</td><td>Livestock, Health, Production, Inventory, Equipment, Finance, Tasks, Reports</td></tr>
+        <tr><td>Worker</td><td>7 modules</td><td>View livestock, record production, view tasks</td></tr>
+        <tr><td>Veterinarian</td><td>2 modules</td><td>View livestock, full health CRUD</td></tr>
+    </table>
+    <p class="note"><strong>Note:</strong> Farmers Market is only for farmers. Workers and vets cannot access it.</p>
+</div>
+
+<!-- MODULES 1-4 -->
+<div class="container page-break">
+    <h1>Module Guides</h1>
+
+    <h2>1. Dashboard</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <p>The dashboard is the first screen after login. It shows:</p>
+    <ul>
+        <li><strong>Farms:</strong> Number of farms (farmers) or assigned farm (team).</li>
+        <li><strong>Alerts:</strong> Unread high/critical alerts count.</li>
+        <li><strong>Animals:</strong> Total active animals.</li>
+        <li><strong>Stock Value:</strong> Total production stock value in KES.</li>
+    </ul>
+    <p>Recent alerts show the latest 4 unread alerts. Quick actions provide shortcuts to Scan Crop, AI Chat, Production, and Alerts.</p>
+
+    <h2>2. Farms & Fields</h2>
+    <p><strong>Available for:</strong> Farmer (CRUD), Team (view)</p>
+    <p>Farms have name, location (county/sub-county), and size. Fields within farms have crop type and soil type. Farm detail shows Fields, Animals, Stock Value, and Alerts stats.</p>
+
+    <h2>3. IoT & Sensors</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <p><strong>Scan Crop:</strong> Capture or upload crop leaf photos for AI disease detection.</p>
+    <p><strong>Sensors:</strong> Real-time temperature, humidity, soil moisture, and light with trend indicators.</p>
+    <p><strong>Devices:</strong> ESP32 registration with auto online/offline detection.</p>
+
+    <h2>4. Livestock</h2>
+    <p><strong>Available for:</strong> Farmer/Manager (CRUD), Worker/Vet (view)</p>
+    <p>Individual animal registration with tag ID, type, breed, weight, and status. Poultry batch mode for bulk registration with mortality tracking.</p>
+</div>
+
+<!-- MODULES 5-8 -->
+<div class="container page-break">
+    <h2>5. Health</h2>
+    <p><strong>Available for:</strong> Farmer/Vet/Manager (CRUD), Worker (locked)</p>
+    <p>Record vaccinations, treatments, checkups, diseases, and deworming. Track upcoming and overdue vaccinations. System sends reminders at 7, 3, and 0 days before due date.</p>
+    <p class="note-danger"><strong>Warning:</strong> Workers see "accessible by farm management and veterinarians only."</p>
+
+    <h2>6. Production</h2>
+    <p><strong>Available for:</strong> Farmer/Manager/Worker (record), Vet (view)</p>
+    <p>Dual-mode: Animal (milk, eggs, meat) and Crop (harvest). Field selection auto-fills crop type. Quantity auto-calculates value from pricing. Production auto-adds to stock.</p>
+
+    <h2>7. Inventory & Stock</h2>
+    <p><strong>Available for:</strong> Farmer/Manager (CRUD), others (view)</p>
+    <p>Prod Stock (auto from production) and Farm Inventory (purchased items). Stock in/out with full movement history. Low stock alerts with minimum thresholds.</p>
+
+    <h2>8. Finance</h2>
+    <p><strong>Available for:</strong> Farmer/Manager only</p>
+    <p>Sales cart with multiple items, discounts, and printable receipts. Expense recording by category. Product pricing with auto-suggestions from farm data. Income/Expense/Net summaries.</p>
+</div>
+
+<!-- MODULES 9-12 -->
+<div class="container page-break">
+    <h2>9. Weather</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <p>Current conditions, 7-day forecast, severe weather alerts (rain, heatwave, frost, drought, storm), and farming recommendations. Weather is auto-fetched from your farm's county/sub-county location.</p>
+
+    <h2>10. Team & Tasks</h2>
+    <p><strong>Available for:</strong> Farmer (CRUD), Manager (tasks), Worker/Vet (view)</p>
+    <p><strong>Team:</strong> Add workers, managers, and vets. Members receive login credentials via email.</p>
+    <p><strong>Tasks:</strong> Create tasks, assign to team members, set priority (Low/Medium/High/Urgent), track status (Pending → In Progress → Completed).</p>
+
+    <h2>11. Farmers Market</h2>
+    <p><strong>Available for:</strong> Farmer only (in dashboard), Public (browse + inquire)</p>
+
+    <h3>Market Overview</h3>
+    <p>The Farmers Market allows farmers to list their farm products for public viewing. Buyers browse products, view farm details, and contact farmers directly via SMS or email inquiry. The market can be enabled or disabled by the platform administrator.</p>
+    <p>When disabled, farmers see a notice with support contact. When enabled, products appear on the public market page and a preview section on the landing page.</p>
+
+    <h3>Adding Products</h3>
+    <ol class="steps">
+        <li>Go to Operations → Market.</li>
+        <li>Click Add Product.</li>
+        <li>Enter product name, category, price, unit, quantity.</li>
+        <li>Upload up to 5 photos.</li>
+        <li>Enter contact phone, WhatsApp, and email.</li>
+        <li>Select farm (auto-populates county/sub-county).</li>
+        <li>Add exact direction for buyers.</li>
+        <li>Click Add Product.</li>
+    </ol>
+
+    <h3>Product Categories</h3>
+    <ul>
+        <li>🥬 Vegetables</li>
+        <li>🍎 Fruits</li>
+        <li>🐄 Livestock</li>
+        <li>🐔 Poultry</li>
+        <li>🥛 Dairy</li>
+        <li>🌾 Grains</li>
+        <li>📦 Other</li>
+    </ul>
+
+    <h3>Product Status</h3>
+    <ul>
+        <li><strong>Active:</strong> Visible to public buyers.</li>
+        <li><strong>Sold:</strong> Marked after sale, hidden from public.</li>
+        <li><strong>Inactive:</strong> Hidden from public, can reactivate.</li>
+    </ul>
+
+    <h3>Managing Inquiries</h3>
+    <p>Buyers send inquiries from the public market page. You receive SMS and email with buyer details and message. Mark inquiries as read or delete them.</p>
+
+    <h3>Public Market Experience</h3>
+    <p>Buyers browse at farmvexa.pxxl.click/market. They can search products, filter by category, view photos, see location and contact details, and send inquiries without logging in.</p>
+
+    <h2>12. Reports</h2>
+    <p><strong>Available for:</strong> Farmer/Manager</p>
+    <p>9 report types: General, Stock, Livestock, Production, Crops, Financial, Vaccination, Inventory, Tasks. Filter by period. Print-optimized formatting with farm header and summary.</p>
+</div>
+
+<!-- MODULES 13-15 -->
+<div class="container page-break">
+    <h2>13. AI Chat</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <p>Chat with FarmVexa AI in English or Kiswahili. The AI knows your farm — animals, production, stock, weather, alerts, and devices. Ask questions like:</p>
+    <ul>
+        <li>"How is my farm today?"</li>
+        <li>"What is the current weather?"</li>
+        <li>"When is the next vaccination due?"</li>
+        <li>"How much milk did we produce this week?"</li>
+    </ul>
+    <p>Daily usage limits apply. The AI shows farm-specific data in responses.</p>
+
+    <h2>14. Alerts & Notifications</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <p>Automatic alerts for:</p>
+    <ul>
+        <li>Low soil moisture</li>
+        <li>High temperature</li>
+        <li>Disease risk conditions</li>
+        <li>Disease detected in crops</li>
+        <li>Device offline</li>
+        <li>Low stock</li>
+        <li>Vaccination due</li>
+        <li>Equipment maintenance due</li>
+        <li>Weather warnings</li>
+    </ul>
+    <p>High and critical alerts send email. Critical alerts can also send SMS. Header bell shows real-time unread count.</p>
+
+    <h2>15. Settings</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <ul>
+        <li><strong>Profile:</strong> Update name, phone, county, sub-county.</li>
+        <li><strong>Password:</strong> Change password with current password verification.</li>
+        <li><strong>Support:</strong> View support contacts (phone, email, WhatsApp).</li>
+        <li><strong>Downloads:</strong> Download desktop and mobile apps.</li>
+    </ul>
+</div>
+
+<!-- MOBILE -->
+<div class="container page-break">
+    <h1>Mobile Access</h1>
+    <p>FarmVexa is fully responsive and works on mobile browsers. Install as PWA:</p>
+    <ol class="steps">
+        <li>Open FarmVexa in Chrome on your phone.</li>
+        <li>Tap menu (⋮) → Install App or Add to Home Screen.</li>
+        <li>FarmVexa appears on your home screen.</li>
+    </ol>
+    <p>The crop scanner uses your phone camera for instant disease detection. Android APK also available for download.</p>
+    <h2>Desktop Applications</h2>
+    <p>Download for Windows, macOS, or Linux from the Downloads page or Settings page in your dashboard.</p>
+</div>
+
+<!-- FAQ -->
+<div class="container page-break">
+    <h1>Frequently Asked Questions</h1>
+    <div class="info-card"><h3>What is FarmVexa?</h3><p>An AI-powered farm intelligence platform combining IoT, computer vision, and AI for smarter farming.</p></div>
+    <div class="info-card"><h3>How does the Farmers Market work?</h3><p>Farmers list products with photos and prices. Buyers browse publicly and send inquiries. Farmers receive SMS/email and respond directly.</p></div>
+    <div class="info-card"><h3>Can I sell on the market as a worker?</h3><p>No. Only farmers (farm owners) can list products.</p></div>
+    <div class="info-card"><h3>How many photos can I upload?</h3><p>Up to 5 photos per product.</p></div>
+    <div class="info-card"><h3>Is the market always open?</h3><p>No. The platform administrator can enable or disable it.</p></div>
+    <div class="info-card"><h3>Can my team members use it?</h3><p>Yes! Add workers, managers, and vets with role-based permissions.</p></div>
+    <div class="info-card"><h3>Does it work offline?</h3><p>Web app requires internet. Desktop app caches some data.</p></div>
+    <div class="info-card"><h3>What support is available?</h3><p>Phone, email, and WhatsApp. Response within 24 hours.</p></div>
+    <div class="info-card"><h3>How does crop scanning work?</h3><p>Take a photo of a crop leaf. AI analyzes for diseases, pests, and deficiencies.</p></div>
+    <div class="info-card"><h3>How do I connect sensors?</h3><p>Connect ESP32-based IoT sensors. Register device in dashboard. Data flows automatically.</p></div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    <p><strong>FarmVexa — AI-Powered Farm Intelligence Platform</strong> — User Documentation v1.0.0</p>
+    <p>© 2026 HDM. All rights reserved. | hdmdevelopers.pxxl.click | farmvexa.pxxl.click</p>
+    <p>Developer: Davis Okoth | davismcintyre5@gmail.com | +254 768 784 909</p>
+</div>
+
+</body>
+</html>

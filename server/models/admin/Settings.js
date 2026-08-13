@@ -15,14 +15,14 @@ const emailToggleSchema = new mongoose.Schema({
     farmerWeeklyReport: { type: Boolean, default: true },
     farmerNewDeviceLogin: { type: Boolean, default: true },
     farmerVaccinationDue: { type: Boolean, default: true },
-farmerLivestockAlert: { type: Boolean, default: true },
-farmerLowStock: { type: Boolean, default: true },
-farmerMaintenanceDue: { type: Boolean, default: true },
-farmerWeatherAlert: { type: Boolean, default: true },
-farmerTaskOverdue: { type: Boolean, default: true },
-teamMemberAdded: { type: Boolean, default: true },
-farmerReminderUpcoming: { type: Boolean, default: true },
-farmerReminderFinal: { type: Boolean, default: true },
+    farmerLivestockAlert: { type: Boolean, default: true },
+    farmerLowStock: { type: Boolean, default: true },
+    farmerMaintenanceDue: { type: Boolean, default: true },
+    farmerWeatherAlert: { type: Boolean, default: true },
+    farmerTaskOverdue: { type: Boolean, default: true },
+    farmerReminderUpcoming: { type: Boolean, default: true },
+    farmerReminderFinal: { type: Boolean, default: true },
+    teamMemberAdded: { type: Boolean, default: true },
     adminNewFarmer: { type: Boolean, default: true },
     adminSystemCritical: { type: Boolean, default: true },
     adminGeminiEightyPercent: { type: Boolean, default: true },
@@ -32,6 +32,7 @@ farmerReminderFinal: { type: Boolean, default: true },
     adminTrainingComplete: { type: Boolean, default: true },
     adminNewAdmin: { type: Boolean, default: true },
     adminWeeklyReport: { type: Boolean, default: true },
+    marketInquiry: { type: Boolean, default: true },
 });
 
 const smsToggleSchema = new mongoose.Schema({
@@ -41,14 +42,15 @@ const smsToggleSchema = new mongoose.Schema({
     farmerDiseaseDetected: { type: Boolean, default: true },
     farmerDeviceOffline: { type: Boolean, default: true },
     farmerVaccinationDue: { type: Boolean, default: true },
-farmerLivestockAlert: { type: Boolean, default: true },
-farmerLowStock: { type: Boolean, default: true },
-farmerWeatherAlert: { type: Boolean, default: true },
-teamMemberAdded: { type: Boolean, default: true },
+    farmerLivestockAlert: { type: Boolean, default: true },
+    farmerLowStock: { type: Boolean, default: true },
+    farmerWeatherAlert: { type: Boolean, default: true },
+    teamMemberAdded: { type: Boolean, default: true },
     adminNewFarmer: { type: Boolean, default: true },
     adminSystemCritical: { type: Boolean, default: true },
     adminGeminiExceeded: { type: Boolean, default: true },
     adminPythonOffline: { type: Boolean, default: true },
+    marketInquiry: { type: Boolean, default: true },
 });
 
 const emailSettingsSchema = new mongoose.Schema({
@@ -67,6 +69,49 @@ const smsSettingsSchema = new mongoose.Schema({
     apiKey: { type: String, default: '' },
     senderId: { type: String, default: 'FarmVexa' },
     enabled: { type: Boolean, default: false },
+});
+
+const downloadSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    version: { type: String, required: true },
+    link: { type: String, required: true },
+    description: { type: String },
+    platform: { type: String, enum: ['android', 'ios', 'web', 'windows', 'all'], default: 'all' },
+    enabled: { type: Boolean, default: true },
+});
+
+const chatbotSchema = new mongoose.Schema({
+    enabled: { type: Boolean, default: false },
+    name: { type: String, default: 'FarmVexa AI' },
+    greeting: { type: String, default: 'Hello! How can I help you with your farm today?' },
+    position: { type: String, enum: ['bottom-right', 'bottom-left'], default: 'bottom-right' },
+    primaryColor: { type: String, default: '#2d6a4f' },
+    aiProvider: { type: String, enum: ['gemini', 'hdm'], default: 'gemini' },
+    geminiApiKey: { type: String, default: '' },
+    hdmApiKey: { type: String, default: '' },
+    hdmBaseUrl: { type: String, default: 'https://hdmaiserver.pxxl.click/api/v1/projects/general/public-chat' },
+});
+
+const legalSchema = new mongoose.Schema({
+    termsOfService: { type: String, default: '' },
+    privacyPolicy: { type: String, default: '' },
+    cookiePolicy: { type: String, default: '' },
+});
+
+const weatherTestResultSchema = new mongoose.Schema({
+    api: { type: String, enum: ['openweather', 'weatherapi'] },
+    status: { type: String, enum: ['success', 'failed'] },
+    responseTime: { type: Number }, // ms
+    data: { type: mongoose.Schema.Types.Mixed },
+    error: { type: String },
+    testedAt: { type: Date, default: Date.now },
+});
+
+const weatherTestSchema = new mongoose.Schema({
+    enabled: { type: Boolean, default: false },
+    location: { type: String, default: 'Nairobi' },
+    lastTested: Date,
+    results: [weatherTestResultSchema],
 });
 
 const settingsSchema = new mongoose.Schema({
@@ -89,22 +134,10 @@ const settingsSchema = new mongoose.Schema({
         diseaseRiskTemperature: { type: Number, default: 28 },
         alertFrequency: { type: Number, default: 30 },
     },
-    email: {
-        type: emailSettingsSchema,
-        default: () => ({}),
-    },
-    sms: {
-        type: smsSettingsSchema,
-        default: () => ({}),
-    },
-    emailToggles: {
-        type: emailToggleSchema,
-        default: () => ({}),
-    },
-    smsToggles: {
-        type: smsToggleSchema,
-        default: () => ({}),
-    },
+    email: { type: emailSettingsSchema, default: () => ({}) },
+    sms: { type: smsSettingsSchema, default: () => ({}) },
+    emailToggles: { type: emailToggleSchema, default: () => ({}) },
+    smsToggles: { type: smsToggleSchema, default: () => ({}) },
 system: {
     appName: { type: String, default: 'FarmVexa' },
     supportPhone: { type: String, default: '+254700000000' },
@@ -112,25 +145,23 @@ system: {
     whatsappNumber: { type: String, default: '' },
     showWhatsapp: { type: Boolean, default: false },
     dataRetentionDays: { type: Number, default: 90 },
-    autoBackup: { type: Boolean, default: false },
+    backupFrequency: { type: String, enum: ['daily', 'weekly', 'monthly'], default: 'daily' },
+    backupEmail: { type: String, default: '' },
+    sendBackupEmail: { type: Boolean, default: false },
     timezone: { type: String, default: 'Africa/Nairobi' },
     language: { type: String, default: 'en' },
     allowSelfRegistration: { type: Boolean, default: true },
-    downloads: [{
-        name: { type: String, required: true },
-        version: { type: String, required: true },
-        link: { type: String, required: true },
-        description: { type: String },
-        platform: { type: String, enum: ['android', 'ios', 'web', 'windows', 'all'], default: 'all' },
-        enabled: { type: Boolean, default: true },
-    }],
-},
-    updatedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Admin',
+    downloads: [downloadSchema],
+    chatbot: { type: chatbotSchema, default: () => ({}) },
+    legal: { type: legalSchema, default: () => ({}) },
+    allowExternalCamera: { type: Boolean, default: true },
+    weatherTest: { type: weatherTestSchema, default: () => ({}) },
+    market: {
+        enabled: { type: Boolean, default: false },
+        updatedAt: Date,
     },
-}, {
-    timestamps: true,
-});
+},
+updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
+}, { timestamps: true });
 
 module.exports = mongoose.model('Settings', settingsSchema);
