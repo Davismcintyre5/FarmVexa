@@ -6,3 +6,4 @@ export const uploadImage = (formData) =>
     });
 export const getFieldImages = (fieldId) => api.get(`/farm/images/field/${fieldId}`);
 export const getImage = (id) => api.get(`/farm/images/${id}`);
+export const deleteImage = (id) => api.delete(`/farm/images/${id}`);

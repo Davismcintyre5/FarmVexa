@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { getImage } from '../../api/images';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { getImage, deleteImage } from '../../api/images';
 import Card from '../../components/ui/Card';
 import Spinner from '../../components/ui/Spinner';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import { ArrowLeft, Camera, Leaf, AlertTriangle, Shield, Droplets } from 'lucide-react';
+import { ArrowLeft, Camera, Leaf, AlertTriangle, Shield, Droplets, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
@@ -17,12 +18,28 @@ function getFullUrl(url) {
 
 export default function ScanResult() {
     const { imageId } = useParams();
+    const navigate = useNavigate();
     const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         getImage(imageId).then((res) => setImage(res.data.data.image)).finally(() => setLoading(false));
     }, [imageId]);
+
+    const handleDelete = async () => {
+        if (!confirm('Delete this scan result?')) return;
+        setDeleting(true);
+        try {
+            await deleteImage(imageId);
+            toast.success('Scan deleted');
+            navigate('/scan');
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Delete failed');
+        } finally {
+            setDeleting(false);
+        }
+    };
 
     if (loading) return <Spinner size="lg" className="mt-20" />;
     if (!image) return (
@@ -126,9 +143,14 @@ export default function ScanResult() {
                 </div>
             </Card>
 
-            <Link to="/scan">
-                <Button className="w-full"><Camera className="w-4 h-4" /> New Scan</Button>
-            </Link>
+            <div className="flex gap-3">
+                <Link to="/scan" className="flex-1">
+                    <Button className="w-full"><Camera className="w-4 h-4" /> New Scan</Button>
+                </Link>
+                <Button variant="outline" onClick={handleDelete} loading={deleting} className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20">
+                    <Trash2 className="w-4 h-4" /> Delete
+                </Button>
+            </div>
         </div>
     );
 }

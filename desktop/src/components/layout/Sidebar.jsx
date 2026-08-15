@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Wheat, Camera, Activity, Cpu, CloudSun, FolderOpen, MessageCircle, Settings, Menu, X, DollarSign, Users } from 'lucide-react';
+import { LayoutDashboard, Wheat, Camera, Activity, Cpu, CloudSun, FolderOpen, MessageCircle, Settings, Menu, X,ScanLine, DollarSign, Users } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
@@ -21,6 +21,7 @@ const mainLinks = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', roles: ['farmer', 'worker', 'vet', 'manager'] },
     { to: '/farms', icon: Wheat, label: 'Farms', roles: ['farmer', 'worker', 'vet', 'manager'] },
     { to: '/scan', icon: Camera, label: 'Scan Crop', roles: ['farmer', 'worker', 'vet', 'manager'] },
+    { to: '/field-scan', icon: ScanLine, label: 'Field Scan', roles: ['farmer', 'worker', 'vet', 'manager'] },
     { to: '/sensors', icon: Activity, label: 'Sensors', roles: ['farmer', 'worker', 'vet', 'manager'] },
     { to: '/devices', icon: Cpu, label: 'Devices', roles: ['farmer', 'worker', 'vet', 'manager'] },
     { to: '/weather', icon: CloudSun, label: 'Weather', roles: ['farmer', 'worker', 'vet', 'manager'] },

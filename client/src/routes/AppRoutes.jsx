@@ -11,6 +11,9 @@ import { FarmerDashboard } from '../pages/dashboard/dashboard';
 import { FarmList, FarmDetail, FarmCreate, FarmEdit } from '../pages/farms/farms';
 import { FieldList, FieldDetail, FieldCreate, FieldEdit } from '../pages/fields/fields';
 import { CropScan, ScanResult, ScanHistory } from '../pages/scan/scan';
+import FieldScan from '../pages/scan/FieldScan';
+import FieldScanHistory from '../pages/scan/FieldScanHistory';
+import FieldScanResult from '../pages/scan/FieldScanResult';
 import { DeviceList, DeviceDetail, DeviceRegister } from '../pages/devices/devices';
 import { AlertList } from '../pages/alerts/alerts';
 import { SensorReadings } from '../pages/sensors/sensors';
@@ -67,6 +70,9 @@ const AppRoutes = () => {
                 <Route path="/fields/:fieldId/scans" element={<ScanHistory />} />
                 <Route path="/scan" element={<CropScan />} />
                 <Route path="/scan/result/:imageId" element={<ScanResult />} />
+                <Route path="/field-scan" element={<FieldScan />} />
+                <Route path="/field-scan/history" element={<FieldScanHistory />} />
+                <Route path="/field-scan/:scanId" element={<FieldScanResult />} />
                 <Route path="/sensors" element={<SensorReadings />} />
                 <Route path="/devices" element={<DeviceList />} />
                 <Route path="/devices/register" element={<DeviceRegister />} />
@@ -83,6 +89,9 @@ const AppRoutes = () => {
                 <Route path="/m/" element={<FarmerDashboard />} />
                 <Route path="/m/farms" element={<FarmList />} />
                 <Route path="/m/scan" element={<CropScan />} />
+                <Route path="/m/field-scan" element={<FieldScan />} />
+                <Route path="/m/field-scan/history" element={<FieldScanHistory />} />
+                <Route path="/m/field-scan/:scanId" element={<FieldScanResult />} />
                 <Route path="/m/sensors" element={<SensorReadings />} />
                 <Route path="/m/devices" element={<DeviceList />} />
                 <Route path="/m/ai-chat" element={<AIAssistant />} />

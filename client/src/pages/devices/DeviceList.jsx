@@ -40,7 +40,22 @@ export default function DeviceList() {
         }
     }, [isFarmer, user]);
 
-    const handleDelete = async (id) => { if (confirm('Delete?')) { await deleteDevice(id); setDevices((p) => p.filter((d) => d._id !== id)); } };
+    const handleDelete = async (id) => { 
+        if (confirm('Delete?')) { 
+            await deleteDevice(id); 
+            setDevices((p) => p.filter((d) => d._id !== id)); 
+        } 
+    };
+
+    const getZoneBadge = (zone) => {
+        const colors = {
+            field: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+            storage: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+            greenhouse: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+            livestock: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+        };
+        return colors[zone] || colors.field;
+    };
 
     if (loading) return <Spinner size="lg" className="mt-20" />;
 
@@ -63,14 +78,28 @@ export default function DeviceList() {
                             <Card hover>
                                 <div className="flex justify-between items-center">
                                     <div>
-                                        <p className="font-semibold">{device.deviceId}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-semibold">{device.deviceId}</p>
+                                            {device.zone && (
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getZoneBadge(device.zone)}`}>
+                                                    {device.zone}
+                                                </span>
+                                            )}
+                                            {device.sensorType && (
+                                                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                                    {device.sensorType}
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-sm text-gray-500">Last seen: {formatDate(device.lastSeen, 'relative')}</p>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <Badge status={device.status} />
                                         <span className="text-sm">{device.batteryLevel}%</span>
                                         {canManage && (
-                                            <button onClick={(e) => { e.preventDefault(); handleDelete(device._id); }} className="text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                            <button onClick={(e) => { e.preventDefault(); handleDelete(device._id); }} className="text-gray-400 hover:text-red-500">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
                                         )}
                                     </div>
                                 </div>

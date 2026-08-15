@@ -246,6 +246,126 @@ const marketInquiryEmail = async (user, data, settings) => {
     };
 };
 
+// ============ FARMER — FIELD SCAN RESULTS ============
+
+const farmerFieldScanResults = async (user, data, settings) => {
+    const phone = settings?.system?.supportPhone || '+254700000000';
+    const email = settings?.system?.supportEmail || 'support@farmvexa.com';
+
+    // Disease summary
+    const diseaseList = (data.diseases || []).map((d) => `
+        <div style="background:#fdf0ef;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #e74c3c;">
+            <strong>🦠 ${d.name || 'Unknown Disease'}</strong>
+            <p style="margin:4px 0;font-size:13px;">Severity: <strong>${(d.severity || 'N/A').toUpperCase()}</strong></p>
+            ${d.location ? `<p style="margin:4px 0;font-size:13px;">📍 Lat: ${d.location.lat}, Lng: ${d.location.lng}</p>` : ''}
+        </div>
+    `).join('') || '<p>✅ No diseases detected.</p>';
+
+    // Weed summary
+    const weedInfo = data.weeds ? `
+        <div style="background:#fef9e7;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #f39c12;">
+            <strong>🌿 Weed Pressure: ${data.weeds.pressure || 'None'}</strong>
+            ${data.weeds.hotspots && data.weeds.hotspots.length > 0 ? `
+                <p style="margin:4px 0;font-size:13px;">Hotspots: ${data.weeds.hotspots.length} area(s)</p>
+                ${data.weeds.hotspots.map((h) => `<p style="margin:2px 0;font-size:12px;">📍 ${h.lat}, ${h.lng} — ${h.type || 'Weeds'}</p>`).join('')}
+            ` : '<p style="margin:4px 0;font-size:13px;">No significant weed hotspots.</p>'}
+        </div>
+    ` : '';
+
+    // Pest summary
+    const pestInfo = data.pests ? `
+        <div style="background:#fef2f2;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #dc2626;">
+            <strong>🐛 Pest Activity: ${data.pests.activity || 'None'}</strong>
+            ${data.pests.affectedAreas ? `<p style="margin:4px 0;font-size:13px;">Affected areas: ${data.pests.affectedAreas}</p>` : ''}
+        </div>
+    ` : '';
+
+    // Recommendations
+    const recommendations = (data.recommendations || []).map((r) => `
+        <li style="margin:4px 0;">${r}</li>
+    `).join('') || '<li>No specific recommendations.</li>';
+
+    return {
+        subject: `🌾 Field Scan Complete — ${data.fieldName || 'Your Field'} (${data.cropType || 'Crop'})`,
+        html: baseTemplate(`
+            <h2>🌾 Field Scan Complete</h2>
+            <p>Hello ${user.name}, your field scan for <strong>${data.fieldName || 'your field'}</strong> is ready.</p>
+
+            <div style="background:#f0fdf4;padding:16px;border-radius:8px;margin:16px 0;">
+                <h3 style="margin:0 0 8px 0;">📊 Scan Summary</h3>
+                <div class="data-row"><span class="data-label">Field:</span><span class="data-value">${data.fieldName || 'N/A'}</span></div>
+                <div class="data-row"><span class="data-label">Crop:</span><span class="data-value">${data.cropType || 'N/A'}</span></div>
+                <div class="data-row"><span class="data-label">Date:</span><span class="data-value">${data.scanDate ? new Date(data.scanDate).toLocaleString('en-KE') : 'N/A'}</span></div>
+                ${data.duration ? `<div class="data-row"><span class="data-label">Duration:</span><span class="data-value">${data.duration}</span></div>` : ''}
+                <div class="data-row"><span class="data-label">Photos Captured:</span><span class="data-value">${data.totalPhotos || 0}</span></div>
+                <div class="data-row"><span class="data-label">Photos Analyzed:</span><span class="data-value">${data.analyzedPhotos || 0}</span></div>
+                ${data.coverage ? `<div class="data-row"><span class="data-label">GPS Coverage:</span><span class="data-value">${data.coverage}%</span></div>` : ''}
+            </div>
+
+            <div style="background:#eff6ff;padding:16px;border-radius:8px;margin:16px 0;">
+                <h3 style="margin:0 0 8px 0;">🦠 Disease Detection</h3>
+                <div class="data-row"><span class="data-label">Healthy Areas:</span><span class="data-value">${data.healthyCount || 0} (${data.healthyPercentage || 0}%)</span></div>
+                <div class="data-row"><span class="data-label">Disease Detected:</span><span class="data-value">${data.diseaseCount || 0}</span></div>
+                ${diseaseList}
+            </div>
+
+            ${weedInfo ? `
+            <div style="background:#fefce8;padding:16px;border-radius:8px;margin:16px 0;">
+                <h3 style="margin:0 0 8px 0;">🌿 Weed Detection</h3>
+                ${weedInfo}
+            </div>` : ''}
+
+            ${pestInfo ? `
+            <div style="background:#fef2f2;padding:16px;border-radius:8px;margin:16px 0;">
+                <h3 style="margin:0 0 8px 0;">🐛 Pest Detection</h3>
+                ${pestInfo}
+            </div>` : ''}
+
+            <div style="background:#f8fafc;padding:16px;border-radius:8px;margin:16px 0;">
+                <h3 style="margin:0 0 8px 0;">💡 Recommendations</h3>
+                <ul style="margin:0;padding-left:20px;">${recommendations}</ul>
+            </div>
+
+            <a href="${process.env.CLIENT_URL}/field-scan/${data.scanId || ''}" class="button">View Full Report</a>
+
+            <p style="margin-top:15px;font-size:13px;color:#777;">Need help? 📞 ${phone} | 📧 ${email}</p>
+        `, settings),
+    };
+};
+
+// ============ FARMER — STORAGE ALERTS ============
+
+const farmerStorageAlert = async (user, data, settings) => {
+    const phone = settings?.system?.supportPhone || '+254700000000';
+    const email = settings?.system?.supportEmail || 'support@farmvexa.com';
+
+    const alertIcons = {
+        storage_temp_critical: '🌡️',
+        storage_humidity_critical: '💧',
+        storage_co2_critical: '🦠',
+        storage_rat_detected: '🐀',
+    };
+
+    const icon = alertIcons[data.alertType] || '⚠️';
+
+    return {
+        subject: `${icon} STORAGE ALERT — ${data.farmName || 'Your Farm'}`,
+        html: baseTemplate(`
+            <h2>${icon} Storage Alert</h2>
+            <div class="alert-high">
+                <strong>${data.message}</strong>
+            </div>
+            <div class="data-row"><span class="data-label">Farm:</span><span class="data-value">${data.farmName || 'N/A'}</span></div>
+            ${data.temperature !== undefined ? `<div class="data-row"><span class="data-label">Temperature:</span><span class="data-value">${data.temperature}°C</span></div>` : ''}
+            ${data.humidity !== undefined ? `<div class="data-row"><span class="data-label">Humidity:</span><span class="data-value">${data.humidity}%</span></div>` : ''}
+            ${data.co2 !== undefined ? `<div class="data-row"><span class="data-label">CO2:</span><span class="data-value">${data.co2}ppm</span></div>` : ''}
+            ${data.recommendation ? `<div class="data-row"><span class="data-label">Action:</span><span class="data-value">${data.recommendation}</span></div>` : ''}
+            <a href="${process.env.CLIENT_URL}/alerts" class="button">View Alerts</a>
+            <p style="margin-top:15px;font-size:13px;color:#777;">Need help? 📞 ${phone} | 📧 ${email}</p>
+        `, settings),
+    };
+};
+
 // ============ ADMIN ============
 
 const adminNewFarmer = async (user, data, settings) => ({
@@ -282,10 +402,10 @@ module.exports = {
     farmerDailyReport, farmerWeeklyReport, farmerNewDeviceLogin,
     farmerVaccinationDue, farmerLivestockAlert, farmerLowStock,
     farmerMaintenanceDue, farmerWeatherAlert, farmerTaskOverdue,
-    teamMemberAdded,
+    farmerFieldScanResults,
+    teamMemberAdded,farmerStorageAlert,
     adminNewFarmer, adminSystemCritical, adminGeminiEightyPercent,
     adminGeminiExceeded, adminPythonOffline, adminDeviceOffline24h,
     adminTrainingComplete, adminNewAdmin, adminWeeklyReport,
-    farmerReminderUpcoming,farmerReminderFinal,marketInquiryEmail,
-
+    farmerReminderUpcoming, farmerReminderFinal, marketInquiryEmail,
 };

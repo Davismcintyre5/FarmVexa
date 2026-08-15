@@ -24,6 +24,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      webviewTag: true,
       preload: path.join(__dirname, 'preload.cjs')
     }
   });
@@ -35,6 +36,18 @@ function createWindow() {
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
+  });
+
+  // Handle camera/microphone permissions
+  mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+    const allowed = ['media', 'camera', 'microphone', 'display-capture', 'fullscreen'];
+    callback(allowed.includes(permission));
+  });
+
+  // Handle permission checks
+  mainWindow.webContents.session.setPermissionCheckHandler((webContents, permission, requestingOrigin) => {
+    const allowed = ['media', 'camera', 'microphone'];
+    return allowed.includes(permission);
   });
 
   if (isDev) {
