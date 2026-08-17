@@ -13,6 +13,29 @@ const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
 let mainWindow = null;
 
+function setupWebviewMessaging(win) {
+  // Listen for webviews attached to the main window
+  win.webContents.on('did-attach-webview', (event, webContents) => {
+    // Listen for messages from hdmstream webview
+    webContents.on('ipc-message', (event, channel, ...args) => {
+      if (channel === 'farmvexa-message') {
+        // Forward to React app (main window)
+        win.webContents.send('farmvexa-message-from-webview', args[0]);
+      }
+    });
+  });
+
+  // Handle React app sending message to webviews
+  ipcMain.on('farmvexa-message', (event, data) => {
+    const allWebContents = win.webContents.getAllWebContents?.() || [];
+    for (const wc of allWebContents) {
+      if (wc.getType() === 'webview') {
+        wc.send('farmvexa-message-to-webview', data);
+      }
+    }
+  });
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -44,11 +67,13 @@ function createWindow() {
     callback(allowed.includes(permission));
   });
 
-  // Handle permission checks
   mainWindow.webContents.session.setPermissionCheckHandler((webContents, permission, requestingOrigin) => {
     const allowed = ['media', 'camera', 'microphone'];
     return allowed.includes(permission);
   });
+
+  // Setup webview messaging for hdmstream
+  setupWebviewMessaging(mainWindow);
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:3000/#/login');
@@ -66,28 +91,28 @@ function createWindow() {
 
 app.whenReady().then(async () => {
   await initDatabase();
-  initOfflineQueue();
-  
-  ipcMain.handle('app:version', () => {
-    return app.getVersion();
-  });
-  
-  ipcMain.handle('db:get', (event, key) => {
-    return getValue(key);
-  });
-  
-  ipcMain.handle('db:set', (event, key, value) => {
-    return setValue(key, value);
-  });
-  
+  initOfflineQueue(); // This already registers queue:add, queue:get, queue:remove, queue:clear
+
+  // App version
+  ipcMain.handle('app:version', () => app.getVersion());
+
+  // Database
+  ipcMain.handle('db:get', (event, key) => getValue(key));
+  ipcMain.handle('db:set', (event, key, value) => setValue(key, value));
   ipcMain.handle('db:delete', (event, key) => {
     deleteValue(key);
+    return true;
   });
-  
   ipcMain.handle('db:clear', () => {
     clearDatabase();
+    return true;
   });
-  
+
+  // Open external links
+  ipcMain.on('open-external', (event, url) => {
+    shell.openExternal(url);
+  });
+
   createWindow();
   initTray(mainWindow);
   initUpdater(mainWindow);

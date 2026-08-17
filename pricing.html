@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌾 FarmVexa — Pricing</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%232d6a4f'/%3E%3Ctext x='256' y='220' text-anchor='middle' fill='white' font-size='140'%3E🌾%3C/text%3E%3C/svg%3E">
+    <style>
+        :root {
+            --green-950: #052e16;
+            --green-900: #14532d;
+            --green-800: #166534;
+            --green-700: #15803d;
+            --green-500: #22c55e;
+            --green-400: #4ade80;
+            --green-300: #86efac;
+            --green-200: #bbf7d0;
+            --green-100: #dcfce7;
+            --green-50: #f0fdf4;
+            --white: #ffffff;
+            --gold: #fbbf24;
+            --gold-light: #fde68a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f0fdf4;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .pricing-card {
+            background: linear-gradient(160deg, #14532d 0%, #166534 30%, #15803d 60%, #16a34a 100%);
+            border-radius: 28px;
+            max-width: 700px;
+            width: 100%;
+            padding: 44px 40px;
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 70px rgba(20, 83, 45, 0.35);
+        }
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .pricing-card::after {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            left: -60px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 36px;
+            position: relative;
+            z-index: 1;
+        }
+        .logo-icon { font-size: 44px; margin-bottom: 8px; }
+        .header h1 { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+        .header .tagline { font-size: 14px; color: var(--green-200); margin-top: 4px; }
+        .plans {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+            position: relative;
+            z-index: 1;
+        }
+        .plan {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px 18px;
+            text-align: center;
+            transition: all 0.25s;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+        }
+        .plan:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        .plan.featured {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: var(--green-400);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+        .plan-badge {
+            display: inline-block;
+            background: var(--gold);
+            color: var(--green-950);
+            font-size: 9px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .plan-icon { font-size: 26px; margin-bottom: 6px; }
+        .plan-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+        .plan-desc { font-size: 10px; color: var(--green-200); margin-bottom: 14px; }
+        .price { font-size: 26px; font-weight: 800; line-height: 1.1; }
+        .price .currency { font-size: 13px; vertical-align: super; }
+        .price-note { font-size: 10px; color: var(--green-300); margin-top: 2px; }
+        .price-alt { font-size: 11px; color: var(--green-200); margin-top: 6px; }
+        .price-alt strong { color: var(--gold-light); }
+        .features { list-style: none; margin: 14px 0 16px; text-align: left; flex-grow: 1; }
+        .features li {
+            padding: 4px 0;
+            font-size: 11px;
+            color: var(--green-100);
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+        .features li.included::before { content: '✓'; color: var(--green-400); font-weight: 700; flex-shrink: 0; }
+        .features li.excluded { color: rgba(255, 255, 255, 0.4); }
+        .features li.excluded::before { content: '✗'; color: rgba(255, 255, 255, 0.3); font-weight: 700; flex-shrink: 0; }
+        .btn {
+            display: block;
+            text-align: center;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-top: auto;
+        }
+        .btn-solid { background: var(--white); color: var(--green-800); }
+        .btn-solid:hover { background: var(--green-100); transform: scale(1.04); }
+        .btn-ghost { background: transparent; color: var(--white); border: 1.5px solid rgba(255, 255, 255, 0.5); }
+        .btn-ghost:hover { background: rgba(255, 255, 255, 0.15); }
+        .footer-note {
+            text-align: center;
+            margin-top: 28px;
+            font-size: 12px;
+            color: var(--green-300);
+            position: relative;
+            z-index: 1;
+        }
+        @media (max-width: 700px) {
+            .plans { grid-template-columns: 1fr; gap: 12px; }
+            .pricing-card { padding: 32px 24px; }
+            .header h1 { font-size: 26px; }
+        }
+        @media print { body { background: var(--white); padding: 10px; } .plan:hover { transform: none; } }
+    </style>
+</head>
+<body>
+
+<div class="pricing-card">
+
+    <!-- Header -->
+    <div class="header">
+        <div class="logo-icon">🌾</div>
+        <h1>FarmVexa Pricing</h1>
+        <p class="tagline">Choose the plan that fits your farm</p>
+    </div>
+
+    <!-- Plans -->
+    <div class="plans">
+
+        <!-- BASIC -->
+        <div class="plan">
+            <div class="plan-icon">🌱</div>
+            <h3 class="plan-name">Basic</h3>
+            <p class="plan-desc">For small-scale farmers</p>
+            <div class="price"><span class="currency">KES</span>6,000</div>
+            <div class="price-note">one-time</div>
+            <div class="price-alt">or <strong>KES 500/mo</strong></div>
+            <ul class="features">
+                <li class="included">AI Crop Scanning</li>
+                <li class="included">Field Scan (Phone)</li>
+                <li class="included">Livestock</li>
+                <li class="included">Health &amp; Vaccines</li>
+                <li class="included">Production</li>
+                <li class="included">Finance &amp; Sales</li>
+                <li class="included">AI Chat (EN/SW)</li>
+                <li class="included">Farmers Market</li>
+                <li class="excluded">IoT Field Sensors</li>
+                <li class="excluded">Storage Monitoring</li>
+            </ul>
+            <a href="https://farmvexa.pxxl.click/pricing" class="btn btn-ghost">Get Started</a>
+        </div>
+
+        <!-- PRO -->
+        <div class="plan featured">
+            <span class="plan-badge">⭐ Popular</span>
+            <div class="plan-icon">🚀</div>
+            <h3 class="plan-name">Pro</h3>
+            <p class="plan-desc">Field sensors included</p>
+            <div class="price"><span class="currency">KES</span>10,000</div>
+            <div class="price-note">one-time</div>
+            <ul class="features">
+                <li class="included">Everything in Basic</li>
+                <li class="included">IoT Field Sensors</li>
+                <li class="included">Soil Moisture</li>
+                <li class="included">Temp &amp; Humidity</li>
+                <li class="included">Light Level</li>
+                <li class="included">Live Dashboard</li>
+                <li class="excluded">Storage Monitoring</li>
+                <li class="excluded">CO2 &amp; PIR</li>
+            </ul>
+            <a href="https://farmvexa.pxxl.click/pricing" class="btn btn-solid">Get Pro</a>
+        </div>
+
+        <!-- FULL SUITE -->
+        <div class="plan">
+            <div class="plan-icon">💎</div>
+            <h3 class="plan-name">Full Suite</h3>
+            <p class="plan-desc">Everything unlocked</p>
+            <div class="price"><span class="currency">KES</span>15,000</div>
+            <div class="price-note">one-time</div>
+            <ul class="features">
+                <li class="included">Everything in Pro</li>
+                <li class="included">Storage Monitoring</li>
+                <li class="included">CO2 Insect Detection</li>
+                <li class="included">PIR Rat Detection</li>
+                <li class="included">Grain Sensors</li>
+                <li class="included">Pest Alerts</li>
+                <li class="included">All Sensors</li>
+                <li class="included">Priority Support</li>
+            </ul>
+            <a href="https://farmvexa.pxxl.click/pricing" class="btn btn-ghost">Go Full Suite</a>
+        </div>
+
+    </div>
+
+    <p class="footer-note">All plans include free updates · No hidden fees · Cancel anytime</p>
+
+</div>
+
+</body>
+</html>

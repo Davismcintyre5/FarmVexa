@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FarmVexa — Software Documentation for Copyright Registration</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%232d6a4f'/%3E%3Ctext x='256' y='220' text-anchor='middle' fill='white' font-size='140'%3E🌾%3C/text%3E%3C/svg%3E">
     <style>
         :root {
             --green-900: #1b5e20; --green-800: #2e7d32; --green-100: #c8e6c9; --green-50: #e8f5e9;
@@ -62,13 +63,14 @@
         <p class="tagline">See. Sense. Predict. Grow.</p>
         <p class="subtitle">Software Documentation for Copyright Registration</p>
         <div class="meta">
-            <strong>Developer:</strong> Davis Okoth (DAVISOKOTH)<br>
+            <strong>Developer:</strong> Davis Okoth<br>
             <strong>Date:</strong> August 2026<br>
             <strong>Version:</strong> 1.0.0<br>
             <strong>Classification:</strong> Agricultural Intelligence Management System<br>
             <strong>URL:</strong> https://farmvexa.pxxl.click<br>
             <strong>API:</strong> https://farmvexaserver.pxxl.click<br>
-            <strong>AI Engine:</strong> https://farmvexa-api.onrender.com
+            <strong>AI Engine:</strong> https://farmvexa-api.onrender.com<br>
+            <strong>Camera Stream:</strong> https://hdmstream.pxxl.click
         </div>
     </div>
 
@@ -78,10 +80,10 @@
         <!-- SECTION 1: ABSTRACT -->
         <h2>1. ABSTRACT</h2>
         <p>
-            FarmVexa is a comprehensive AI-powered farm intelligence platform that combines Internet of Things (IoT) sensor data, computer vision for crop disease detection, artificial intelligence for predictive analytics, and a full-featured farm management system into a single unified platform. Unlike traditional farm record-keeping tools that passively store information, FarmVexa actively interprets farm data through multiple AI engines (Google Gemini, HDM AI, and local TensorFlow models) to provide real-time, contextual recommendations.
+            FarmVexa is a comprehensive AI-powered farm intelligence platform that combines Internet of Things (IoT) sensor data, computer vision for crop disease detection, artificial intelligence for predictive analytics, live camera streaming for field scanning, storage pest detection, and a full-featured farm management system into a single unified platform. Unlike traditional farm record-keeping tools that passively store information, FarmVexa actively interprets farm data through multiple AI engines to provide real-time, contextual recommendations.
         </p>
         <p>
-            The software is built using a modern polyglot architecture: Node.js with Express for the MERN backend (MongoDB, Express, React, Node.js), Python with FastAPI for the dedicated AI engine, React with Vite and Tailwind CSS for both the farmer dashboard and admin panel, and C++ for ESP32 IoT sensor nodes. The system supports Redis for caching, Cloudinary for image storage, HDM Bridge for email, Brevo for SMS, and OpenWeatherMap/WeatherAPI/Open-Meteo for weather data.
+            The software is built using a modern polyglot architecture: Node.js with Express for the MERN backend (MongoDB, Express, React, Node.js), Python with FastAPI for the dedicated AI engine, React with Vite and Tailwind CSS for both the farmer dashboard and admin panel, C++ for ESP32 IoT sensor nodes, and hdmstream for live camera streaming and field scanning. The system supports Redis for caching, Cloudinary for image storage, HDM Bridge for email, Brevo for SMS, and OpenWeatherMap/WeatherAPI/Open-Meteo for weather data.
         </p>
         <p>
             FarmVexa is accessible as a Progressive Web Application (PWA) via web browser, as a Windows desktop application, as a macOS application, as a Linux application, and as an Android application (APK). The landing page is at <code>https://farmvexa.pxxl.click</code>, the farmer dashboard at <code>/dashboard</code>, and the admin panel at a separate deployment.
@@ -95,18 +97,21 @@
 
         <h3>2.1 Problem Statement</h3>
         <p>
-            Farmers often discover crop and farm problems after significant damage has already occurred. Late detection of crop diseases, inadequate or excessive irrigation, limited knowledge of soil conditions, difficulty continuously monitoring farm conditions, and lack of historical farm data for decision-making are persistent challenges. Traditional farming methods depend heavily on visual inspection and experience — valuable but unable to provide continuous, data-driven monitoring.
+            Farmers often discover crop and farm problems after significant damage has already occurred. Late detection of crop diseases, inadequate or excessive irrigation, limited knowledge of soil conditions, difficulty continuously monitoring farm conditions, pest infestations in storage, and lack of historical farm data for decision-making are persistent challenges. Traditional farming methods depend heavily on visual inspection and experience — valuable but unable to provide continuous, data-driven monitoring.
         </p>
 
         <h3>2.2 Solution Overview</h3>
         <p>
-            FarmVexa addresses this gap by integrating IoT sensors, computer vision, and artificial intelligence directly into farm operations. The core principle is: <strong>See</strong> (camera and computer vision), <strong>Sense</strong> (IoT sensors), <strong>Predict</strong> (AI and data analysis), <strong>Grow</strong> (better and earlier farm decisions). The system does not merely record that soil moisture is 15%; it detects declining trends, cross-references with temperature and humidity, correlates with crop image analysis, and alerts the farmer with specific recommended actions.
+            FarmVexa addresses this gap by integrating IoT sensors, computer vision, artificial intelligence, live camera streaming, and storage monitoring directly into farm operations. The core principle is: <strong>See</strong> (camera and computer vision), <strong>Sense</strong> (IoT sensors), <strong>Predict</strong> (AI and data analysis), <strong>Grow</strong> (better and earlier farm decisions). The system does not merely record that soil moisture is 15%; it detects declining trends, cross-references with temperature and humidity, correlates with crop image analysis, scans entire fields with GPS-tagged photos, monitors storage conditions for pest risk, and alerts the farmer with specific recommended actions.
         </p>
 
         <h3>2.3 Key Functionalities</h3>
         <table>
             <tr><th>Module</th><th>Functionality</th></tr>
-            <tr><td>AI Crop Scanning</td><td>Computer vision disease detection via Gemini AI, confidence scoring, severity assessment, treatment recommendations</td></tr>
+            <tr><td>AI Crop Scanning</td><td>Computer vision disease detection via AI, confidence scoring, severity assessment, treatment recommendations</td></tr>
+            <tr><td>Field Scan</td><td>Full-field scanning with live camera streaming, GPS-tagged auto-capture, batch AI analysis with pre-filtering, disease/weed/pest detection</td></tr>
+            <tr><td>hdmstream Integration</td><td>Live camera streaming (5 FPS), photo capture, video recording, auto field scan mode, direct photo send to FarmVexa</td></tr>
+            <tr><td>Storage Monitoring</td><td>DHT temperature/humidity, CO2 insect detection, PIR rat detection, threshold-based alerts with cooldown</td></tr>
             <tr><td>IoT Sensor Monitoring</td><td>ESP32-based soil moisture, temperature, humidity, light level sensing with real-time dashboard</td></tr>
             <tr><td>Livestock Management</td><td>Individual animal and poultry batch registration, weight tracking, status management, mortality recording</td></tr>
             <tr><td>Health & Vaccination</td><td>Health records (vaccination, treatment, disease, deworming), vaccination scheduling with 7/3/0-day reminders, vet assignment</td></tr>
@@ -118,10 +123,10 @@
             <tr><td>Team Management</td><td>Role-based team (Worker, Vet, Manager) with auto-generated credentials, email notifications, permission-based access</td></tr>
             <tr><td>Task Management</td><td>Task creation, assignment, priority levels, status tracking (Pending → In Progress → Completed)</td></tr>
             <tr><td>Reports</td><td>9 report types (General, Stock, Livestock, Production, Crops, Financial, Vaccination, Inventory, Tasks) with print-optimized formatting</td></tr>
-            <tr><td>Proactive Alerts</td><td>Automatic alerts for low soil moisture, high temperature, disease risk, device offline, low stock, vaccination due, maintenance due</td></tr>
+            <tr><td>Proactive Alerts</td><td>Automatic alerts for low soil moisture, high temperature, disease risk, device offline, low stock, vaccination due, storage conditions, rat detection</td></tr>
             <tr><td>Daily Briefing</td><td>Automated 6 AM email with weather, production stats, device status, sensor readings, active alerts</td></tr>
             <tr><td>Reminder System</td><td>Automated 7 AM reminders for vaccinations, low stock, equipment maintenance, and overdue tasks</td></tr>
-            <tr><td>Public Chatbot</td><td>Landing page AI chatbot with system-wide knowledge (features, pricing, support), configurable AI provider (Gemini/HDM AI)</td></tr>
+            <tr><td>Public Chatbot</td><td>Landing page AI chatbot with system-wide knowledge (features, pricing, support), configurable AI provider</td></tr>
             <tr><td>Payment Integration</td><td>M-Pesa STK Push, Send Money, Till, Paybill, bank transfer, card payment method management</td></tr>
             <tr><td>Usage Tracking</td><td>Per-user and per-farm AI request tracking with configurable daily limits, admin analytics dashboard</td></tr>
         </table>
@@ -138,8 +143,9 @@
             <tr><td>Caching</td><td>Redis (ioredis)</td></tr>
             <tr><td>Authentication</td><td>JSON Web Tokens (JWT) with bcrypt, API key for internal services</td></tr>
             <tr><td>Web Frontend</td><td>React 18, Vite, Tailwind CSS, Lucide React icons, Recharts, React Router v6</td></tr>
-            <tr><td>AI/ML</td><td>Google Gemini 2.0/3.5 Flash, HDM AI, TensorFlow (local models), OpenCV</td></tr>
-            <tr><td>IoT Hardware</td><td>ESP32 microcontroller, DHT22, capacitive soil moisture, LDR light sensor</td></tr>
+            <tr><td>AI/ML</td><td>Google Gemini Flash, HDM AI, TensorFlow (local models), OpenCV (pre-filtering)</td></tr>
+            <tr><td>Camera Streaming</td><td>hdmstream (Socket.io WebSocket, 5 FPS frame relay)</td></tr>
+            <tr><td>IoT Hardware</td><td>ESP32 microcontroller, DHT22, capacitive soil moisture, LDR light sensor, MH-Z19 CO2, HC-SR501 PIR</td></tr>
             <tr><td>Email Service</td><td>HDM Bridge API</td></tr>
             <tr><td>SMS Service</td><td>Brevo (Sendinblue) Transactional SMS</td></tr>
             <tr><td>Image Storage</td><td>Cloudinary with local fallback</td></tr>
@@ -170,38 +176,73 @@
 └────────────────────┘&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│   TensorFlow │ OpenCV │<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└──────────────────────┘<br>
 ┌──────────────────────────────────────────────────────────┐<br>
+│                 HDMSTREAM (Camera Layer)                  │<br>
+│  Send Mode (/out) │ Receive Mode (/in) │ Field Scan      │<br>
+│  Socket.io │ GPS │ Auto-capture │ Photo/Video │ Batch   │<br>
+└───────────────────────┬──────────────────────────────────┘<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+┌──────────────────────────────────────────────────────────┐<br>
 │                 EXTERNAL SERVICES                         │<br>
 │  HDM Bridge (Email) │ Brevo (SMS) │ M-Pesa │ Weather APIs│<br>
 │  ESP32 IoT Nodes (Wi-Fi) │ Smartphone Camera             │<br>
 └──────────────────────────────────────────────────────────┘
         </div>
 
-        <h3>3.3 Data Isolation Architecture</h3>
+        <h3>3.3 Field Scan Architecture</h3>
+        <p>
+            The Field Scan module enables full-field crop analysis through live camera streaming with GPS-tagged photo capture. The flow is:
+        </p>
+        <ol>
+            <li>Farmer selects farm, field, and crop type in FarmVexa</li>
+            <li>Opens External Camera (hdmstream /in embedded in FarmVexa)</li>
+            <li>hdmstream /out (camera device) starts Field Scan mode</li>
+            <li>GPS tracking starts on the camera device</li>
+            <li>Photos auto-capture at configured intervals (default 5 seconds)</li>
+            <li>Each photo uploaded to Cloudinary with GPS coordinates</li>
+            <li>On stop, all photos sent to FarmVexa as a batch via postMessage/IPC</li>
+            <li>Python AI pre-filters frames with OpenCV (blur detection, green coverage, disease indicators)</li>
+            <li>Top 60% suspicious frames selected and batched (16 per request)</li>
+            <li>AI analyzes each batch for disease, weeds, pests, and health score</li>
+            <li>Results returned with GPS locations for field mapping</li>
+        </ol>
+
+        <h3>3.4 Storage Monitoring Architecture</h3>
+        <p>
+            Storage Monitoring detects unfavourable conditions and pests in grain stores using:
+        </p>
+        <table>
+            <tr><th>Sensor</th><th>Detects</th><th>Warning Threshold</th><th>Critical Threshold</th></tr>
+            <tr><td>DHT22</td><td>Temperature</td><td>30°C</td><td>35°C</td></tr>
+            <tr><td>DHT22</td><td>Humidity</td><td>65%</td><td>75%</td></tr>
+            <tr><td>MH-Z19 CO2</td><td>Insect respiration (weevils, beetles)</td><td>800 ppm</td><td>1200 ppm</td></tr>
+            <tr><td>HC-SR501 PIR</td><td>Rat/rodent movement (night)</td><td>—</td><td>Motion detected</td></tr>
+        </table>
+        <p>Alerts have a 6-hour cooldown per type. Warning alerts are in-app only. Critical alerts send email + SMS.</p>
+
+        <h3>3.5 Data Isolation Architecture</h3>
         <p>
             FarmVexa implements strict data isolation between farms. Every database document contains a <code>farm</code> field referencing the parent farm. Middleware (<code>ownsFarm</code>, <code>ownsField</code>) extracts the authenticated user's ID from JWT and verifies farm ownership before any query executes. Team members are restricted to their assigned farm via <code>TeamMember.farm</code> reference. Cross-farm data access is impossible at the architectural level.
         </p>
 
-        <h3>3.4 Role-Based Access Control</h3>
+        <h3>3.6 Role-Based Access Control</h3>
         <table>
             <tr><th>Role</th><th>Permissions</th></tr>
-            <tr><td>Farmer (Owner)</td><td>Full access — all 9 operational modules, team management, finances, farm CRUD, device management, settings</td></tr>
+            <tr><td>Farmer (Owner)</td><td>Full access — all modules, team management, finances, farm CRUD, device management, field scan, storage monitoring, settings</td></tr>
             <tr><td>Manager</td><td>8 modules — livestock (CRUD), health (CRUD), production (CRUD), inventory (CRUD), equipment (CRUD), finance (full), tasks (CRUD), reports (full)</td></tr>
             <tr><td>Worker</td><td>7 modules — livestock (view), health (locked), production (record), inventory (view), equipment (view), tasks (view), reports (view)</td></tr>
             <tr><td>Veterinarian</td><td>2 modules — livestock (view only), health (full CRUD)</td></tr>
         </table>
-        <p>Role middleware (<code>farmRole.js</code>) provides granular permission checks: <code>isFarmer</code>, <code>isFarmerOrManager</code>, <code>canManageLivestock</code>, <code>canManageHealth</code>, <code>canRecordProduction</code>, <code>canManageInventory</code>, <code>canAccessFinance</code>, <code>canManageTeam</code>, <code>canManageTasks</code>, <code>canManageDevices</code>.</p>
 
-        <h3>3.5 AI Decision Architecture</h3>
+        <h3>3.7 AI Decision Architecture</h3>
         <p>
-            The Python AI Engine serves as the intelligence hub with three AI provider options configured via environment variable:
+            The Python AI Engine serves as the intelligence hub with three AI provider options:
         </p>
         <table>
-            <tr><th>Mode</th><th>Chat</th><th>Crop Images</th><th>Sensor Analysis</th></tr>
-            <tr><td>local</td><td>N/A</td><td>TensorFlow .h5 model</td><td>Rule engine (JSON config)</td></tr>
-            <tr><td>gemini</td><td>Gemini 3.5 Flash</td><td>Gemini 3.5 Flash (always)</td><td>Rule engine</td></tr>
-            <tr><td>hdm</td><td>HDM AI API</td><td>Gemini 3.5 Flash (always)</td><td>Rule engine</td></tr>
+            <tr><th>Mode</th><th>Chat</th><th>Crop Images</th><th>Field Scan</th><th>Sensor Analysis</th></tr>
+            <tr><td>local</td><td>N/A</td><td>TensorFlow .h5 model</td><td>N/A</td><td>Rule engine</td></tr>
+            <tr><td>gemini</td><td>Gemini Flash</td><td>Gemini Flash</td><td>Gemini Flash (batch 16)</td><td>Rule engine</td></tr>
+            <tr><td>hdm</td><td>HDM AI API</td><td>Gemini Flash</td><td>Gemini Flash (batch 16)</td><td>Rule engine</td></tr>
         </table>
-        <p>Crop images always use Gemini regardless of chat AI provider because HDM AI does not support image analysis. Sensor data always uses the local rule engine for speed and reliability. The public chatbot has its own independent AI provider configuration in admin settings.</p>
 
         <!-- SECTION 4: KEY PAGES -->
         <h2>4. SEQUENCED DESCRIPTION OF KEY PAGES</h2>
@@ -209,182 +250,108 @@
         <h3>4.1 Landing Page</h3>
         <p>The public-facing landing page introduces FarmVexa to visitors. It dynamically fetches content from the admin settings API.</p>
         <ul class="features-list">
-            <li>Hero section with "Get Started Free" or "Get Access" based on self-registration setting</li>
+            <li>Hero section with "Get Started Free" or "Get Access" based on self-registration setting, or "Launch App" if logged in</li>
             <li>Features grid (8 cards: AI Crop Scanner, IoT Sensors, AI Assistant, Reports, Livestock, Finance, Weather, Stock)</li>
             <li>How It Works (4-step process), Pricing (from PaymentModel database), Downloads (from admin settings)</li>
             <li>About section, Contact section (phone, email, WhatsApp), FAQs (8 accordion items)</li>
             <li>Help Center (coming soon), CTA section, Footer with legal links (Terms, Privacy, Cookies)</li>
             <li>Cookie consent banner (bottom-left), Public AI chatbot (configurable provider, position, color)</li>
-            <li>Responsive Navbar with theme toggle, support dropdown, auth-aware buttons (Login/Register or Launch App)</li>
         </ul>
         <div class="screenshot-placeholder"><div class="number">1</div><strong>SCREENSHOT — Landing Page</strong><div class="caption">FarmVexa landing page showing hero section with CTA buttons, features grid, pricing, downloads, and chatbot widget.</div></div>
 
         <h3>4.2 Authentication Pages</h3>
         <p>Login and Register pages with self-registration awareness, password visibility toggle, and dynamic support contact display.</p>
-        <ul class="features-list">
-            <li>Login: Email/password with show/hide toggle, forgot password link, register link (hidden if self-registration disabled)</li>
-            <li>Register: Full name, email, phone, password, county, sub-county, terms agreement</li>
-            <li>Pending Approval page shown after registration, Forgot/Reset password flow with email link</li>
-        </ul>
         <div class="screenshot-placeholder"><div class="number">2</div><strong>SCREENSHOT — Authentication</strong><div class="caption">FarmVexa Login page with password visibility toggle and dynamic register link.</div></div>
 
         <h3>4.3 Dashboard</h3>
-        <p>Role-aware dashboard showing farm-specific statistics and quick actions. Team members auto-load their assigned farm.</p>
-        <ul class="features-list">
-            <li>Stats cards: Farms (or single farm for team), Alerts, Animals, Stock Value</li>
-            <li>Recent Alerts with severity badges, Quick Actions (Scan Crop, AI Chat, Production, Alerts)</li>
-            <li>Multi-farm selector dropdown for farmers, assigned farm display for team members</li>
-            <li>Header with real-time alert count badge (Socket.io), theme toggle, profile dropdown</li>
-        </ul>
+        <p>Role-aware dashboard showing farm-specific statistics and quick actions.</p>
         <div class="screenshot-placeholder"><div class="number">3</div><strong>SCREENSHOT — Dashboard</strong><div class="caption">FarmVexa Dashboard with stat cards, recent alerts, and quick actions.</div></div>
 
         <h3>4.4 Farms & Fields</h3>
         <p>Complete farm and field management with location tracking and crop assignment.</p>
-        <ul class="features-list">
-            <li>Farm CRUD with county/sub-county location, size (acres/hectares)</li>
-            <li>Field CRUD within farms with crop type, size, soil type</li>
-            <li>Farm detail shows 5 stat cards: Fields, Animals, Stock Value, Alerts, Status</li>
-            <li>Field detail shows latest sensor readings (temp, humidity, soil, light) and recent crop scans</li>
-        </ul>
         <div class="screenshot-placeholder"><div class="number">4</div><strong>SCREENSHOT — Farms & Fields</strong><div class="caption">FarmVexa Farm Detail page with stats cards and fields list.</div></div>
 
         <h3>4.5 IoT & Sensors</h3>
         <p>Three-in-one page with tabbed interface: Scan Crop, Sensors, Devices.</p>
-        <ul class="features-list">
-            <li><strong>Scan Crop:</strong> Live camera capture or gallery upload, farm/field/crop selection, AI analysis with disease detection, confidence, symptoms, and recommendations</li>
-            <li><strong>Sensors:</strong> Farm/field selector, 4 live stat cards with trend indicators, reading history table</li>
-            <li><strong>Devices:</strong> ESP32 registration, online/offline status, battery level, last seen, recent readings per device</li>
-        </ul>
         <div class="screenshot-placeholder"><div class="number">5</div><strong>SCREENSHOT — IoT & Sensors</strong><div class="caption">FarmVexa Scan Crop page with live camera viewfinder, farm/field selectors, and capture button.</div></div>
 
-        <h3>4.6 Livestock</h3>
+        <h3>4.6 Field Scan</h3>
+        <p>Full-field scanning with hdmstream live camera, GPS-tagged auto-capture, and batch AI analysis.</p>
+        <ul class="features-list">
+            <li>Farm/field/crop selection, External Camera modal with hdmstream embedded</li>
+            <li>Auto-receives batch of photos from hdmstream via postMessage/IPC</li>
+            <li>Dynamic processing screen with rotating status messages and progress bar</li>
+            <li>Auto-redirect to results page after analysis</li>
+            <li>Results: disease count, weed spots, healthy percentage, GPS locations, photos with AI analysis</li>
+            <li>History page with past scans, delete, and full result viewing</li>
+        </ul>
+        <div class="screenshot-placeholder"><div class="number">6</div><strong>SCREENSHOT — Field Scan</strong><div class="caption">FarmVexa Field Scan page with setup form, external camera button, and processing screen.</div></div>
+
+        <h3>4.7 Storage Monitoring</h3>
+        <p>Storage condition monitoring with pest detection sensors and threshold-based alerts.</p>
+        <ul class="features-list">
+            <li>Sensors tab with Field/Storage toggle</li>
+            <li>Storage cards: Temperature, Humidity, CO2 level, Motion (rats)</li>
+            <li>Reading history table with CO2 and motion columns</li>
+            <li>Device registration with zone (Field/Storage) and sensor type (DHT/CO2/PIR)</li>
+            <li>Alert types: storage_temp_critical, storage_humidity_critical, storage_co2_critical, storage_rat_detected</li>
+        </ul>
+        <div class="screenshot-placeholder"><div class="number">7</div><strong>SCREENSHOT — Storage Monitoring</strong><div class="caption">FarmVexa Storage tab with temperature, humidity, CO2, and motion cards.</div></div>
+
+        <h3>4.8 Livestock</h3>
         <p>Comprehensive animal management with individual and batch (poultry) registration.</p>
-        <ul class="features-list">
-            <li>Animal CRUD with tag ID, type, breed, category, name, gender, weight, status</li>
-            <li>Poultry batch mode: batch name, initial quantity, mortality tracking, current count</li>
-            <li>Farm selector dropdown, role-based readOnly mode for workers and vets</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">6</div><strong>SCREENSHOT — Livestock</strong><div class="caption">FarmVexa Livestock tab with animal cards, batch management, and role-based actions.</div></div>
+        <div class="screenshot-placeholder"><div class="number">8</div><strong>SCREENSHOT — Livestock</strong><div class="caption">FarmVexa Livestock tab with animal cards, batch management, and role-based actions.</div></div>
 
-        <h3>4.7 Health</h3>
+        <h3>4.9 Health</h3>
         <p>Complete animal health records with vaccination scheduling and automated reminders.</p>
-        <ul class="features-list">
-            <li>5 record types: Vaccination, Treatment, Checkup, Disease, Deworming</li>
-            <li>Upcoming vaccinations card with due dates</li>
-            <li>Record details: animal, date, description, diagnosis, treatment, medication, dosage, cost, vet name, next checkup</li>
-            <li>Locked for workers (veterinarian access only message)</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">7</div><strong>SCREENSHOT — Health</strong><div class="caption">FarmVexa Health tab with upcoming vaccinations and health records list.</div></div>
+        <div class="screenshot-placeholder"><div class="number">9</div><strong>SCREENSHOT — Health</strong><div class="caption">FarmVexa Health tab with upcoming vaccinations and health records list.</div></div>
 
-        <h3>4.8 Production</h3>
+        <h3>4.10 Production</h3>
         <p>Dual-mode production recording with auto-calculated values from pricing table.</p>
-        <ul class="features-list">
-            <li>Mode toggle: Animal (milk, eggs, meat) / Crop (harvest from fields)</li>
-            <li>Field selection auto-fills crop type for harvest recording</li>
-            <li>Auto-calculated value from product pricing with live preview</li>
-            <li>Production automatically adds to stock inventory</li>
-            <li>Summary cards: total records, total value, product count</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">8</div><strong>SCREENSHOT — Production</strong><div class="caption">FarmVexa Production tab with Animal/Crop toggle and auto-calculated value display.</div></div>
+        <div class="screenshot-placeholder"><div class="number">10</div><strong>SCREENSHOT — Production</strong><div class="caption">FarmVexa Production tab with Animal/Crop toggle and auto-calculated value display.</div></div>
 
-        <h3>4.9 Inventory & Stock</h3>
+        <h3>4.11 Inventory & Stock</h3>
         <p>Unified inventory with Production Stock and Farm Inventory toggles.</p>
-        <ul class="features-list">
-            <li><strong>Prod Stock:</strong> Auto-populated from production records, stock in/out with movement history</li>
-            <li><strong>Farm Inventory:</strong> Purchased items (feed, medicine, fertilizer), supplier tracking, expiry dates</li>
-            <li>Low stock alerts, stock value calculation, movement history modal</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">9</div><strong>SCREENSHOT — Inventory</strong><div class="caption">FarmVexa Inventory tab with Prod Stock/Farm Inventory toggle and stock cards.</div></div>
+        <div class="screenshot-placeholder"><div class="number">11</div><strong>SCREENSHOT — Inventory</strong><div class="caption">FarmVexa Inventory tab with Prod Stock/Farm Inventory toggle and stock cards.</div></div>
 
-        <h3>4.10 Finance</h3>
+        <h3>4.12 Finance</h3>
         <p>Complete financial management with shopping cart sales, expenses, pricing, and receipts.</p>
-        <ul class="features-list">
-            <li>Sales cart: select product from stock, enter quantity/price/discount, add multiple items, complete sale</li>
-            <li>Stock auto-reduction on sale, printable receipt with farm name, items, totals</li>
-            <li>Expense recording by category, income/expense/net summary cards</li>
-            <li>Product pricing table with auto-suggestions from farm animals and crops</li>
-            <li>Recent transactions with individual print buttons</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">10</div><strong>SCREENSHOT — Finance</strong><div class="caption">FarmVexa Finance tab with sales cart, pricing table, and receipt preview.</div></div>
+        <div class="screenshot-placeholder"><div class="number">12</div><strong>SCREENSHOT — Finance</strong><div class="caption">FarmVexa Finance tab with sales cart, pricing table, and receipt preview.</div></div>
 
-        <h3>4.11 Weather</h3>
+        <h3>4.13 Weather</h3>
         <p>Farm-specific weather with current conditions, 7-day forecast, and farming recommendations.</p>
-        <ul class="features-list">
-            <li>Current conditions: temperature, humidity, rainfall, wind speed, condition icon</li>
-            <li>7-day forecast grid with daily min/max, condition icons, rainfall</li>
-            <li>Weather alerts (rain, heatwave, frost, drought, storm) with recommendations</li>
-            <li>Farming tips based on current conditions</li>
-            <li>Auto-geocoding from farm county/sub-county, refresh button</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">11</div><strong>SCREENSHOT — Weather</strong><div class="caption">FarmVexa Weather page with current conditions, 7-day forecast, alerts, and farming tips.</div></div>
+        <div class="screenshot-placeholder"><div class="number">13</div><strong>SCREENSHOT — Weather</strong><div class="caption">FarmVexa Weather page with current conditions, 7-day forecast, alerts, and farming tips.</div></div>
 
-        <h3>4.12 Team Management</h3>
+        <h3>4.14 Team Management</h3>
         <p>Farm team management with role-based access and auto-generated credentials.</p>
-        <ul class="features-list">
-            <li>Add team members: name, role (Worker/Vet/Manager), phone, email, salary, hire date</li>
-            <li>Auto-generated password sent via email with welcome credentials</li>
-            <li>Team member cards with contact info, role badges, activate/deactivate, edit, delete</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">12</div><strong>SCREENSHOT — Team Management</strong><div class="caption">FarmVexa Team tab with member cards showing roles, contacts, and action buttons.</div></div>
+        <div class="screenshot-placeholder"><div class="number">14</div><strong>SCREENSHOT — Team Management</strong><div class="caption">FarmVexa Team tab with member cards showing roles, contacts, and action buttons.</div></div>
 
-        <h3>4.13 Tasks</h3>
+        <h3>4.15 Tasks</h3>
         <p>Task management with assignment, priority levels, and status tracking.</p>
-        <ul class="features-list">
-            <li>Create tasks: title, description, assign to team member, priority (Low/Medium/High/Urgent), due date</li>
-            <li>Status flow: Pending → In Progress → Completed</li>
-            <li>Priority color coding, pending tasks card, role-based readOnly</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">13</div><strong>SCREENSHOT — Tasks</strong><div class="caption">FarmVexa Tasks tab with pending tasks list and priority badges.</div></div>
+        <div class="screenshot-placeholder"><div class="number">15</div><strong>SCREENSHOT — Tasks</strong><div class="caption">FarmVexa Tasks tab with pending tasks list and priority badges.</div></div>
 
-        <h3>4.14 Reports</h3>
+        <h3>4.16 Reports</h3>
         <p>Comprehensive reporting across 9 categories with print-optimized formatting.</p>
-        <ul class="features-list">
-            <li>9 report types: General, Stock, Livestock, Production, Crops, Financial, Vaccination, Inventory, Tasks</li>
-            <li>Farm selector, report type dropdown, period filter (Week/Month/Year/Custom)</li>
-            <li>Summary cards with totals, formatted data tables, print button opens clean printable window</li>
-            <li>Print output includes farm header, report title, date range, summary, and styled tables</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">14</div><strong>SCREENSHOT — Reports</strong><div class="caption">FarmVexa Reports tab with report type selector and formatted data table.</div></div>
+        <div class="screenshot-placeholder"><div class="number">16</div><strong>SCREENSHOT — Reports</strong><div class="caption">FarmVexa Reports tab with report type selector and formatted data table.</div></div>
 
-        <h3>4.15 AI Chat</h3>
+        <h3>4.17 AI Chat</h3>
         <p>Farm-aware AI assistant with full farm context injection and bilingual support.</p>
-        <ul class="features-list">
-            <li>Chat interface with message bubbles, typing indicator, auto-scroll</li>
-            <li>Language toggle: English ↔ Kiswahili with persistence</li>
-            <li>Quick suggestion chips, chat history sidebar with search and delete</li>
-            <li>System prompt injected with: app info, support contacts, farm name, location, animals, production, stock, weather, alerts, devices</li>
-            <li>Editable chat titles, usage limit tracking with "resets at midnight" messaging</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">15</div><strong>SCREENSHOT — AI Chat</strong><div class="caption">FarmVexa AI Chat with message bubbles, language toggle, and quick suggestions.</div></div>
+        <div class="screenshot-placeholder"><div class="number">17</div><strong>SCREENSHOT — AI Chat</strong><div class="caption">FarmVexa AI Chat with message bubbles, language toggle, and quick suggestions.</div></div>
 
-        <h3>4.16 Alerts</h3>
+        <h3>4.18 Alerts</h3>
         <p>Real-time alert system with automatic generation and notification delivery.</p>
-        <ul class="features-list">
-            <li>Alert types: soil moisture, temperature, humidity, disease risk, disease detected, device offline, low stock, vaccination due, maintenance due, weather warnings</li>
-            <li>Severity levels: Low, Medium, High, Critical with color coding</li>
-            <li>Mark as read (per alert), delete single, delete all</li>
-            <li>Email notifications for high/critical, SMS for critical (configurable toggles)</li>
-            <li>Header bell icon with real-time count badge (Socket.io updates)</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">16</div><strong>SCREENSHOT — Alerts</strong><div class="caption">FarmVexa Alerts page with severity badges, mark read, and delete actions.</div></div>
+        <div class="screenshot-placeholder"><div class="number">18</div><strong>SCREENSHOT — Alerts</strong><div class="caption">FarmVexa Alerts page with severity badges, mark read, and delete actions.</div></div>
 
-        <h3>4.17 Settings</h3>
+        <h3>4.19 Settings</h3>
         <p>User settings with Profile, Password, Support, and conditional Downloads tabs.</p>
-        <ul class="features-list">
-            <li>Profile: avatar, name, phone, county, sub-county editing</li>
-            <li>Password: current password verification, new password with confirmation</li>
-            <li>Support: dynamic phone, email, WhatsApp from admin settings</li>
-            <li>Downloads: platform-specific download cards (only shown if downloads enabled)</li>
-        </ul>
-        <div class="screenshot-placeholder"><div class="number">17</div><strong>SCREENSHOT — Settings</strong><div class="caption">FarmVexa Settings page with Profile tab and Support tab.</div></div>
+        <div class="screenshot-placeholder"><div class="number">19</div><strong>SCREENSHOT — Settings</strong><div class="caption">FarmVexa Settings page with Profile tab and Support tab.</div></div>
 
-        <div class="note"><strong>Screenshot Summary:</strong> 17 screenshots covering Landing, Auth, Dashboard, Farms, IoT/Sensors, Livestock, Health, Production, Inventory, Finance, Weather, Team, Tasks, Reports, AI Chat, Alerts, and Settings.</div>
+        <div class="note"><strong>Screenshot Summary:</strong> 19 screenshots covering Landing, Auth, Dashboard, Farms, IoT/Sensors, Field Scan, Storage Monitoring, Livestock, Health, Production, Inventory, Finance, Weather, Team, Tasks, Reports, AI Chat, Alerts, and Settings.</div>
 
         <!-- SECTION 5: SOURCE CODE -->
         <h2>5. SOURCE CODE EXCERPTS</h2>
 
         <h3>5.1 Dual Server Architecture</h3>
-        <p>The MERN server and Python AI Engine run as separate processes communicating via REST API with shared API key authentication.</p>
         <pre>// MERN aiService.js — sends data to Python AI
 async farmerChat(message, systemPrompt = '') {
   const response = await axios.post(`${this.baseUrl}/api/chat`,
@@ -403,8 +370,73 @@ async def farmer_chat(data: dict, x_api_key: str = Header(None)):
         reply = get_chat_response_gemini(message, system_prompt)
     return success_response({"reply": reply, "model": settings.AI_USED})</pre>
 
-        <h3>5.2 Farm Context Injection for AI</h3>
-        <p>Before sending any chat message to AI, the system gathers comprehensive farm context.</p>
+        <h3>5.2 Field Scan Batch Analysis</h3>
+        <pre># Python field_scan_routes.py — pre-filter + batch analysis
+@router.post("/analyze/field-scan")
+async def analyze_field_scan(data: dict, x_api_key: str = Header(None)):
+    frames = data.get("frames", [])
+    pre_filter_percentage = data.get("preFilterPercentage", 60)
+    
+    # Pre-filter with OpenCV (blur, green coverage, disease indicators)
+    for frame in frames:
+        should_skip, score, reason = prefilter_frame(image_data)
+        if not should_skip:
+            scored_frames.append({"frame": frame, "score": score})
+    
+    # Sort by score, take top 60%
+    scored_frames.sort(key=lambda x: x["score"], reverse=True)
+    keep_count = int(len(scored_frames) * (pre_filter_percentage / 100))
+    selected = scored_frames[:keep_count]
+    
+    # Batch in chunks of 16
+    batches = [selected[i:i+16] for i in range(0, len(selected), 16)]
+    for batch in batches:
+        results = analyze_batch(batch_frames, crop_type)</pre>
+
+        <h3>5.3 Storage Monitoring</h3>
+        <pre>// sensorService.js — storage zone detection and threshold checks
+if (device.zone === 'storage') {
+  if (temperature >= storage.tempCritical) {
+    await alertService.createStorageAlert({
+      type: 'storage_temp_critical', severity: 'high',
+      message: `Storage temperature critical: ${temperature}°C`,
+      recommendation: 'Ventilate storage immediately'
+    });
+  }
+  if (co2 >= storage.co2Critical) {
+    await alertService.createStorageAlert({
+      type: 'storage_co2_critical', severity: 'high',
+      message: `Storage CO2 critical: ${co2}ppm — insect infestation suspected`
+    });
+  }
+}</pre>
+
+        <h3>5.4 hdmstream Integration</h3>
+        <pre>// hdmstream — send batch to FarmVexa (Electron IPC + postMessage)
+const sendMessageToFarmVexa = (data) => {
+  if (window.electronAPI?.sendMessage) {
+    window.electronAPI.sendMessage(data);
+    return true;
+  }
+  if (window.parent !== window) {
+    window.parent.postMessage(data, '*');
+    return true;
+  }
+  return false;
+};
+
+// FarmVexa FieldScan.jsx — receive batch and auto-analyze
+useEffect(() => {
+  const handler = (event) => {
+    if (event.data?.type === 'farmvexa-field-scan-batch') {
+      autoAnalyze(event.data.photos);
+    }
+  };
+  window.addEventListener('message', handler);
+  return () => window.removeEventListener('message', handler);
+}, []);</pre>
+
+        <h3>5.5 Farm Context Injection for AI</h3>
         <pre>// aiContextService.js — builds complete farm context
 async getFarmContext(farmId) {
   const [animals, todayProd, stock, alerts, devices, weather] = await Promise.all([
@@ -415,49 +447,16 @@ async getFarmContext(farmId) {
     Device.find({ farm: farmId }),
     weatherService.getFarmWeather(farmId)
   ]);
-  return { farmName, location, animals: { total, byType }, productionToday: { milk, eggs },
-    stock: stockSummary, alerts: alertSummary, devices: { total, online }, weather };
+  return { farmName, location, animals, productionToday, stock, alerts, devices, weather };
 }</pre>
 
-        <h3>5.3 Role-Based Access Control Middleware</h3>
+        <h3>5.6 Role-Based Access Control Middleware</h3>
         <pre>// farmRole.js — granular permission middleware
 const canManageHealth = (req, res, next) => {
   if (!['farmer', 'vet', 'manager'].includes(req.user.role))
     return errorResponse(res, 'Access denied', 403);
   next();
-};
-// Applied to routes: router.post('/farm/:farmId', ownsFarm, canManageHealth, addRecord);</pre>
-
-        <h3>5.4 Production Auto-Stock Integration</h3>
-        <pre>// productionController.js — production automatically updates stock
-const Stock = require('../../models/farm/Stock');
-let stockItem = await Stock.findOne({ farm, product: productName, unit });
-if (stockItem) {
-  stockItem.quantity += Number(quantity);
-  stockItem.movements.push({ type: 'in', quantity, date, reason: 'Production',
-    relatedModule: 'production', relatedId: record._id });
-  await stockItem.save();
-}</pre>
-
-        <h3>5.5 Sales Cart with Stock Reduction</h3>
-        <pre>// FinanceTab.jsx — complete sale reduces stock
-const handleSale = async () => {
-  const description = cart.map(c => `${c.product} x${c.quantity} ${c.unit}`).join(', ');
-  await addTransaction(farmId, { type: 'income', category: 'sales', amount: cartTotal, description });
-  for (const c of cart)
-    await stockOut(farmId, { product: c.product, unit: c.unit, quantity: c.quantity, reason: 'Sale' });
-  printCartReceipt(); setCart([]);
 };</pre>
-
-        <h3>5.6 Weather Geocoding from Farm Location</h3>
-        <pre>// weatherService.js — geocodes farm county/sub-county to coordinates
-async getCoordinates(farm) {
-  if (farm.location?.coordinates?.lat) return farm.location.coordinates;
-  const query = [farm.location?.county, farm.location?.subCounty, 'Kenya'].filter(Boolean).join(', ');
-  const res = await axios.get('https://nominatim.openstreetmap.org/search',
-    { params: { q: query, format: 'json', limit: 1 } });
-  return { lat: parseFloat(res.data[0].lat), lon: parseFloat(res.data[0].lon) };
-}</pre>
 
         <h3>5.7 ESP32 Sensor Node Firmware</h3>
         <pre>// sensor_node.ino — ESP32 reads sensors and sends to MERN
@@ -465,71 +464,36 @@ void sendSensorData() {
   float temp = dht.readTemperature();
   float hum = dht.readHumidity();
   int soilMoisture = map(analogRead(SOIL_PIN), 4095, 1500, 0, 100);
+  int co2 = map(analogRead(CO2_PIN), 0, 4095, 400, 5000);
   String json = "{\"deviceId\":\"" + String(deviceId) + "\",\"temperature\":" +
-    String(temp,1) + ",\"humidity\":" + String(hum,0) + ",\"soilMoisture\":" +
-    String(soilMoisture) + ",\"lightLevel\":" + String(lightLevel) + "}";
+    String(temp,1) + ",\"humidity\":" + String(hum,0) + ",\"co2\":" + String(co2) + "}";
   http.POST(json);
-}</pre>
-
-        <h3>5.8 Automated Daily Briefing Scheduler</h3>
-        <pre>// dailyBriefingScheduler.js — runs at 6 AM EAT
-task = cron.schedule('0 6 * * *', async () => {
-  const farms = await Farm.find({ status: 'active' }).populate('owner');
-  for (const farm of farms) {
-    const todayProd = await ProductionRecord.find({ farm: farm._id, date: { $gte: today } });
-    const alerts = await Alert.find({ farm: farm._id, severity: { $in: ['high','critical'] } });
-    const devices = await Device.find({ farm: farm._id });
-    await emailService.send(farmer.email, 'farmerDailyReport', { farmName, todayMilk, todayEggs,
-      animalCount, alertsCount, onlineDevices, totalDevices, deviceList, sensorReadings });
-  }
-});</pre>
-
-        <h3>5.9 Reminder Scheduler with Multi-Source Checks</h3>
-        <pre>// reminderScheduler.js — checks vaccinations, stock, equipment, tasks
-const vaccinations = await HealthRecord.find({ farm: farm._id, recordType: 'vaccination',
-  nextCheckup: { $lte: threeDays } });
-const stockItems = await Stock.find({ farm: farm._id });
-const equipment = await Equipment.find({ farm: farm._id, nextMaintenance: { $lte: threeDays } });
-const tasks = await Task.find({ farm: farm._id, status: { $in: ['pending','in_progress'] },
-  dueDate: { $lte: threeDays } });
-// Sends upcoming (3-day) and final (today) reminders via email and SMS</pre>
-
-        <h3>5.10 Public Chatbot with Independent AI Provider</h3>
-        <pre>// chatbotController.js — uses its own AI credentials from admin settings
-if (chatbot.aiProvider === 'hdm') {
-  const response = await axios.post(chatbot.hdmBaseUrl,
-    { message, system_prompt: systemPrompt },
-    { headers: { 'Authorization': `Bearer ${chatbot.hdmApiKey}` } });
-} else {
-  const genAI = new GoogleGenerativeAI(chatbot.geminiApiKey);
-  const model = genAI.getGenerativeModel({ model: 'models/gemini-3.5-flash' });
-  const result = await model.generateContent(fullPrompt);
 }</pre>
 
         <!-- SECTION 6: CONCLUSION -->
         <h2>6. CONCLUSION</h2>
         <p>
-            FarmVexa represents a significant advancement in agricultural technology by combining IoT sensor networks, computer vision for crop disease detection, and multiple artificial intelligence engines into a single unified platform. The system's core innovation lies in its sensor fusion approach — combining camera analysis, environmental sensor data, historical trends, and AI interpretation to provide contextual, actionable recommendations rather than raw data displays.
+            FarmVexa represents a significant advancement in agricultural technology by combining IoT sensor networks, computer vision for crop disease detection, live camera streaming for field scanning, storage pest detection, and multiple artificial intelligence engines into a single unified platform. The system's core innovation lies in its sensor fusion approach — combining camera analysis, environmental sensor data, GPS-tagged field scanning, storage monitoring, historical trends, and AI interpretation to provide contextual, actionable recommendations rather than raw data displays.
+        </p>
+        <p>
+            The field scan module enables farmers to analyze entire fields systematically with GPS-tagged photos, batch AI processing with OpenCV pre-filtering, and automated disease/weed/pest detection. The storage monitoring module provides affordable pest detection using CO2 sensors for insect respiration and PIR sensors for rat movement. The hdmstream integration enables live camera streaming with automatic photo capture and direct sending to FarmVexa.
         </p>
         <p>
             The platform's multi-provider AI architecture allows deployment flexibility — organizations can use Google Gemini, HDM AI, or local TensorFlow models depending on connectivity, cost, and privacy requirements. The role-based access control system enables farms to onboard workers, veterinarians, and managers with granular permissions appropriate to each role.
         </p>
         <p>
-            The system's 7 automated schedulers (daily briefing, reminders, sensor checks, alert processing, device health monitoring, data cleanup, and vaccination scheduling) ensure proactive farm monitoring without requiring constant farmer attention. The integration of M-Pesa payment processing, printable receipts, and comprehensive financial tracking makes FarmVexa a complete farm business management solution.
-        </p>
-        <p>
-            FarmVexa's architecture — with 78 MERN server files, 21 Python AI files, 26 farmer dashboard pages, 19 API route files, 10 farm operation modules, 30 email templates, 14 SMS templates, 9 report types, and ESP32 IoT firmware — represents a substantial original work of software development.
+            FarmVexa's architecture — with MERN server, Python AI engine, hdmstream camera layer, farmer dashboard, admin panel, 7 schedulers, 19+ key pages, ESP32 IoT firmware with multiple sensor types, and comprehensive storage monitoring — represents a substantial original work of software development.
         </p>
 
     </div>
 
     <!-- FOOTER -->
     <div class="footer">
-        <strong>Document Prepared By:</strong> Davis Okoth (DAVISOKOTH)<br>
+        <strong>Document Prepared By:</strong> Davis Okoth<br>
         <strong>Date:</strong> August 2026 &nbsp;|&nbsp; <strong>Software Version:</strong> 1.0.0<br><br>
         <strong>Copyright Claim:</strong> All rights reserved. This software and its documentation are the intellectual property of Davis Okoth.<br>
         <strong>Registration Authority:</strong> Kenya Copyright Board (KECOBO) — National Rights Registry (NRR) Portal<br><br>
-        <strong>Software URLs:</strong> https://farmvexa.pxxl.click | https://farmvexaserver.pxxl.click | https://farmvexa-api.onrender.com
+        <strong>Software URLs:</strong> https://farmvexa.pxxl.click | https://farmvexaserver.pxxl.click | https://farmvexa-api.onrender.com | https://hdmstream.pxxl.click
     </div>
 
 </div>

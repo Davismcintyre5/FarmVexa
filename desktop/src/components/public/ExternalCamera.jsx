@@ -1,15 +1,37 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
-import { Video, Camera, ExternalLink, X, RefreshCw } from 'lucide-react';
+import { Video, Camera, ExternalLink, RefreshCw } from 'lucide-react';
 
 export default function ExternalCamera({ inUrl, outUrl, title = 'External Camera' }) {
     const [showStream, setShowStream] = useState(false);
     const [showCamera, setShowCamera] = useState(false);
     const [isElectron, setIsElectron] = useState(false);
+    const webviewRef = useRef(null);
 
     useEffect(() => {
         setIsElectron(window.electronAPI?.isElectron || false);
+    }, []);
+
+    // Listen for IPC messages from webview (hdmstream in Electron)
+    useEffect(() => {
+        if (!window.electronAPI?.onMessage) return;
+
+        const unsubscribe = window.electronAPI.onMessage((data) => {
+            if (!data) return;
+
+            // Forward as postMessage so FieldScan.jsx can receive it
+            window.postMessage({
+                type: data.type || 'farmvexa-field-scan-batch',
+                photos: data.photos || [],
+                imageUrl: data.imageUrl,
+                lat: data.lat,
+                lng: data.lng,
+                timestamp: data.timestamp || new Date().toISOString(),
+            }, '*');
+        });
+
+        return unsubscribe;
     }, []);
 
     const openExternal = (url) => {
@@ -47,7 +69,7 @@ export default function ExternalCamera({ inUrl, outUrl, title = 'External Camera
             <Modal open={showStream} onClose={() => setShowStream(false)} title={`📹 ${title} — Live Stream`} size="xl">
                 <div className="space-y-3">
                     {isElectron ? (
-                        <ElectronWebview src={inUrl} />
+                        <ElectronWebview ref={webviewRef} src={inUrl} />
                     ) : (
                         <iframe
                             src={inUrl}
@@ -69,7 +91,7 @@ export default function ExternalCamera({ inUrl, outUrl, title = 'External Camera
             <Modal open={showCamera} onClose={() => setShowCamera(false)} title="📤 Camera Device" size="md">
                 <div className="space-y-3">
                     {isElectron ? (
-                        <ElectronWebview src={outUrl} />
+                        <ElectronWebview ref={webviewRef} src={outUrl} />
                     ) : (
                         <iframe
                             src={outUrl}
@@ -86,7 +108,7 @@ export default function ExternalCamera({ inUrl, outUrl, title = 'External Camera
     );
 }
 
-function ElectronWebview({ src }) {
+const ElectronWebview = React.forwardRef(({ src }, ref) => {
     const [error, setError] = useState(false);
     const [key, setKey] = useState(0);
 
@@ -106,6 +128,7 @@ function ElectronWebview({ src }) {
     return (
         <div className="relative">
             <webview
+                ref={ref}
                 key={key}
                 src={src}
                 className="w-full h-[70vh] rounded-xl"
@@ -135,4 +158,6 @@ function ElectronWebview({ src }) {
             )}
         </div>
     );
-}
+});
+
+ElectronWebview.displayName = 'ElectronWebview';

@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight, Play, Rocket } from 'lucide-react';
 import axios from 'axios';
 
 export default function Hero() {
     const [settings, setSettings] = useState({});
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
         axios.get(`${import.meta.env.VITE_API_URL || '/api'}/admin/public/settings`)
             .then((res) => setSettings(res.data.data || {}))
             .catch(() => {});
+        
+        // Check if token exists
+        const token = localStorage.getItem('token');
+        setIsAuthenticated(!!token);
     }, []);
 
     const allowRegister = settings.allowSelfRegistration !== false;
@@ -33,7 +38,11 @@ export default function Hero() {
                         track finances, and get real-time insights — all in one place.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        {allowRegister ? (
+                        {isAuthenticated ? (
+                            <Link to="/dashboard" className="px-8 py-3 bg-white text-primary-700 font-semibold rounded-xl hover:bg-green-50 transition-colors inline-flex items-center justify-center gap-2">
+                                <Rocket className="w-5 h-5" /> Launch App
+                            </Link>
+                        ) : allowRegister ? (
                             <Link to="/register" className="px-8 py-3 bg-white text-primary-700 font-semibold rounded-xl hover:bg-green-50 transition-colors inline-flex items-center justify-center gap-2">
                                 Get Started <ArrowRight className="w-5 h-5" />
                             </Link>

@@ -35,5 +35,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   onOnlineStatus: (callback) => {
     ipcRenderer.on('online-status', (event, status) => callback(status));
-  }
+  },
+
+  // === WEBVIEW MESSAGING ===
+  
+  // Send message from React app to webview (or from webview to main)
+  sendMessage: (data) => ipcRenderer.send('farmvexa-message', data),
+  
+  // Listen for messages from webview (forwarded by main process)
+  onMessage: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('farmvexa-message-from-webview', handler);
+    return () => ipcRenderer.removeListener('farmvexa-message-from-webview', handler);
+  },
 });
