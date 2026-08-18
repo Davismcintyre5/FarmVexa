@@ -24,6 +24,12 @@ import Settings from '../pages/settings/Settings';
 import Landing from '../pages/public/Landing';
 import GetAccess from '../pages/public/GetAccess';
 import Market from '../pages/public/Market';
+import Documents from '../pages/public/Documents';
+import Pricing from '../pages/public/Pricing';
+import Checkout from '../pages/auth/Checkout';
+import Renewal from '../pages/auth/Renewal';
+import Plans from '../pages/plan/Plans';
+import UpgradeCheckout from '../pages/plan/UpgradeCheckout';
 import NotFound from '../pages/NotFound';
 
 const AppRoutes = () => {
@@ -42,6 +48,8 @@ const AppRoutes = () => {
                 <Route path="/" element={<Landing />} />
                 <Route path="/get-access" element={<GetAccess />} />
                 <Route path="/market" element={<Market />} />
+                <Route path="/documents" element={<Documents />} />
+                <Route path="/pricing" element={<Pricing />} />
             </Route>
 
             {/* Auth Routes */}
@@ -50,6 +58,8 @@ const AppRoutes = () => {
                 <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
+                <Route path="/checkout" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Checkout />} />
+                <Route path="/renewal" element={<Renewal />} />
             </Route>
 
             {/* Pending Approval */}
@@ -81,6 +91,8 @@ const AppRoutes = () => {
                 <Route path="/alerts" element={<AlertList />} />
                 <Route path="/operations" element={<Operations />} />
                 <Route path="/weather" element={<Weather />} />
+                <Route path="/plans" element={<Plans />} />
+                <Route path="/plans/upgrade/:planName" element={<UpgradeCheckout />} />
                 <Route path="/settings" element={<Settings />} />
             </Route>
 

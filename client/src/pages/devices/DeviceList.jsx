@@ -9,7 +9,7 @@ import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
 import Badge from '../../components/ui/Badge';
 import { formatDate } from '../../utils/formatters';
-import { Cpu, Plus, Trash2 } from 'lucide-react';
+import { Cpu, Plus, Trash2, AlertTriangle } from 'lucide-react';
 
 export default function DeviceList() {
     const { user } = useAuth();
@@ -20,7 +20,14 @@ export default function DeviceList() {
     const [farms, setFarms] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const hasIotAccess = ['Pro', 'Full Suite'].includes(user?.selectedPlan);
+
     useEffect(() => {
+        if (!hasIotAccess) {
+            setLoading(false);
+            return;
+        }
+
         if (isFarmer) {
             getFarms().then(async (res) => {
                 const list = res.data.data.farms || [];
@@ -38,7 +45,7 @@ export default function DeviceList() {
         } else {
             setLoading(false);
         }
-    }, [isFarmer, user]);
+    }, [isFarmer, user, hasIotAccess]);
 
     const handleDelete = async (id) => { 
         if (confirm('Delete?')) { 
@@ -58,6 +65,27 @@ export default function DeviceList() {
     };
 
     if (loading) return <Spinner size="lg" className="mt-20" />;
+
+    if (!hasIotAccess) {
+        return (
+            <div className="page-container max-w-lg mx-auto space-y-6">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Devices</h1>
+                <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl border-2 border-yellow-300 dark:border-yellow-700 text-center">
+                    <AlertTriangle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
+                    <h2 className="text-xl font-bold text-yellow-800 dark:text-yellow-300 mb-2">
+                        Feature Not Available
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                        Your plan ({user?.selectedPlan || 'Basic'}) does not include IoT Devices.
+                        Upgrade to Pro or Full Suite to connect sensors.
+                    </p>
+                    <Link to="/plans" className="inline-block px-6 py-3 bg-yellow-600 text-white rounded-xl font-semibold hover:bg-yellow-700">
+                        Upgrade Plan
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="page-container space-y-6">

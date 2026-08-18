@@ -12,7 +12,11 @@ export const AuthProvider = ({ children }) => {
         if (token) {
             authApi.getProfile()
                 .then((res) => setUser(res.data.data.user))
-                .catch(() => logout())
+                .catch((err) => {
+                    if (err.response?.status === 401) {
+                        logout();
+                    }
+                })
                 .finally(() => setIsLoading(false));
         } else {
             setIsLoading(false);
@@ -20,13 +24,27 @@ export const AuthProvider = ({ children }) => {
     }, [token]);
 
     const login = async (data) => {
-        const res = await authApi.login(data);
-        const { user, token } = res.data.data;
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        setToken(token);
-        setUser(user);
-        return user;
+        try {
+            const res = await authApi.login(data);
+            const { user, token } = res.data.data;
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+            setToken(token);
+            setUser(user);
+            return user;
+        } catch (err) {
+            if (err.response?.status === 402) {
+                const responseData = err.response.data?.data;
+                if (responseData?.token) {
+                    localStorage.setItem('token', responseData.token);
+                    localStorage.setItem('user', JSON.stringify(responseData.user));
+                    setToken(responseData.token);
+                    setUser(responseData.user);
+                }
+                throw err;
+            }
+            throw err;
+        }
     };
 
     const logout = () => {

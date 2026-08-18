@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getFields, deleteField } from '../../api/fields';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -10,6 +10,7 @@ import { Layers, Plus, Trash2 } from 'lucide-react';
 
 export default function FieldList() {
     const { farmId } = useParams();
+    const navigate = useNavigate();
     const [fields, setFields] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -32,7 +33,7 @@ export default function FieldList() {
                 <Link to={`/farms/${farmId}/fields/new`}><Button><Plus className="w-4 h-4" /> Add Field</Button></Link>
             </div>
             {fields.length === 0 ? (
-                <EmptyState icon={Layers} title="No fields" description="Add a field to this farm." actionLabel="Add Field" onAction={() => window.location.href = `/farms/${farmId}/fields/new`} />
+                <EmptyState icon={Layers} title="No fields" description="Add a field to this farm." actionLabel="Add Field" onAction={() => navigate(`/farms/${farmId}/fields/new`)} />
             ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {fields.map((field) => (

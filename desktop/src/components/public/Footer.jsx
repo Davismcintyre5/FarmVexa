@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Phone, Mail, MessageCircle } from 'lucide-react';
+import { Phone, Mail, MessageCircle, FileText } from 'lucide-react';
 import LegalModal from './LegalModal';
 
 export default function Footer() {
@@ -33,17 +33,20 @@ export default function Footer() {
                                 <Link to={settings.allowSelfRegistration !== false ? '/register' : '/get-access'} className="block hover:text-white">
                                     {settings.allowSelfRegistration !== false ? 'Register' : 'Get Access'}
                                 </Link>
-                                <a href="#features" className="block hover:text-white">Features</a>
-                                <a href="#downloads" className="block hover:text-white">Downloads</a>
+                                <a href="#/#features" className="block hover:text-white">Features</a>
+                                <a href="#/#downloads" className="block hover:text-white">Downloads</a>
                             </div>
                         </div>
 
                         <div>
                             <h4 className="font-semibold text-white mb-3">Support</h4>
                             <div className="space-y-2 text-sm">
-                                <a href="#contact" className="block hover:text-white">Contact Us</a>
-                                <a href="#help" className="block hover:text-white">Help Center</a>
-                                <a href="#faq" className="block hover:text-white">FAQs</a>
+                                <a href="#/#contact" className="block hover:text-white">Contact Us</a>
+                                <a href="#/#help" className="block hover:text-white">Help Center</a>
+                                <a href="#/#faq" className="block hover:text-white">FAQs</a>
+                                <Link to="/documents" className="flex items-center gap-2 hover:text-white">
+                                    <FileText className="w-4 h-4" /> Documents
+                                </Link>
                             </div>
                         </div>
 

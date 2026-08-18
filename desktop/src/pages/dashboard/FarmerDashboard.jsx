@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getFarms } from '../../api/farms';
 import { getFarmAlerts } from '../../api/alerts';
@@ -15,6 +15,7 @@ import { Wheat, Camera, MessageCircle, Bell, Plus, Package, GitBranch, AlertTria
 
 export default function FarmerDashboard() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const isFarmer = user?.role === 'farmer';
     const teamFarmId = user?.farm;
 
@@ -59,7 +60,7 @@ export default function FarmerDashboard() {
 
     if (isFarmer && farms.length === 0) {
         return (
-            <EmptyState icon={Wheat} title="Welcome to FarmVexa!" description="Create your first farm to start monitoring your crops with AI." actionLabel="Create Farm" onAction={() => window.location.href = '/farms/new'} />
+            <EmptyState icon={Wheat} title="Welcome to FarmVexa!" description="Create your first farm to start monitoring your crops with AI." actionLabel="Create Farm" onAction={() => navigate('/farms/new')} />
         );
     }
 
@@ -92,7 +93,6 @@ export default function FarmerDashboard() {
                 )}
             </div>
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card className="text-center">
                     <Wheat className="w-8 h-8 text-primary-500 mx-auto mb-2" />
@@ -117,7 +117,6 @@ export default function FarmerDashboard() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-                {/* Recent Alerts */}
                 <Card title="Recent Alerts" footer={totalAlerts > 0 ? <Link to="/alerts" className="text-sm text-primary-500 hover:underline">View all alerts</Link> : null}>
                     {totalAlerts === 0 ? <p className="text-sm text-gray-400 py-4 text-center">No unread alerts</p> : (
                         <div className="space-y-2">
@@ -134,7 +133,6 @@ export default function FarmerDashboard() {
                     )}
                 </Card>
 
-                {/* Quick Actions */}
                 <Card title="Quick Actions">
                     <div className="grid grid-cols-2 gap-3">
                         <Link to="/scan" className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex items-center gap-3">

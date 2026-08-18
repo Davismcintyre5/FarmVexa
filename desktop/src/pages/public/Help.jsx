@@ -7,7 +7,7 @@ export default function Help() {
                 <HelpCircle className="w-16 h-16 text-primary-500 mx-auto mb-6" />
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">Help Center</h2>
                 <p className="text-lg text-gray-500 dark:text-gray-400 mb-8">Our comprehensive help center is coming soon.</p>
-                
+
                 <div className="grid md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
                         <BookOpen className="w-8 h-8 text-primary-500 mx-auto mb-3" />
@@ -26,7 +26,7 @@ export default function Help() {
                     </div>
                 </div>
 
-                <p className="text-gray-400">In the meantime, check our <a href="#faq" className="text-primary-500 hover:underline">FAQs</a> or <a href="#contact" className="text-primary-500 hover:underline">contact us</a> directly.</p>
+                <p className="text-gray-400">In the meantime, check our <a href="#/#faq" className="text-primary-500 hover:underline">FAQs</a> or <a href="#/#contact" className="text-primary-500 hover:underline">contact us</a> directly.</p>
             </div>
         </section>
     );

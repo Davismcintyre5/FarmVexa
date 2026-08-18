@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getFarms, getFarm } from '../../api/farms';
+import { getFarms, getFarm, deleteFarm } from '../../api/farms';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Spinner from '../../components/ui/Spinner';
@@ -11,6 +11,7 @@ import { Wheat, Plus, Trash2, MapPin } from 'lucide-react';
 
 export default function FarmList() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const isFarmer = user?.role === 'farmer';
 
     const [farms, setFarms] = useState([]);
@@ -44,7 +45,7 @@ export default function FarmList() {
             </div>
 
             {farms.length === 0 ? (
-                <EmptyState icon={Wheat} title="No farms yet" description={isFarmer ? 'Create your first farm to get started.' : 'You are not assigned to any farm. Contact your administrator.'} actionLabel={isFarmer ? 'Create Farm' : undefined} onAction={isFarmer ? () => window.location.href = '/farms/new' : undefined} />
+                <EmptyState icon={Wheat} title="No farms yet" description={isFarmer ? 'Create your first farm to get started.' : 'You are not assigned to any farm. Contact your administrator.'} actionLabel={isFarmer ? 'Create Farm' : undefined} onAction={isFarmer ? () => navigate('/farms/new') : undefined} />
             ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {farms.map((farm) => (

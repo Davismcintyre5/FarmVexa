@@ -7,6 +7,7 @@ import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import SupportTab from './SupportTab';
 import DownloadsTab from './DownloadsTab';
+import DocumentsTab from './DocumentsTab';
 import { User, Mail, Phone, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -56,6 +57,7 @@ export default function Settings() {
         { key: 'profile', label: 'Profile' },
         { key: 'password', label: 'Password' },
         { key: 'support', label: 'Support' },
+        { key: 'documents', label: 'Documents' },
     ];
 
     const downloads = publicSettings.downloads?.filter((d) => d.enabled) || [];
@@ -121,6 +123,7 @@ export default function Settings() {
             )}
 
             {activeTab === 'support' && <SupportTab />}
+            {activeTab === 'documents' && <DocumentsTab />}
             {activeTab === 'downloads' && <DownloadsTab />}
         </div>
     );

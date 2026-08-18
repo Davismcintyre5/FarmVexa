@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Phone, Mail, MessageCircle } from 'lucide-react';
+import { Phone, Mail, MessageCircle, FileText } from 'lucide-react';
 import LegalModal from './LegalModal';
 
 export default function Footer() {
@@ -44,6 +44,9 @@ export default function Footer() {
                                 <a href="#contact" className="block hover:text-white">Contact Us</a>
                                 <a href="#help" className="block hover:text-white">Help Center</a>
                                 <a href="#faq" className="block hover:text-white">FAQs</a>
+                                <Link to="/documents" className="flex items-center gap-2 hover:text-white">
+                                    <FileText className="w-4 h-4" /> Documents
+                                </Link>
                             </div>
                         </div>
 

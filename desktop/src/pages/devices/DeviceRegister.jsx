@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getFarms } from '../../api/farms';
-import { getFields } from '../../api/fields';
 import { registerDevice } from '../../api/devices';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
@@ -12,28 +11,11 @@ import toast from 'react-hot-toast';
 
 export default function DeviceRegister() {
     const navigate = useNavigate();
-    const [form, setForm] = useState({ deviceId: '', farmId: '', fieldId: '', zone: 'field', sensorType: 'dht' });
+    const [form, setForm] = useState({ deviceId: '', farmId: '', zone: 'field', sensorType: 'dht' });
     const [farms, setFarms] = useState([]);
-    const [fields, setFields] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => { 
-        getFarms().then((res) => setFarms(res.data.data.farms || [])); 
-    }, []);
-
-    const handleFarmChange = async (farmId) => {
-        setForm((prev) => ({ ...prev, farmId, fieldId: '' }));
-        if (farmId) {
-            try {
-                const res = await getFields(farmId);
-                setFields(res.data.data.fields || []);
-            } catch {
-                setFields([]);
-            }
-        } else {
-            setFields([]);
-        }
-    };
+    useEffect(() => { getFarms().then((res) => setFarms(res.data.data.farms || [])); }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -74,7 +56,7 @@ export default function DeviceRegister() {
                     <Select 
                         label="Zone" 
                         value={form.zone} 
-                        onChange={(e) => setForm({ ...form, zone: e.target.value, fieldId: '' })} 
+                        onChange={(e) => setForm({ ...form, zone: e.target.value })} 
                         options={[
                             { value: 'field', label: 'Field' },
                             { value: 'storage', label: 'Storage' },
@@ -101,24 +83,18 @@ export default function DeviceRegister() {
                     <Select 
                         label="Farm" 
                         value={form.farmId} 
-                        onChange={(e) => handleFarmChange(e.target.value)} 
+                        onChange={(e) => setForm({ ...form, farmId: e.target.value })} 
                         options={farms.map((f) => ({ value: f._id, label: f.name }))} 
                     />
                     
                     {form.zone !== 'storage' && (
                         <Select 
                             label="Field" 
-                            value={form.fieldId} 
+                            value={form.fieldId || ''} 
                             onChange={(e) => setForm({ ...form, fieldId: e.target.value })} 
-                            options={fields.map((f) => ({ value: f._id, label: f.name }))} 
-                            disabled={!form.farmId}
+                            options={[]} // You'll need to fetch fields based on farm selection
+                            placeholder="Select field..."
                         />
-                    )}
-                    
-                    {form.zone === 'storage' && (
-                        <p className="text-xs text-gray-400">
-                            Storage devices don't require a field — they monitor storage conditions.
-                        </p>
                     )}
                     
                     <Button type="submit" loading={loading} className="w-full">Register Device</Button>

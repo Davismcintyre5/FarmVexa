@@ -29,7 +29,7 @@ export default function CTA() {
                             Get Access <ArrowRight className="w-5 h-5" />
                         </Link>
                     )}
-                    <a href="#contact" className="px-8 py-3 border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-colors">
+                    <a href="#/#contact" className="px-8 py-3 border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-colors">
                         Contact Sales
                     </a>
                 </div>

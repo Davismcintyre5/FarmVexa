@@ -40,6 +40,10 @@ export default function Login() {
             if (user.approvalStatus === 'pending') navigate('/pending');
             else navigate('/dashboard');
         } catch (err) {
+            if (err.response?.status === 402) {
+                navigate('/renewal');
+                return;
+            }
             setAlert({ type: 'error', message: err.response?.data?.message || 'Login failed' });
         } finally {
             setLoading(false);
@@ -65,7 +69,7 @@ export default function Login() {
             </form>
             {allowRegister ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-6">
-                    Don't have an account? <Link to="/register" className="text-primary-500 hover:underline">Create one</Link>
+                    Don't have an account? <Link to="/pricing" className="text-primary-500 hover:underline">Create one</Link>
                 </p>
             ) : (
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-6">

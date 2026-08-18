@@ -1,7 +1,7 @@
 {
   "name": "farmvexa-desktop",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.0",
   "type": "module",
   "description": "FarmVexa Farmer Dashboard - AI-Powered Farm Intelligence Desktop Application",
   "main": "electron/main.js",
@@ -10,13 +10,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "generate-icons": "node scripts/generate-icons.js",
-    "electron:dev": "concurrently \"vite --port 3000\" \"wait-on http://localhost:3000 && C:\\Electron\\electron.exe .\"",
+    "electron:dev": "concurrently \"vite --port 3000\" \"wait-on http://localhost:3000 && electron .\"",
     "electron:build": "npm run generate-icons && vite build && electron-builder --publish always",
     "electron:build:win": "npm run generate-icons && vite build && electron-builder --win --publish always",
     "electron:build:mac": "npm run generate-icons && vite build && electron-builder --mac --publish always",
     "electron:build:linux": "npm run generate-icons && vite build && electron-builder --linux --publish always",
     "electron:build:local": "npm run generate-icons && vite build && electron-builder --publish never",
-    "electron:start": "C:\\Electron\\electron.exe .",
+    "electron:start": "electron .",
     "release:patch": "npm version patch -m 'Release v%s'",
     "release:minor": "npm version minor -m 'Release v%s'",
     "release:major": "npm version major -m 'Release v%s'",
@@ -70,7 +70,14 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
+      "assets/**/*",
       "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "assets",
+        "to": "assets"
+      }
     ],
     "win": {
       "target": [

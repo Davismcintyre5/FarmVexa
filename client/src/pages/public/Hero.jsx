@@ -43,7 +43,7 @@ export default function Hero() {
                                 <Rocket className="w-5 h-5" /> Launch App
                             </Link>
                         ) : allowRegister ? (
-                            <Link to="/register" className="px-8 py-3 bg-white text-primary-700 font-semibold rounded-xl hover:bg-green-50 transition-colors inline-flex items-center justify-center gap-2">
+                            <Link to="/pricing" className="px-8 py-3 bg-white text-primary-700 font-semibold rounded-xl hover:bg-green-50 transition-colors inline-flex items-center justify-center gap-2">
                                 Get Started <ArrowRight className="w-5 h-5" />
                             </Link>
                         ) : (

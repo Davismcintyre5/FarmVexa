@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getFarms } from '../../api/farms';
 import { getFields } from '../../api/fields';
@@ -8,14 +9,14 @@ import Card from '../../components/ui/Card';
 import Select from '../../components/ui/Select';
 import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
-import { Activity, Thermometer, Droplets, Sun, TrendingUp, TrendingDown, Minus, Box, Bug, Rat } from 'lucide-react';
+import { Activity, Thermometer, Droplets, Sun, TrendingUp, TrendingDown, Minus, Box, Bug, Rat, AlertTriangle } from 'lucide-react';
 import { formatDate, formatTemperature } from '../../utils/formatters';
 
 export default function SensorReadings() {
     const { user } = useAuth();
     const isFarmer = user?.role === 'farmer';
 
-    const [activeTab, setActiveTab] = useState('field'); // field | storage
+    const [activeTab, setActiveTab] = useState('field');
     const [farms, setFarms] = useState([]);
     const [fields, setFields] = useState([]);
     const [farmId, setFarmId] = useState('');
@@ -24,12 +25,15 @@ export default function SensorReadings() {
     const [loading, setLoading] = useState(false);
     const [farmsLoaded, setFarmsLoaded] = useState(false);
 
-    // Storage states
     const [storageDevices, setStorageDevices] = useState([]);
     const [storageDeviceId, setStorageDeviceId] = useState('');
     const [storageReadings, setStorageReadings] = useState([]);
 
+    const hasIotAccess = ['Pro', 'Full Suite'].includes(user?.selectedPlan);
+    const hasStorageAccess = user?.selectedPlan === 'Full Suite';
+
     useEffect(() => {
+        if (!hasIotAccess) return;
         if (!isFarmer && user?.farm) {
             setFarmId(user.farm);
             setFarms([{ _id: user.farm, name: 'Assigned Farm' }]);
@@ -37,30 +41,31 @@ export default function SensorReadings() {
             getFields(user.farm).then((res) => setFields(res.data.data.fields || [])).catch(() => {});
             fetchStorageDevices(user.farm);
         }
-    }, [user]);
+    }, [user, hasIotAccess]);
 
     useEffect(() => {
+        if (!hasIotAccess) return;
         if (isFarmer) {
             getFarms().then((res) => {
                 setFarms(res.data.data.farms || []);
                 setFarmsLoaded(true);
             });
         }
-    }, [isFarmer]);
+    }, [isFarmer, hasIotAccess]);
 
     useEffect(() => {
-        if (fieldId && activeTab === 'field') {
+        if (fieldId && activeTab === 'field' && hasIotAccess) {
             setLoading(true);
             getFieldReadings(fieldId, 50).then((res) => setReadings(res.data.data.readings || [])).finally(() => setLoading(false));
         }
-    }, [fieldId, activeTab]);
+    }, [fieldId, activeTab, hasIotAccess]);
 
     useEffect(() => {
-        if (storageDeviceId && activeTab === 'storage') {
+        if (storageDeviceId && activeTab === 'storage' && hasStorageAccess) {
             setLoading(true);
             getDeviceReadings(storageDeviceId, 50).then((res) => setStorageReadings(res.data.data.readings || [])).finally(() => setLoading(false));
         }
-    }, [storageDeviceId, activeTab]);
+    }, [storageDeviceId, activeTab, hasStorageAccess]);
 
     const handleFarmChange = async (id) => {
         setFarmId(id); setFieldId(''); setReadings([]);
@@ -95,6 +100,27 @@ export default function SensorReadings() {
         return <Minus className="w-4 h-4 text-gray-400" />;
     };
 
+    if (!hasIotAccess) {
+        return (
+            <div className="page-container max-w-lg mx-auto space-y-6">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Sensor Readings</h1>
+                <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl border-2 border-yellow-300 dark:border-yellow-700 text-center">
+                    <AlertTriangle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
+                    <h2 className="text-xl font-bold text-yellow-800 dark:text-yellow-300 mb-2">
+                        Feature Not Available
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                        Your plan ({user?.selectedPlan || 'Basic'}) does not include IoT Sensors.
+                        Upgrade to Pro or Full Suite to monitor field conditions.
+                    </p>
+                    <Link to="/plans" className="inline-block px-6 py-3 bg-yellow-600 text-white rounded-xl font-semibold hover:bg-yellow-700">
+                        Upgrade Plan
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="page-container space-y-6">
             <div>
@@ -102,7 +128,6 @@ export default function SensorReadings() {
                 <p className="text-gray-500 dark:text-gray-400 mt-1">Monitor field and storage conditions in real-time</p>
             </div>
 
-            {/* Tabs */}
             <div className="flex gap-2">
                 <button
                     onClick={() => setActiveTab('field')}
@@ -126,7 +151,6 @@ export default function SensorReadings() {
                 </button>
             </div>
 
-            {/* FIELD TAB */}
             {activeTab === 'field' && (
                 <>
                     <Card>
@@ -183,8 +207,23 @@ export default function SensorReadings() {
                 </>
             )}
 
-            {/* STORAGE TAB */}
-            {activeTab === 'storage' && (
+            {activeTab === 'storage' && !hasStorageAccess && (
+                <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl border-2 border-yellow-300 dark:border-yellow-700 text-center">
+                    <AlertTriangle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
+                    <h2 className="text-xl font-bold text-yellow-800 dark:text-yellow-300 mb-2">
+                        Storage Monitoring Not Available
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                        Your plan ({user?.selectedPlan}) does not include Storage Monitoring.
+                        Upgrade to Full Suite to access CO2 and PIR sensors.
+                    </p>
+                    <Link to="/plans" className="inline-block px-6 py-3 bg-yellow-600 text-white rounded-xl font-semibold hover:bg-yellow-700">
+                        Upgrade Plan
+                    </Link>
+                </div>
+            )}
+
+            {activeTab === 'storage' && hasStorageAccess && (
                 <>
                     <Card>
                         <div className="grid md:grid-cols-2 gap-4">

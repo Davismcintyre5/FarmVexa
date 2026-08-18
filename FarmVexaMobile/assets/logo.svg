@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <circle cx="256" cy="256" r="240" fill="#2d6a4f"/>
+  <text x="256" y="200" text-anchor="middle" fill="white" font-size="120">🌾</text>
+  <text x="256" y="310" text-anchor="middle" fill="white" font-size="48" font-weight="bold" font-family="Arial, sans-serif">FarmVexa</text>
+  <text x="256" y="345" text-anchor="middle" fill="#3b82f6" font-size="18" font-family="Arial, sans-serif">See. Sense. Predict. Grow.</text>
+</svg>

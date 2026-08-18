@@ -31,22 +31,8 @@ export default function Weather() {
         else if (user?.farm) setFarms([{ _id: user.farm, name: 'Assigned Farm' }]);
     }, [isFarmer, user]);
 
-    // Fetch weather when farmId changes
     useEffect(() => {
         if (farmId) { setLoading(true); getFarmWeather(farmId).then((r) => setWeather(r.data.data.weather)).catch(() => setWeather(null)).finally(() => setLoading(false)); }
-    }, [farmId]);
-
-    // Auto-refresh every 5 minutes (300000ms)
-    useEffect(() => {
-        if (!farmId) return;
-        
-        const interval = setInterval(() => {
-            getFarmWeather(farmId)
-                .then((r) => setWeather(r.data.data.weather))
-                .catch(() => console.log('Auto-refresh failed'));
-        }, 300000); // 5 minutes
-
-        return () => clearInterval(interval);
     }, [farmId]);
 
     const handleRefresh = async () => {

@@ -1,0 +1,61 @@
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import { MainTabParamList } from '../types';
+import DashboardNavigator from './DashboardNavigator';
+import ProfileNavigator from './ProfileNavigator';
+import { colors } from '../theme';
+
+const Tab = createBottomTabNavigator<MainTabParamList>();
+
+// Placeholder screens for tabs not yet built
+function ComingSoon() {
+  return null;
+}
+
+export default function MainTabNavigator() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary[500],
+        tabBarInactiveTintColor: colors.gray[400],
+        tabBarStyle: {
+          backgroundColor: colors.white,
+          borderTopColor: colors.gray[200],
+        },
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap;
+
+          switch (route.name) {
+            case 'Dashboard':
+              iconName = focused ? 'home' : 'home-outline';
+              break;
+            case 'Farms':
+              iconName = focused ? 'leaf' : 'leaf-outline';
+              break;
+            case 'Scan':
+              iconName = focused ? 'camera' : 'camera-outline';
+              break;
+            case 'Operations':
+              iconName = focused ? 'grid' : 'grid-outline';
+              break;
+            case 'Profile':
+              iconName = focused ? 'person' : 'person-outline';
+              break;
+            default:
+              iconName = 'ellipse';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen name="Dashboard" component={DashboardNavigator} />
+      <Tab.Screen name="Farms" component={ComingSoon} />
+      <Tab.Screen name="Scan" component={ComingSoon} />
+      <Tab.Screen name="Operations" component={ComingSoon} />
+      <Tab.Screen name="Profile" component={ProfileNavigator} />
+    </Tab.Navigator>
+  );
+}

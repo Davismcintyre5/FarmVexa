@@ -17,7 +17,7 @@ export default function Navbar() {
         axios.get(`${import.meta.env.VITE_API_URL || '/api'}/admin/public/settings`)
             .then((res) => setSettings(res.data.data || {}))
             .catch(() => {});
-        
+
         axios.get(`${import.meta.env.VITE_API_URL || '/api'}/public/market/status`)
             .then((res) => setMarketEnabled(res.data.data?.enabled || false))
             .catch(() => {});

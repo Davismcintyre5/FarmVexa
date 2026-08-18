@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "FarmVexa",
+    "slug": "farmvexamobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2d6a4f"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.farmvexa.mobile",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "FarmVexa uses your location to track field positions and provide farm-specific weather data.",
+        "NSCameraUsageDescription": "FarmVexa uses your camera to scan crops and detect diseases.",
+        "NSPhotoLibraryUsageDescription": "FarmVexa accesses your photos to upload crop images for AI analysis."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2d6a4f"
+      },
+      "package": "com.farmvexa.mobile",
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "static",
+      "name": "FarmVexa"
+    },
+    "plugins": [
+      "expo-camera",
+      "expo-image-picker",
+      "expo-location",
+      "expo-notifications",
+      "expo-secure-store"
+    ]
+  }
+}

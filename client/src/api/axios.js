@@ -20,11 +20,30 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        const status = error.response?.status;
+        const data = error.response?.data?.data;
+
+        if (status === 402) {
+            if (data?.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                console.log('Token saved from 402:', data.token.substring(0, 20) + '...');
+            }
+            setTimeout(() => {
+                if (!window.location.pathname.includes('/renewal')) {
+                    window.location.href = '/renewal';
+                }
+            }, 200);
+        }
+
+        if (status === 401) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = '/login';
+            if (!window.location.pathname.includes('/login')) {
+                window.location.href = '/login';
+            }
         }
+
         return Promise.reject(error);
     }
 );
