@@ -1,4 +1,5 @@
-// User Types
+// ==================== USER TYPES ====================
+
 export interface User {
   _id: string;
   name: string;
@@ -10,11 +11,16 @@ export interface User {
   approvalStatus?: 'pending' | 'approved' | 'rejected';
   selectedPlan?: string;
   farm?: string;
+  lastLogin?: string;
+  subscriptionExpiry?: string;
+  subscriptionStatus?: 'active' | 'expired' | 'pending';
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
 
-// Farm Types
+// ==================== FARM TYPES ====================
+
 export interface FarmLocation {
   county?: string;
   subCounty?: string;
@@ -39,7 +45,8 @@ export interface Farm {
   updatedAt?: string;
 }
 
-// Field Types
+// ==================== FIELD TYPES ====================
+
 export interface Field {
   _id: string;
   name: string;
@@ -51,7 +58,22 @@ export interface Field {
   updatedAt?: string;
 }
 
-// Animal Types
+// ==================== DEVICE TYPES ====================
+
+export interface Device {
+  _id: string;
+  name: string;
+  type: string;
+  serialNumber?: string;
+  farm: string;
+  status?: 'online' | 'offline' | 'maintenance';
+  lastReading?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// ==================== ANIMAL TYPES ====================
+
 export interface Animal {
   _id: string;
   name?: string;
@@ -62,9 +84,11 @@ export interface Animal {
   status?: 'active' | 'sold' | 'dead';
   birthDate?: string;
   createdAt?: string;
+  updatedAt?: string;
 }
 
-// Health Record Types
+// ==================== HEALTH TYPES ====================
+
 export interface HealthRecord {
   _id: string;
   animal: string;
@@ -75,7 +99,8 @@ export interface HealthRecord {
   vet?: string;
 }
 
-// Production Types
+// ==================== PRODUCTION TYPES ====================
+
 export interface ProductionRecord {
   _id: string;
   farm: string;
@@ -86,7 +111,8 @@ export interface ProductionRecord {
   notes?: string;
 }
 
-// Inventory Types
+// ==================== INVENTORY TYPES ====================
+
 export interface InventoryItem {
   _id: string;
   farm: string;
@@ -98,7 +124,8 @@ export interface InventoryItem {
   reorderLevel?: number;
 }
 
-// Equipment Types
+// ==================== EQUIPMENT TYPES ====================
+
 export interface Equipment {
   _id: string;
   farm: string;
@@ -109,7 +136,8 @@ export interface Equipment {
   lastMaintenance?: string;
 }
 
-// Transaction Types
+// ==================== FINANCE TYPES ====================
+
 export interface Transaction {
   _id: string;
   farm: string;
@@ -120,7 +148,8 @@ export interface Transaction {
   description?: string;
 }
 
-// Team Member Types
+// ==================== TEAM TYPES ====================
+
 export interface TeamMember {
   _id: string;
   farm: string;
@@ -133,7 +162,8 @@ export interface TeamMember {
   status?: 'active' | 'inactive';
 }
 
-// Task Types
+// ==================== TASK TYPES ====================
+
 export interface Task {
   _id: string;
   farm: string;
@@ -146,7 +176,8 @@ export interface Task {
   createdAt?: string;
 }
 
-// Market Product Types
+// ==================== MARKET TYPES ====================
+
 export interface MarketProduct {
   _id: string;
   name: string;
@@ -168,7 +199,6 @@ export interface MarketProduct {
   };
 }
 
-// Inquiry Types
 export interface Inquiry {
   _id: string;
   product: MarketProduct;
@@ -180,7 +210,8 @@ export interface Inquiry {
   createdAt: string;
 }
 
-// Alert Types
+// ==================== ALERT TYPES ====================
+
 export interface Alert {
   _id: string;
   farm: string;
@@ -190,7 +221,8 @@ export interface Alert {
   createdAt: string;
 }
 
-// Weather Types
+// ==================== WEATHER TYPES ====================
+
 export interface WeatherData {
   temperature: number;
   humidity: number;
@@ -203,7 +235,8 @@ export interface WeatherData {
   }>;
 }
 
-// Sensor Types
+// ==================== SENSOR TYPES ====================
+
 export interface SensorReading {
   _id: string;
   field?: string;
@@ -214,31 +247,42 @@ export interface SensorReading {
   timestamp: string;
 }
 
-// Chat Types
+// ==================== CHAT TYPES ====================
+
+export interface ChatMessage {
+  _id?: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
 export interface Chat {
   _id: string;
   title: string;
-  messages: Array<{
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp: string;
-  }>;
+  messages: ChatMessage[];
   createdAt: string;
   updatedAt: string;
 }
 
-// Plan Types
+// ==================== PLAN TYPES ====================
+
 export interface Plan {
   _id?: string;
+  id?: string;
   name: string;
   price: number;
+  currency?: string;
   interval: 'monthly' | 'one_time';
   features?: string[];
+  maxFarms?: number;
+  maxDevices?: number;
+  aiRequestsPerDay?: number;
   status?: 'available' | 'current' | 'purchased' | 'upgrade_available';
   upgradeCost?: number;
 }
 
-// Subscription Types
+// ==================== SUBSCRIPTION TYPES ====================
+
 export interface Subscription {
   plan: string;
   planPrice?: number;
@@ -246,6 +290,8 @@ export interface Subscription {
   subscriptionStatus?: 'active' | 'expired' | 'pending';
   subscriptionExpiry?: string;
   isExpired?: boolean;
+  lastRenewalDate?: string;
+  renewalCount?: number;
   pendingRenewal?: {
     submittedAt: string;
     reference: string;
@@ -254,7 +300,8 @@ export interface Subscription {
   };
 }
 
-// Payment Method Types
+// ==================== PAYMENT TYPES ====================
+
 export interface PaymentMethod {
   id: string;
   type: 'mpesa_stk' | 'mpesa_send_money' | 'mpesa_till' | 'mpesa_paybill' | 'bank' | 'card';
@@ -269,7 +316,8 @@ export interface PaymentMethod {
   };
 }
 
-// Scan Types
+// ==================== SCAN TYPES ====================
+
 export interface CropScanResult {
   _id: string;
   field: Field;
@@ -318,12 +366,74 @@ export interface FieldScanResult {
   totalFrames?: number;
   analyzedFrames?: number;
   skippedFrames?: number;
+  skipReasons?: Record<string, number>;
   geminiRequests?: number;
   duration?: number;
   createdAt: string;
 }
 
-// Navigation Types
+// ==================== PUBLIC SETTINGS TYPES ====================
+
+export interface PublicSettings {
+  appName?: string;
+  supportPhone?: string;
+  supportEmail?: string;
+  whatsappNumber?: string;
+  showWhatsapp?: boolean;
+  allowSelfRegistration?: boolean;
+  allowExternalCamera?: boolean;
+  externalCameraInUrl?: string;
+  externalCameraOutUrl?: string;
+  marketEnabled?: boolean;
+  downloads?: Array<{
+    _id: string;
+    name: string;
+    version: string;
+    link: string;
+    description?: string;
+    platform: string;
+    enabled: boolean;
+  }>;
+  fieldScan?: {
+    enabled: boolean;
+    maxPhotosPerScan?: number;
+    captureInterval?: number;
+    farmerLimits?: {
+      daily: number;
+      weekly: number;
+      monthly: number;
+    };
+    fieldLimits?: {
+      daily: number;
+      weekly: number;
+      monthly: number;
+    };
+    allowedCropTypes?: string[];
+    requireGpsAccuracy?: number;
+    preFilterEnabled?: boolean;
+    maxGeminiCallsPerScan?: number;
+    minPhotoSize?: number;
+    maxPhotoSize?: number;
+  };
+  chatbot?: {
+    enabled: boolean;
+    name?: string;
+    greeting?: string;
+    position?: string;
+    primaryColor?: string;
+    aiProvider?: string;
+  };
+  legal?: {
+    termsOfService?: string;
+    privacyPolicy?: string;
+    cookiePolicy?: string;
+  };
+  paymentMethods?: PaymentMethod[];
+  paymentModels?: Plan[];
+}
+
+// ==================== NAVIGATION TYPES ====================
+
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
@@ -345,13 +455,17 @@ export type MainTabParamList = {
   Dashboard: undefined;
   Farms: undefined;
   Scan: undefined;
+  Devices: undefined;
   Operations: undefined;
-  Profile: undefined;
+  Settings: undefined;
 };
 
 export type DashboardStackParamList = {
   DashboardHome: undefined;
   Notifications: undefined;
+  Weather: undefined;
+  SensorReadings: { fieldId?: string } | undefined;
+  AIChat: undefined;
 };
 
 export type FarmsStackParamList = {
@@ -359,15 +473,26 @@ export type FarmsStackParamList = {
   FarmDetail: { farmId: string };
   FarmCreate: undefined;
   FarmEdit: { farmId: string };
+  FieldList: { farmId: string };
   FieldDetail: { fieldId: string };
   FieldCreate: { farmId: string };
   FieldEdit: { fieldId: string };
 };
 
+export type DevicesStackParamList = {
+  DevicesHome: undefined;
+  DeviceList: undefined;
+  DeviceDetail: { deviceId: string };
+  DeviceRegister: { farmId: string };
+  SensorReadings: { fieldId?: string } | undefined;
+  Weather: undefined;
+};
+
 export type ScanStackParamList = {
-  CropScan: undefined;
+  ScanHome: undefined;
+  CropScan: { fieldId?: string } | undefined;
   ScanResult: { scanId: string };
-  ScanHistory: undefined;
+  ScanHistory: { fieldId?: string } | undefined;
   FieldScan: undefined;
   FieldScanResult: { scanId: string };
   FieldScanHistory: undefined;
@@ -375,17 +500,16 @@ export type ScanStackParamList = {
 
 export type OperationsStackParamList = {
   OperationsHome: undefined;
-  Market: undefined;
-  TeamTasks: undefined;
-  Inventory: undefined;
-  Finance: undefined;
-  Reports: undefined;
+  AIChat: undefined;
 };
 
 export type ProfileStackParamList = {
   ProfileHome: undefined;
   Settings: undefined;
   ChangePassword: undefined;
+  DocumentsTab: undefined;
+  DownloadsTab: undefined;
+  SupportTab: undefined;
   Plans: undefined;
   UpgradeCheckout: { planName: string };
 };

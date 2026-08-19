@@ -3,15 +3,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { MainTabParamList } from '../types';
 import DashboardNavigator from './DashboardNavigator';
+import FarmsNavigator from './FarmsNavigator';
+import ScanNavigator from './ScanNavigator';
+import OperationsNavigator from './OperationsNavigator';
+import DevicesNavigator from './DevicesNavigator';
 import ProfileNavigator from './ProfileNavigator';
 import { colors } from '../theme';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
-
-// Placeholder screens for tabs not yet built
-function ComingSoon() {
-  return null;
-}
 
 export default function MainTabNavigator() {
   return (
@@ -37,11 +36,14 @@ export default function MainTabNavigator() {
             case 'Scan':
               iconName = focused ? 'camera' : 'camera-outline';
               break;
+            case 'Devices':
+              iconName = focused ? 'hardware-chip' : 'hardware-chip-outline';
+              break;
             case 'Operations':
               iconName = focused ? 'grid' : 'grid-outline';
               break;
-            case 'Profile':
-              iconName = focused ? 'person' : 'person-outline';
+            case 'Settings':
+              iconName = focused ? 'settings' : 'settings-outline';
               break;
             default:
               iconName = 'ellipse';
@@ -52,10 +54,11 @@ export default function MainTabNavigator() {
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardNavigator} />
-      <Tab.Screen name="Farms" component={ComingSoon} />
-      <Tab.Screen name="Scan" component={ComingSoon} />
-      <Tab.Screen name="Operations" component={ComingSoon} />
-      <Tab.Screen name="Profile" component={ProfileNavigator} />
+      <Tab.Screen name="Farms" component={FarmsNavigator} />
+      <Tab.Screen name="Scan" component={ScanNavigator} />
+      <Tab.Screen name="Devices" component={DevicesNavigator} />
+      <Tab.Screen name="Operations" component={OperationsNavigator} />
+      <Tab.Screen name="Settings" component={ProfileNavigator} />
     </Tab.Navigator>
   );
 }

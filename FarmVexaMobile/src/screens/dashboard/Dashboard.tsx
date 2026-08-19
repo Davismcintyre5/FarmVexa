@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../hooks/useAuth';
@@ -41,7 +40,7 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    if (activeFarm) {
+    if (activeFarm?._id) {
       loadDashboardData();
     }
   }, [activeFarm?._id]);
@@ -197,7 +196,7 @@ export default function Dashboard() {
 
           <TouchableOpacity
             style={styles.quickAction}
-            onPress={() => navigation.navigate('Operations')}
+            onPress={() => navigation.navigate('Operations', { screen: 'AIChat' })}
           >
             <View style={[styles.quickActionIcon, { backgroundColor: colors.blue[50] }]}>
               <Ionicons name="chatbubble" size={24} color={colors.blue[500]} />
@@ -217,7 +216,7 @@ export default function Dashboard() {
 
           <TouchableOpacity
             style={styles.quickAction}
-            onPress={() => navigation.navigate('Operations')}
+            onPress={() => navigation.navigate('Notifications')}
           >
             <View style={[styles.quickActionIcon, { backgroundColor: colors.orange[100] }]}>
               <Ionicons name="warning" size={24} color={colors.orange[500]} />

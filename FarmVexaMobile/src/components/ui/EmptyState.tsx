@@ -13,7 +13,7 @@ interface EmptyStateProps {
 }
 
 export default function EmptyState({
-  icon = 'inbox-outline',
+  icon = 'file-tray-outline', // Changed from 'inbox-outline'
   title = 'Nothing here yet',
   description,
   actionLabel,

@@ -1,16 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from '../api/axios';
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  approvalStatus?: string;
-  selectedPlan?: string;
-  farm?: string;
-}
+import { User } from '../types';
 
 interface AuthState {
   user: User | null;
@@ -20,6 +11,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -35,9 +27,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await AsyncStorage.setItem('token', token);
       await AsyncStorage.setItem('user', JSON.stringify(user));
-    } catch (error) {
-      // Silently fail
-    }
+    } catch {}
     
     set({ user, token, isAuthenticated: true });
     return user;
@@ -47,9 +37,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await AsyncStorage.removeItem('token');
       await AsyncStorage.removeItem('user');
-    } catch (error) {
-      // Silently fail
-    }
+    } catch {}
     set({ user: null, token: null, isAuthenticated: false });
   },
 
@@ -63,8 +51,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } else {
         set({ isLoading: false });
       }
-    } catch (error) {
+    } catch {
       set({ isLoading: false });
+    }
+  },
+
+  updateUser: (userData: Partial<User>) => {
+    set((state) => ({
+      user: state.user ? { ...state.user, ...userData } : null,
+    }));
+    // Update AsyncStorage
+    const currentUser = get().user;
+    if (currentUser) {
+      AsyncStorage.setItem('user', JSON.stringify(currentUser));
     }
   },
 }));

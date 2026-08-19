@@ -26,51 +26,15 @@ export default function AuthNavigator() {
         headerBackTitle: 'Back',
       }}
     >
-      <Stack.Screen 
-        name="Login" 
-        component={Login} 
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen 
-        name="Pricing" 
-        component={Pricing} 
-        options={{ title: 'Plans & Pricing' }}
-      />
-      <Stack.Screen 
-        name="Register" 
-        component={Register} 
-        options={{ title: 'Create Account' }}
-      />
-      <Stack.Screen 
-        name="GetAccess" 
-        component={GetAccess} 
-        options={{ title: 'Request Access' }}
-      />
-      <Stack.Screen 
-        name="Checkout" 
-        component={Checkout} 
-        options={{ title: 'Checkout' }}
-      />
-      <Stack.Screen 
-        name="Renewal" 
-        component={Renewal} 
-        options={{ title: 'Renew Subscription' }}
-      />
-      <Stack.Screen 
-        name="PendingApproval" 
-        component={PendingApproval} 
-        options={{ title: 'Pending Approval', headerShown: false }}
-      />
-      <Stack.Screen 
-        name="ForgotPassword" 
-        component={ForgotPassword} 
-        options={{ title: 'Forgot Password' }}
-      />
-      <Stack.Screen 
-        name="ResetPassword" 
-        component={ResetPassword} 
-        options={{ title: 'Reset Password' }}
-      />
+      <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+      <Stack.Screen name="Pricing" component={Pricing} options={{ title: 'Plans & Pricing' }} />
+      <Stack.Screen name="Register" component={Register} options={{ title: 'Create Account' }} />
+      <Stack.Screen name="GetAccess" component={GetAccess} options={{ title: 'Request Access' }} />
+      <Stack.Screen name="Checkout" component={Checkout} options={{ title: 'Checkout' }} />
+      <Stack.Screen name="Renewal" component={Renewal} options={{ title: 'Renew Subscription' }} />
+      <Stack.Screen name="PendingApproval" component={PendingApproval} options={{ title: 'Pending Approval', headerShown: false }} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ title: 'Forgot Password' }} />
+      <Stack.Screen name="ResetPassword" component={ResetPassword} options={{ title: 'Reset Password' }} />
     </Stack.Navigator>
   );
 }
