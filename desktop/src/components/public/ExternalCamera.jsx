@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
 import { Video, Camera, ExternalLink, X, RefreshCw } from 'lucide-react';
@@ -7,9 +7,45 @@ export default function ExternalCamera({ inUrl, outUrl, title = 'External Camera
     const [showStream, setShowStream] = useState(false);
     const [showCamera, setShowCamera] = useState(false);
     const [isElectron, setIsElectron] = useState(false);
+    const webviewRef = useRef(null);
 
     useEffect(() => {
         setIsElectron(window.electronAPI?.isElectron || false);
+    }, []);
+
+    // Listen for messages from hdmstream via console bridge
+    useEffect(() => {
+        if (!isElectron) return;
+
+        const webview = webviewRef.current;
+        if (!webview) return;
+
+        const handleConsoleMessage = (event) => {
+            // hdmstream sends: console.log('FARMVEXA_MSG:' + JSON.stringify(data))
+            if (event.message && event.message.startsWith('FARMVEXA_MSG:')) {
+                try {
+                    const data = JSON.parse(event.message.replace('FARMVEXA_MSG:', ''));
+                    // Forward to React app (FieldScan.jsx listens for postMessage)
+                    window.postMessage(data, '*');
+                } catch (err) {
+                    console.error('Failed to parse FarmVexa message:', err);
+                }
+            }
+        };
+
+        webview.addEventListener('console-message', handleConsoleMessage);
+        return () => webview.removeEventListener('console-message', handleConsoleMessage);
+    }, [isElectron, showStream, showCamera]);
+
+    // Also listen for electronAPI messages (from main process IPC)
+    useEffect(() => {
+        if (!window.electronAPI?.onMessage) return;
+
+        const unsubscribe = window.electronAPI.onMessage((data) => {
+            window.postMessage(data, '*');
+        });
+
+        return unsubscribe;
     }, []);
 
     const openExternal = (url) => {
@@ -47,7 +83,7 @@ export default function ExternalCamera({ inUrl, outUrl, title = 'External Camera
             <Modal open={showStream} onClose={() => setShowStream(false)} title={`📹 ${title} — Live Stream`} size="xl">
                 <div className="space-y-3">
                     {isElectron ? (
-                        <ElectronWebview src={inUrl} />
+                        <ElectronWebview ref={webviewRef} src={inUrl} />
                     ) : (
                         <iframe
                             src={inUrl}
@@ -69,7 +105,7 @@ export default function ExternalCamera({ inUrl, outUrl, title = 'External Camera
             <Modal open={showCamera} onClose={() => setShowCamera(false)} title="📤 Camera Device" size="md">
                 <div className="space-y-3">
                     {isElectron ? (
-                        <ElectronWebview src={outUrl} />
+                        <ElectronWebview ref={webviewRef} src={outUrl} />
                     ) : (
                         <iframe
                             src={outUrl}
@@ -86,9 +122,40 @@ export default function ExternalCamera({ inUrl, outUrl, title = 'External Camera
     );
 }
 
-function ElectronWebview({ src }) {
+const ElectronWebview = React.forwardRef(({ src }, ref) => {
     const [error, setError] = useState(false);
     const [key, setKey] = useState(0);
+    const localRef = useRef(null);
+
+    // Merge refs
+    useEffect(() => {
+        if (typeof ref === 'function') {
+            ref(localRef.current);
+        } else if (ref) {
+            ref.current = localRef.current;
+        }
+    }, [ref]);
+
+    // Inject message bridge into hdmstream
+    const handleDomReady = () => {
+        if (localRef.current) {
+            localRef.current.executeJavaScript(`
+                // Override postMessage to also use console bridge
+                const originalPostMessage = window.postMessage;
+                window.postMessage = function(data, targetOrigin) {
+                    try {
+                        if (window.parent && window.parent !== window) {
+                            originalPostMessage.call(window, data, targetOrigin || '*');
+                        }
+                    } catch(e) {}
+                    try {
+                        console.log('FARMVEXA_MSG:' + JSON.stringify(data));
+                    } catch(e) {}
+                };
+                true;
+            `);
+        }
+    };
 
     const handleRetry = () => {
         setError(false);
@@ -106,11 +173,13 @@ function ElectronWebview({ src }) {
     return (
         <div className="relative">
             <webview
+                ref={localRef}
                 key={key}
                 src={src}
                 className="w-full h-[70vh] rounded-xl"
                 allowpopups
                 onDidFailLoad={() => setError(true)}
+                onDomReady={handleDomReady}
             />
             {error && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80 rounded-xl">
@@ -135,4 +204,6 @@ function ElectronWebview({ src }) {
             )}
         </div>
     );
-}
+});
+
+ElectronWebview.displayName = 'ElectronWebview';

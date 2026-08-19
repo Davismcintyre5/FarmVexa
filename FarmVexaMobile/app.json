@@ -11,17 +11,27 @@
       "resizeMode": "contain",
       "backgroundColor": "#2d6a4f"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.farmvexa.mobile"
+      "bundleIdentifier": "com.farmvexa.mobile",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#2d6a4f"
       },
-      "package": "com.farmvexa.mobile"
+      "package": "com.farmvexa.mobile",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -35,6 +45,12 @@
       "expo-location",
       "expo-notifications",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "87eeb813-daba-46d8-a1ba-382b1b55b9ed"
+      }
+    },
+    "owner": "davixhdm"
   }
 }

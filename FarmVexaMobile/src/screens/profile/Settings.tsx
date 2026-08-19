@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Linking,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../hooks/useAuth';
@@ -23,6 +24,8 @@ import SupportTab from './SupportTab';
 import DownloadsTab from './DownloadsTab';
 import DocumentsTab from './DocumentsTab';
 import { APP_VERSION } from '../../utils/constants';
+import { checkForUpdate } from '../../utils/updateChecker';
+import Constants from 'expo-constants';
 
 export default function Settings() {
   const navigation = useNavigation<any>();
@@ -42,6 +45,7 @@ export default function Settings() {
     confirm: '',
   });
   const [loading, setLoading] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -121,6 +125,18 @@ export default function Settings() {
     }
   };
 
+const handleCheckUpdate = async () => {
+  console.log('Manual update check triggered');
+  setCheckingUpdate(true);
+  
+  try {
+    await checkForUpdate(true);
+  } catch (error) {
+    console.log('Update check failed:', error);
+  } finally {
+    setCheckingUpdate(false);
+  }
+};
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
@@ -256,6 +272,34 @@ export default function Settings() {
         {activeTab === 'documents' && <DocumentsTab />}
         {activeTab === 'downloads' && <DownloadsTab />}
 
+        {/* About Section */}
+        <Text style={styles.sectionHeader}>About</Text>
+        <Card style={styles.card}>
+          <View style={styles.settingItem}>
+            <Ionicons name="information-circle" size={20} color={colors.gray[500]} />
+            <Text style={styles.settingText}>Version</Text>
+            <Text style={styles.settingDetail}>
+              v{Constants.expoConfig?.version || '1.0.0'}
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={handleCheckUpdate}
+            disabled={checkingUpdate}
+          >
+            <Ionicons name="refresh" size={20} color={colors.primary[500]} />
+            <Text style={styles.settingText}>
+              {checkingUpdate ? 'Checking for Updates...' : 'Check for Updates'}
+            </Text>
+            {checkingUpdate ? (
+              <ActivityIndicator size="small" color={colors.primary[500]} />
+            ) : (
+              <Ionicons name="chevron-forward" size={20} color={colors.gray[400]} />
+            )}
+          </TouchableOpacity>
+        </Card>
+
         {/* Logout */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out" size={20} color={colors.red[500]} />
@@ -347,6 +391,30 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: colors.gray[900],
+  },
+  sectionHeader: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.gray[500],
+    textTransform: 'uppercase',
+    paddingHorizontal: spacing.xs,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  settingText: {
+    flex: 1,
+    fontSize: 16,
+    color: colors.gray[700],
+  },
+  settingDetail: {
+    fontSize: 14,
+    color: colors.gray[400],
   },
   logoutButton: {
     flexDirection: 'row',

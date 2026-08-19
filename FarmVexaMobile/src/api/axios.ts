@@ -127,7 +127,15 @@ export const productionApi = {
   deleteProduction: (id: string) => api.delete(`/farm/production/${id}`),
 };
 
-// Stock endpoints
+// Inventory endpoints
+export const inventoryApi = {
+  getInventory: (farmId: string) => api.get(`/farm/inventory/farm/${farmId}`),
+  addItem: (farmId: string, data: any) => api.post(`/farm/inventory/farm/${farmId}`, data),
+  updateItem: (id: string, data: any) => api.put(`/farm/inventory/${id}`, data),
+  deleteItem: (id: string) => api.delete(`/farm/inventory/${id}`),
+};
+
+// Stock endpoints (Production Stock)
 export const stockApi = {
   getStock: (farmId: string) => api.get(`/farm/stock/farm/${farmId}`),
   getStockItem: (id: string) => api.get(`/farm/stock/${id}`),
@@ -136,16 +144,6 @@ export const stockApi = {
   stockOut: (farmId: string, data: any) => api.post(`/farm/stock/farm/${farmId}/out`, data),
   updateStock: (id: string, data: any) => api.put(`/farm/stock/${id}`, data),
   deleteStock: (id: string) => api.delete(`/farm/stock/${id}`),
-};
-
-// Inventory endpoints
-export const inventoryApi = {
-  getInventory: (farmId: string) => api.get(`/farm/inventory/farm/${farmId}`),
-  addItem: (farmId: string, data: any) => api.post(`/farm/inventory/farm/${farmId}`, data),
-  updateItem: (id: string, data: any) => api.put(`/farm/inventory/${id}`, data),
-  deleteItem: (id: string) => api.delete(`/farm/inventory/${id}`),
-  stockIn: (farmId: string, data: any) => api.post(`/farm/stock/farm/${farmId}/in`, data),
-  stockOut: (farmId: string, data: any) => api.post(`/farm/stock/farm/${farmId}/out`, data),
 };
 
 // Equipment endpoints
@@ -241,6 +239,8 @@ export const imageApi = {
   uploadImage: (formData: FormData) => api.post('/farm/images/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
+  uploadImageByUrl: (data: any) => api.post('/farm/images/upload-by-url', data),
+  getImage: (id: string) => api.get(`/farm/images/${id}`),
   getFieldImages: (fieldId: string) => api.get(`/farm/images/field/${fieldId}`),
   deleteImage: (id: string) => api.delete(`/farm/images/${id}`),
 };

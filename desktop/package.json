@@ -1,7 +1,7 @@
 {
   "name": "farmvexa-desktop",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "FarmVexa Farmer Dashboard - AI-Powered Farm Intelligence Desktop Application",
   "main": "electron/main.js",

@@ -6,7 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../hooks/useAuth';
@@ -16,22 +16,32 @@ import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Select from '../../components/ui/Select';
 import Spinner from '../../components/ui/Spinner';
+import Modal from '../../components/ui/Modal';
 import { colors, spacing, borderRadius } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { CROP_TYPES } from '../../utils/constants';
 import { WebView } from 'react-native-webview';
-import { useCamera } from '../../hooks/useCamera';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = 'https://farmvexaserver.pxxl.click/api';
+
+const processingMessages = [
+  '📸 Uploading photos...',
+  '🔍 Pre-filtering frames...',
+  '🧠 Analyzing with AI...',
+  '🦠 Detecting diseases...',
+  '🌿 Checking for weeds...',
+  '🐛 Scanning for pests...',
+  '📊 Building results...',
+  '✅ Almost done...',
+];
 
 export default function FieldScan() {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { farms, activeFarm, loadFarms } = useFarms();
   const webViewRef = useRef<WebView>(null);
-  const { pickMultipleImages } = useCamera();
   
   const [fields, setFields] = useState<any[]>([]);
   const [selectedFarmId, setSelectedFarmId] = useState('');
@@ -39,25 +49,13 @@ export default function FieldScan() {
   const [cropType, setCropType] = useState('');
   const [settings, setSettings] = useState<any>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
-  const [showWebView, setShowWebView] = useState(false);
-  const [externalCameraUrl, setExternalCameraUrl] = useState('');
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [externalInUrl, setExternalInUrl] = useState('');
+  const [webViewLoading, setWebViewLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [processingText, setProcessingText] = useState(0);
-  const [capturedPhotos, setCapturedPhotos] = useState<any[]>([]);
-  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
 
   const isFarmer = user?.role === 'farmer';
-
-  const processingMessages = [
-    '📸 Uploading photos...',
-    '🔍 Pre-filtering frames...',
-    '🧠 Analyzing with AI...',
-    '🦠 Detecting diseases...',
-    '🌿 Checking for weeds...',
-    '🐛 Scanning for pests...',
-    '📊 Building results...',
-    '✅ Almost done...',
-  ];
 
   useEffect(() => {
     loadSettings();
@@ -82,10 +80,9 @@ export default function FieldScan() {
       const res = await publicApi.getPublicSettings();
       const data = res.data.data || {};
       setSettings(data.fieldScan);
-      setExternalCameraUrl(data.externalCameraOutUrl || '');
+      setExternalInUrl(data.externalCameraInUrl || '');
     } catch (error) {
       setSettings({ enabled: false });
-      setExternalCameraUrl('');
     } finally {
       setSettingsLoading(false);
     }
@@ -94,7 +91,7 @@ export default function FieldScan() {
   const loadFields = async (farmId: string) => {
     try {
       const res = await fieldApi.getFields(farmId);
-      setFields(res.data.data.fields || []);
+      setFields(res.data.data?.fields || []);
     } catch (error) {
       setFields([]);
     }
@@ -108,47 +105,39 @@ export default function FieldScan() {
 
   const openExternalCamera = () => {
     if (!selectedFieldId) {
-      Alert.alert('Error', 'Please select a field first');
+      Alert.alert('Error', 'Select a field first');
       return;
     }
     if (!cropType) {
-      Alert.alert('Error', 'Please select crop type first');
+      Alert.alert('Error', 'Select crop type first');
       return;
     }
-    if (!externalCameraUrl) {
+    if (!externalInUrl) {
       Alert.alert('Error', 'External camera URL not configured');
       return;
     }
 
-    setShowWebView(true);
+    setShowCameraModal(true);
+    setWebViewLoading(true);
   };
 
-  // Handle postMessage from hdmstream WebView
   const handleWebViewMessage = (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-      console.log('WebView message received:', data);
-      console.log('Message type:', data.type);
 
-      // Handle batch photos from field scan
       if (data.type === 'farmvexa-field-scan-batch') {
         const photos = data.photos || [];
-        console.log('Batch photos received:', photos.length);
         if (photos.length === 0) return;
 
-        setShowWebView(false);
-        Alert.alert('Photos Received', `Received ${photos.length} photos — analyzing...`);
+        setShowCameraModal(false);
         autoAnalyze(photos);
       }
 
-      // Handle single photo
       if (data.type === 'farmvexa-crop-photo') {
         const imageUrl = data.imageUrl;
-        console.log('Single photo received:', imageUrl);
         if (!imageUrl) return;
 
-        setShowWebView(false);
-        Alert.alert('Photo Received', 'Photo received — analyzing...');
+        setShowCameraModal(false);
         autoAnalyze([{
           imageUrl,
           lat: data.lat,
@@ -156,18 +145,11 @@ export default function FieldScan() {
           timestamp: data.timestamp || new Date().toISOString(),
         }]);
       }
-
-      // Handle console logs from WebView
-      if (data.type === 'console') {
-        console.log('WebView console:', data.data);
-      }
     } catch (error) {
-      console.log('Failed to parse WebView message:', error);
-      console.log('Raw message:', event.nativeEvent.data);
+      // Silently fail
     }
   };
 
-  // Auto analyze photos from hdmstream
   const autoAnalyze = async (photos: any[]) => {
     if (!selectedFieldId || !cropType) {
       Alert.alert('Error', 'Select field and crop type first');
@@ -176,6 +158,12 @@ export default function FieldScan() {
 
     setProcessing(true);
     setProcessingText(0);
+
+    Alert.alert(
+      'Analysis Started',
+      `Received ${photos.length} photos. Please stay on this page — the scan takes less than 5 minutes.`,
+      [{ text: 'OK' }]
+    );
 
     try {
       const token = await AsyncStorage.getItem('token');
@@ -194,100 +182,19 @@ export default function FieldScan() {
         }
       );
 
-      const scanId = res.data.data?.scanId || res.data.scanId;
-      Alert.alert('Success', 'Field scan complete');
+      const scanId = res.data?.data?.scanId || res.data?.scanId;
       
       if (scanId) {
-        navigation.navigate('FieldScanResult', { scanId });
+        Alert.alert('Success', 'Field scan complete!', [
+          { text: 'View Results', onPress: () => navigation.navigate('FieldScanResult', { scanId }) },
+        ]);
+      } else {
+        Alert.alert('Error', 'Failed to get scan result');
       }
     } catch (err: any) {
       Alert.alert('Error', err.response?.data?.message || 'Field scan failed');
     } finally {
       setProcessing(false);
-    }
-  };
-
-  // Take multiple photos with phone camera
-  const handleTakePhotos = async () => {
-    const images = await pickMultipleImages(10);
-    if (images.length > 0) {
-      setCapturedPhotos(images);
-      setPhotoPreviews(images.map((img) => img.uri));
-    }
-  };
-
-  // Upload phone camera photos
-  const handleUploadPhotos = async () => {
-    if (capturedPhotos.length === 0) {
-      Alert.alert('Error', 'No photos to upload');
-      return;
-    }
-    if (!selectedFieldId || !cropType) {
-      Alert.alert('Error', 'Select field and crop type first');
-      return;
-    }
-
-    setProcessing(true);
-    setProcessingText(0);
-
-    try {
-      const token = await AsyncStorage.getItem('token');
-      
-      // Upload photos first
-      const uploadedUrls: string[] = [];
-      for (const photo of capturedPhotos) {
-        const formData = new FormData();
-        formData.append('image', {
-          uri: photo.uri,
-          name: `field_${Date.now()}.jpg`,
-          type: 'image/jpeg',
-        } as any);
-        
-        const uploadRes = await axios.post(`${API_URL}/farm/images/upload`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        
-        if (uploadRes.data?.data?.imageUrl) {
-          uploadedUrls.push(uploadRes.data.data.imageUrl);
-        }
-      }
-
-      // Then analyze
-      const frames = uploadedUrls.map((url) => ({
-        imageUrl: url,
-        timestamp: new Date().toISOString(),
-      }));
-
-      const res = await axios.post(
-        `${API_URL}/farm/field-scan/analyze`,
-        {
-          fieldId: selectedFieldId,
-          cropType,
-          frames,
-          maxGeminiCalls: settings?.maxGeminiCallsPerScan || 30,
-          preFilterEnabled: settings?.preFilterEnabled ?? true,
-          preFilterPercentage: settings?.preFilterPercentage || 60,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const scanId = res.data.data?.scanId || res.data.scanId;
-      Alert.alert('Success', 'Field scan complete');
-      
-      if (scanId) {
-        navigation.navigate('FieldScanResult', { scanId });
-      }
-    } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.message || 'Field scan failed');
-    } finally {
-      setProcessing(false);
-      setCapturedPhotos([]);
-      setPhotoPreviews([]);
     }
   };
 
@@ -302,125 +209,7 @@ export default function FieldScan() {
         <Text style={styles.disabledTitle}>Field Scan is currently disabled</Text>
         <Text style={styles.disabledText}>
           The field scan feature has been temporarily disabled by the administrator.
-        </Text>
-      </View>
-    );
-  }
-
-  if (showWebView) {
-    return (
-      <View style={styles.webviewContainer}>
-        <View style={styles.webviewHeader}>
-          <TouchableOpacity onPress={() => setShowWebView(false)}>
-            <Ionicons name="close" size={24} color={colors.gray[700]} />
-          </TouchableOpacity>
-          <Text style={styles.webviewTitle}>External Camera</Text>
-          <View style={{ width: 24 }} />
-        </View>
-        <WebView
-          ref={webViewRef}
-          source={{ uri: externalCameraUrl }}
-          style={styles.webview}
-          javaScriptEnabled
-          domStorageEnabled
-          startInLoadingState
-          onMessage={handleWebViewMessage}
-          injectedJavaScript={`
-            (function() {
-              const originalPostMessage = window.postMessage;
-              
-              window.postMessage = function(message, targetOrigin) {
-                try {
-                  if (typeof message === 'string') {
-                    try {
-                      const data = JSON.parse(message);
-                      window.ReactNativeWebView.postMessage(JSON.stringify(data));
-                    } catch {
-                      window.ReactNativeWebView.postMessage(JSON.stringify({
-                        type: 'hdmstream-message',
-                        data: message
-                      }));
-                    }
-                  } else {
-                    window.ReactNativeWebView.postMessage(JSON.stringify(message));
-                  }
-                } catch (e) {}
-                
-                if (originalPostMessage) {
-                  return originalPostMessage.call(this, message, targetOrigin);
-                }
-              };
-              
-              window.addEventListener('message', function(event) {
-                try {
-                  if (event.data) {
-                    const data = typeof event.data === 'string' 
-                      ? JSON.parse(event.data) 
-                      : event.data;
-                    
-                    if (data.type === 'farmvexa-field-scan-batch' || 
-                        data.type === 'farmvexa-crop-photo' ||
-                        data.type === 'hdmstream-photo') {
-                      window.ReactNativeWebView.postMessage(JSON.stringify(data));
-                    }
-                  }
-                } catch (e) {}
-              });
-              
-              document.addEventListener('hdmstream-photo', function(event) {
-                window.ReactNativeWebView.postMessage(JSON.stringify(event.detail));
-              });
-              
-              document.addEventListener('farmvexa-field-scan-batch', function(event) {
-                window.ReactNativeWebView.postMessage(JSON.stringify(event.detail));
-              });
-              
-              document.addEventListener('farmvexa-crop-photo', function(event) {
-                window.ReactNativeWebView.postMessage(JSON.stringify(event.detail));
-              });
-              
-              true;
-            })();
-          `}
-          renderLoading={() => (
-            <View style={styles.webviewLoading}>
-              <Spinner size="lg" />
-            </View>
-          )}
-        />
-      </View>
-    );
-  }
-
-  if (processing) {
-    return (
-      <View style={styles.processingContainer}>
-        <Ionicons name="sync" size={48} color={colors.primary[500]} />
-        <Text style={styles.processingText}>
-          {processingMessages[processingText]}
-        </Text>
-        <View style={styles.progressDots}>
-          {processingMessages.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                i === processingText && styles.dotActive,
-                i < processingText && styles.dotDone,
-              ]}
-            />
-          ))}
-        </View>
-        <View style={styles.progressBar}>
-          <View
-            style={[
-              styles.progressFill,
-              { width: `${((processingText + 1) / processingMessages.length) * 100}%` },
-            ]}
-          />
-        </View>
-        <Text style={styles.processingNote}>
-          This takes less than 5 minutes — please stay on this page
+          Please check back later.
         </Text>
       </View>
     );
@@ -428,131 +217,154 @@ export default function FieldScan() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Field Scan</Text>
+      {/* Header with History */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Field Scan</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('FieldScanHistory')}>
+          <Text style={styles.historyLink}>History</Text>
+        </TouchableOpacity>
+      </View>
 
-      <Card style={styles.card}>
-        {isFarmer ? (
-          <>
-            <Select
-              label="Farm"
-              value={selectedFarmId}
-              onChange={handleFarmChange}
-              options={farms.map((f) => ({ value: f._id, label: f.name }))}
-              placeholder="Select Farm"
+      {/* Processing Card - shows inside page */}
+      {processing && (
+        <Card style={styles.processingCard}>
+          <ActivityIndicator size="large" color={colors.primary[500]} />
+          <Text style={styles.processingText}>
+            {processingMessages[processingText]}
+          </Text>
+          <View style={styles.progressDots}>
+            {processingMessages.map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.dot,
+                  i === processingText && styles.dotActive,
+                  i < processingText && styles.dotDone,
+                ]}
+              />
+            ))}
+          </View>
+          <Text style={styles.processingWarning}>
+            ⚠️ Please stay on this page — do not navigate away
+          </Text>
+          <View style={styles.progressBar}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${((processingText + 1) / processingMessages.length) * 100}%` },
+              ]}
             />
+          </View>
+          <Text style={styles.progressPercentage}>
+            {Math.round(((processingText + 1) / processingMessages.length) * 100)}%
+          </Text>
+        </Card>
+      )}
+
+      {/* Setup - hidden during processing */}
+      {!processing && (
+        <>
+          <Card style={styles.card}>
+            {isFarmer ? (
+              <>
+                <Select
+                  label="Farm"
+                  value={selectedFarmId}
+                  onChange={handleFarmChange}
+                  options={farms.map((f) => ({ value: f._id, label: f.name }))}
+                  placeholder="Select Farm"
+                />
+                <Select
+                  label="Field"
+                  value={selectedFieldId}
+                  onChange={setSelectedFieldId}
+                  options={fields.map((f) => ({ value: f._id, label: f.name }))}
+                  placeholder="Select Field"
+                />
+              </>
+            ) : (
+              <>
+                <Text style={styles.assignedFarm}>
+                  📍 {activeFarm?.name || 'Assigned Farm'}
+                </Text>
+                <Select
+                  label="Field"
+                  value={selectedFieldId}
+                  onChange={setSelectedFieldId}
+                  options={fields.map((f) => ({ value: f._id, label: f.name }))}
+                  placeholder="Select Field"
+                />
+              </>
+            )}
+
             <Select
-              label="Field"
-              value={selectedFieldId}
-              onChange={setSelectedFieldId}
-              options={fields.map((f) => ({ value: f._id, label: f.name }))}
-              placeholder="Select Field"
+              label="Crop Type"
+              value={cropType}
+              onChange={setCropType}
+              options={settings?.allowedCropTypes
+                ? settings.allowedCropTypes.map((c: string) => ({
+                    value: c,
+                    label: c.charAt(0).toUpperCase() + c.slice(1),
+                  }))
+                : CROP_TYPES
+              }
+              placeholder="Select Crop Type"
             />
-          </>
-        ) : (
-          <>
-            <Text style={styles.assignedFarm}>
-              📍 {activeFarm?.name || 'Assigned Farm'}
-            </Text>
-            <Select
-              label="Field"
-              value={selectedFieldId}
-              onChange={setSelectedFieldId}
-              options={fields.map((f) => ({ value: f._id, label: f.name }))}
-              placeholder="Select Field"
-            />
-          </>
-        )}
+          </Card>
 
-        <Select
-          label="Crop Type"
-          value={cropType}
-          onChange={setCropType}
-          options={settings?.allowedCropTypes
-            ? settings.allowedCropTypes.map((c: string) => ({
-                value: c,
-                label: c.charAt(0).toUpperCase() + c.slice(1),
-              }))
-            : CROP_TYPES
-          }
-          placeholder="Select Crop Type"
-        />
-      </Card>
-
-      <Card style={styles.card}>
-        <Text style={styles.sectionTitle}>Scan Options</Text>
-        
-        <Button
-          onPress={openExternalCamera}
-          disabled={!selectedFieldId || !cropType}
-          fullWidth
-          size="lg"
-        >
-          <Ionicons name="videocam" size={20} color={colors.white} /> External Camera (hdmstream)
-        </Button>
-
-        <Text style={styles.dividerText}>OR</Text>
-
-        <Button
-          onPress={handleTakePhotos}
-          disabled={!selectedFieldId || !cropType}
-          variant="outline"
-          fullWidth
-          size="lg"
-        >
-          <Ionicons name="camera" size={20} color={colors.primary[500]} /> Use Phone Camera
-        </Button>
-
-        {photoPreviews.length > 0 && (
-          <View style={styles.photoPreviewSection}>
-            <Text style={styles.photoCount}>
-              {photoPreviews.length} photos selected
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.photoRow}>
-                {photoPreviews.map((preview, i) => (
-                  <View key={i} style={styles.photoItem}>
-                    <Image source={{ uri: preview }} style={styles.photo} />
-                    <TouchableOpacity
-                      style={styles.removePhotoButton}
-                      onPress={() => {
-                        setPhotoPreviews((prev) => prev.filter((_, idx) => idx !== i));
-                        setCapturedPhotos((prev) => prev.filter((_, idx) => idx !== i));
-                      }}
-                    >
-                      <Ionicons name="close" size={14} color={colors.white} />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
+          <Card style={styles.card}>
             <Button
-              onPress={handleUploadPhotos}
+              onPress={openExternalCamera}
+              disabled={!settings?.enabled}
               fullWidth
               size="lg"
             >
-              Upload & Analyze Photos
+              <Ionicons name="videocam" size={20} color={colors.white} /> Open External Camera
             </Button>
-          </View>
-        )}
-      </Card>
-
-      <Card style={styles.card}>
-        <View style={styles.infoRow}>
-          <Ionicons name="information-circle" size={20} color={colors.blue[500]} />
-          <Text style={styles.infoText}>
-            Field Scan captures multiple photos of your field for AI analysis.
-            You can use external camera (hdmstream) or your phone camera.
-          </Text>
-        </View>
-        {settings?.maxPhotosPerScan && (
-          <View style={styles.infoRow}>
-            <Ionicons name="images" size={20} color={colors.gray[500]} />
-            <Text style={styles.infoText}>
-              Max photos: {settings.maxPhotosPerScan}
+            <Text style={styles.cameraNote}>
+              Opens hdmstream. Start field scan from the hdmstream /out page.
             </Text>
-          </View>
-        )}
-      </Card>
+          </Card>
+        </>
+      )}
+
+      {/* External Camera Modal */}
+      <Modal
+        open={showCameraModal}
+        onClose={() => setShowCameraModal(false)}
+        title="📹 External Camera"
+        size="xl"
+      >
+        <View style={styles.webviewContainer}>
+          {webViewLoading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#2d6a4f" />
+              <Text style={styles.loadingText}>Loading camera...</Text>
+            </View>
+          )}
+          <WebView
+            ref={webViewRef}
+            source={{ uri: externalInUrl }}
+            onMessage={handleWebViewMessage}
+            onLoadStart={() => setWebViewLoading(true)}
+            onLoadEnd={() => setWebViewLoading(false)}
+            javaScriptEnabled
+            domStorageEnabled
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+            startInLoadingState
+            injectedJavaScript={`
+              if (!window.ReactNativeWebView) {
+                window.ReactNativeWebView = {
+                  postMessage: function(data) {}
+                };
+              }
+              true;
+            `}
+            style={styles.webview}
+          />
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -566,120 +378,38 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.md,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.gray[900],
   },
+  historyLink: {
+    fontSize: 14,
+    color: colors.primary[500],
+    fontWeight: '500',
+  },
   card: {
     gap: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.gray[900],
   },
   assignedFarm: {
     fontSize: 14,
     color: colors.gray[700],
     fontWeight: '500',
   },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 14,
-    color: colors.gray[600],
-    lineHeight: 20,
-  },
-  dividerText: {
-    textAlign: 'center',
-    fontSize: 14,
+  cameraNote: {
+    fontSize: 12,
     color: colors.gray[400],
-    marginVertical: spacing.xs,
+    textAlign: 'center',
   },
-  photoPreviewSection: {
-    gap: spacing.md,
-  },
-  photoCount: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.gray[700],
-  },
-  photoRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  photoItem: {
-    width: 80,
-    height: 80,
-    borderRadius: borderRadius.md,
-    overflow: 'hidden',
-  },
-  photo: {
-    width: '100%',
-    height: '100%',
-  },
-  removePhotoButton: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 10,
-    padding: 2,
-  },
-  disabledContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  processingCard: {
     alignItems: 'center',
     gap: spacing.md,
-    padding: spacing.lg,
-    backgroundColor: colors.gray[50],
-  },
-  disabledTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.gray[900],
-  },
-  disabledText: {
-    fontSize: 14,
-    color: colors.gray[500],
-  },
-  webviewContainer: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
-  webviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[200],
-  },
-  webviewTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.gray[900],
-  },
-  webview: {
-    flex: 1,
-  },
-  webviewLoading: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  processingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.xl,
-    backgroundColor: colors.gray[50],
+    paddingVertical: spacing.xl,
   },
   processingText: {
     fontSize: 16,
@@ -704,19 +434,69 @@ const styles = StyleSheet.create({
   dotDone: {
     backgroundColor: colors.primary[300],
   },
+  processingWarning: {
+    fontSize: 13,
+    color: colors.orange[600],
+    fontWeight: '600',
+    textAlign: 'center',
+  },
   progressBar: {
     width: '100%',
-    height: 4,
+    maxWidth: 300,
+    height: 8,
     backgroundColor: colors.gray[200],
-    borderRadius: 2,
+    borderRadius: 4,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
     backgroundColor: colors.primary[500],
   },
-  processingNote: {
+  progressPercentage: {
     fontSize: 12,
     color: colors.gray[400],
+  },
+  disabledContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.lg,
+    backgroundColor: colors.gray[50],
+  },
+  disabledTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.gray[900],
+  },
+  disabledText: {
+    fontSize: 14,
+    color: colors.gray[500],
+    textAlign: 'center',
+  },
+  webviewContainer: {
+    height: 400,
+    backgroundColor: '#000',
+    borderRadius: borderRadius.md,
+    overflow: 'hidden',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    zIndex: 10,
+  },
+  loadingText: {
+    color: colors.white,
+    marginTop: spacing.sm,
+    fontSize: 14,
+  },
+  webview: {
+    flex: 1,
   },
 });
