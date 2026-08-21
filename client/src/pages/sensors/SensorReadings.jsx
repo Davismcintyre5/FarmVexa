@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
 import { getFarms } from '../../api/farms';
 import { getFields } from '../../api/fields';
 import { getFieldReadings, getDeviceReadings } from '../../api/sensors';
@@ -9,8 +10,10 @@ import Card from '../../components/ui/Card';
 import Select from '../../components/ui/Select';
 import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
-import { Activity, Thermometer, Droplets, Sun, TrendingUp, TrendingDown, Minus, Box, Bug, Rat, AlertTriangle } from 'lucide-react';
+import { Activity, Thermometer, Droplets, Sun, TrendingUp, TrendingDown, Minus, Box, Bug, Rat, AlertTriangle, Sparkles } from 'lucide-react';
 import { formatDate, formatTemperature } from '../../utils/formatters';
+
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export default function SensorReadings() {
     const { user } = useAuth();
@@ -29,6 +32,11 @@ export default function SensorReadings() {
     const [storageDeviceId, setStorageDeviceId] = useState('');
     const [storageReadings, setStorageReadings] = useState([]);
 
+    const [virtualDevices, setVirtualDevices] = useState([]);
+    const [virtualDeviceId, setVirtualDeviceId] = useState('');
+    const [virtualReadings, setVirtualReadings] = useState([]);
+    const [showVirtualTab, setShowVirtualTab] = useState(false);
+
     const hasIotAccess = ['Pro', 'Full Suite'].includes(user?.selectedPlan);
     const hasStorageAccess = user?.selectedPlan === 'Full Suite';
 
@@ -40,6 +48,7 @@ export default function SensorReadings() {
             setFarmsLoaded(true);
             getFields(user.farm).then((res) => setFields(res.data.data.fields || [])).catch(() => {});
             fetchStorageDevices(user.farm);
+            fetchVirtualDevices();
         }
     }, [user, hasIotAccess]);
 
@@ -50,6 +59,7 @@ export default function SensorReadings() {
                 setFarms(res.data.data.farms || []);
                 setFarmsLoaded(true);
             });
+            fetchVirtualDevices();
         }
     }, [isFarmer, hasIotAccess]);
 
@@ -66,6 +76,47 @@ export default function SensorReadings() {
             getDeviceReadings(storageDeviceId, 50).then((res) => setStorageReadings(res.data.data.readings || [])).finally(() => setLoading(false));
         }
     }, [storageDeviceId, activeTab, hasStorageAccess]);
+
+    useEffect(() => {
+        if (virtualDeviceId && activeTab === 'virtual') {
+            setLoading(true);
+            getDeviceReadings(virtualDeviceId, 50)
+                .then((res) => {
+                    console.log('Virtual readings fetched:', res.data.data?.readings);
+                    setVirtualReadings(res.data.data?.readings || []);
+                })
+                .catch((err) => console.error('Readings fetch failed:', err))
+                .finally(() => setLoading(false));
+        }
+    }, [virtualDeviceId, activeTab]);
+
+    const fetchVirtualDevices = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${API_BASE}/farm/devices/virtual`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const devices = res.data.data?.devices || [];
+            console.log('Virtual devices:', devices);
+            setVirtualDevices(devices);
+            setShowVirtualTab(devices.length > 0);
+
+            // Auto-select first device and fetch readings
+            if (devices.length > 0) {
+                setVirtualDeviceId(devices[0]._id);
+
+                const readingsRes = await axios.get(`${API_BASE}/farm/sensors/device/${devices[0]._id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                console.log('Initial virtual readings:', readingsRes.data.data?.readings);
+                setVirtualReadings(readingsRes.data.data?.readings || []);
+            }
+        } catch (err) {
+            console.error('Virtual devices fetch failed:', err);
+            setVirtualDevices([]);
+            setShowVirtualTab(false);
+        }
+    };
 
     const handleFarmChange = async (id) => {
         setFarmId(id); setFieldId(''); setReadings([]);
@@ -92,6 +143,8 @@ export default function SensorReadings() {
     const prev = readings[1];
     const storageLatest = storageReadings[0];
     const storagePrev = storageReadings[1];
+    const virtualLatest = virtualReadings[0];
+    const virtualPrev = virtualReadings[1];
 
     const trend = (curr, prev) => {
         if (!curr || !prev) return null;
@@ -149,8 +202,78 @@ export default function SensorReadings() {
                 >
                     <Box className="w-4 h-4" /> Storage
                 </button>
+                {showVirtualTab && (
+                    <button
+                        onClick={() => setActiveTab('virtual')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
+                            activeTab === 'virtual'
+                                ? 'bg-primary-500 text-white'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
+                        }`}
+                    >
+                        <Sparkles className="w-4 h-4" /> Virtual
+                    </button>
+                )}
             </div>
 
+            {/* VIRTUAL TAB */}
+            {activeTab === 'virtual' && (
+                <>
+                    <Card>
+                        <Select
+                            label="Virtual Device"
+                            value={virtualDeviceId}
+                            onChange={(e) => setVirtualDeviceId(e.target.value)}
+                            options={virtualDevices.map((d) => ({ 
+                                value: d._id, 
+                                label: d.farm?.name ? `${d.farm.name} — ${d.name}` : d.name 
+                            }))}
+                        />
+                    </Card>
+
+                    {loading ? <Spinner size="lg" className="mt-10" /> : !virtualDeviceId ? (
+                        <EmptyState icon={Sparkles} title="Select a virtual device" description="Choose a virtual device to view generated readings." />
+                    ) : virtualReadings.length === 0 ? (
+                        <EmptyState icon={Sparkles} title="No readings yet" description="The scheduler will generate readings soon." />
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                <Card>
+                                    <div className="flex items-center justify-between mb-2"><Thermometer className="w-5 h-5 text-red-500" />{trend(virtualLatest?.temperature, virtualPrev?.temperature)}</div>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{virtualLatest?.temperature !== undefined ? formatTemperature(virtualLatest.temperature) : 'N/A'}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Temperature</p>
+                                </Card>
+                                <Card>
+                                    <div className="flex items-center justify-between mb-2"><Droplets className="w-5 h-5 text-blue-500" />{trend(virtualLatest?.humidity, virtualPrev?.humidity)}</div>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{virtualLatest?.humidity !== undefined ? `${virtualLatest.humidity}%` : 'N/A'}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Humidity</p>
+                                </Card>
+                                <Card>
+                                    <div className="flex items-center justify-between mb-2"><Droplets className="w-5 h-5 text-green-500" />{trend(virtualLatest?.soilMoisture, virtualPrev?.soilMoisture)}</div>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{virtualLatest?.soilMoisture !== undefined ? `${virtualLatest.soilMoisture}%` : 'N/A'}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Soil Moisture</p>
+                                </Card>
+                                <Card>
+                                    <div className="flex items-center justify-between mb-2"><Sun className="w-5 h-5 text-yellow-500" />{trend(virtualLatest?.lightLevel, virtualPrev?.lightLevel)}</div>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{virtualLatest?.lightLevel !== undefined ? virtualLatest.lightLevel : 'N/A'}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Light Level</p>
+                                </Card>
+                            </div>
+
+                            <Card title="Virtual Reading History">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead><tr className="border-b border-gray-200 dark:border-gray-700"><th className="px-4 py-3 text-left font-medium text-gray-500">Time</th><th className="px-4 py-3 text-left font-medium text-gray-500">Temp</th><th className="px-4 py-3 text-left font-medium text-gray-500">Humidity</th><th className="px-4 py-3 text-left font-medium text-gray-500">Soil</th><th className="px-4 py-3 text-left font-medium text-gray-500">Light</th></tr></thead>
+                                        <tbody>{virtualReadings.map((r, i) => (<tr key={i} className="border-b border-gray-100 dark:border-gray-800"><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{formatDate(r.timestamp, 'time')}</td><td className="px-4 py-3">{formatTemperature(r.temperature)}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.humidity ? `${r.humidity}%` : 'N/A'}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.soilMoisture ? `${r.soilMoisture}%` : 'N/A'}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.lightLevel || 'N/A'}</td></tr>))}</tbody>
+                                    </table>
+                                </div>
+                            </Card>
+                        </>
+                    )}
+                </>
+            )}
+
+            {/* FIELD TAB */}
             {activeTab === 'field' && (
                 <>
                     <Card>
@@ -207,6 +330,7 @@ export default function SensorReadings() {
                 </>
             )}
 
+            {/* STORAGE TAB */}
             {activeTab === 'storage' && !hasStorageAccess && (
                 <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl border-2 border-yellow-300 dark:border-yellow-700 text-center">
                     <AlertTriangle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />

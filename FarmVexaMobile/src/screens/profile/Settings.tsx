@@ -23,7 +23,7 @@ import { getCountyOptions, getConstituencyOptions } from '../../utils/counties';
 import SupportTab from './SupportTab';
 import DownloadsTab from './DownloadsTab';
 import DocumentsTab from './DocumentsTab';
-import { APP_VERSION } from '../../utils/constants';
+import { APP_NAME } from '../../utils/constants';
 import { checkForUpdate } from '../../utils/updateChecker';
 import Constants from 'expo-constants';
 
@@ -125,18 +125,19 @@ export default function Settings() {
     }
   };
 
-const handleCheckUpdate = async () => {
-  console.log('Manual update check triggered');
-  setCheckingUpdate(true);
-  
-  try {
-    await checkForUpdate(true);
-  } catch (error) {
-    console.log('Update check failed:', error);
-  } finally {
-    setCheckingUpdate(false);
-  }
-};
+  const handleCheckUpdate = async () => {
+    setCheckingUpdate(true);
+    try {
+      const minDelay = new Promise((resolve) => setTimeout(resolve, 1000));
+      const updateCheck = checkForUpdate(true);
+      await Promise.all([minDelay, updateCheck]);
+    } catch (error) {
+      // Silently fail
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
@@ -306,135 +307,62 @@ const handleCheckUpdate = async () => {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
 
-        <Text style={styles.versionText}>FarmVexa v{APP_VERSION}</Text>
+        <Text style={styles.versionText}>
+          {APP_NAME} v{Constants.expoConfig?.version || '1.0.0'}
+        </Text>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.gray[50],
-  },
+  container: { flex: 1, backgroundColor: colors.gray[50] },
   tabBar: {
     flexGrow: 0,
     backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.gray[200],
   },
-  tabBarContent: {
-    paddingHorizontal: spacing.xs,
-  },
+  tabBarContent: { paddingHorizontal: spacing.xs },
   tab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.transparent,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
+    paddingHorizontal: spacing.md, paddingVertical: spacing.md,
+    borderBottomWidth: 2, borderBottomColor: colors.transparent,
   },
-  tabActive: {
-    borderBottomColor: colors.primary[500],
-  },
-  tabText: {
-    fontSize: 14,
-    color: colors.gray[500],
-    fontWeight: '500',
-  },
-  tabTextActive: {
-    color: colors.primary[500],
-  },
-  content: {
-    padding: spacing.md,
-    gap: spacing.md,
-  },
-  card: {
-    gap: spacing.md,
-  },
+  tabActive: { borderBottomColor: colors.primary[500] },
+  tabText: { fontSize: 14, color: colors.gray[500], fontWeight: '500' },
+  tabTextActive: { color: colors.primary[500] },
+  content: { padding: spacing.md, gap: spacing.md },
+  card: { gap: spacing.md },
   profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[100],
+    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
+    paddingBottom: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.gray[100],
   },
   avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.primary[500],
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 60, height: 60, borderRadius: 30,
+    backgroundColor: colors.primary[500], alignItems: 'center', justifyContent: 'center',
   },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.white,
-  },
-  profileInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.gray[900],
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: colors.gray[500],
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.gray[900],
-  },
+  avatarText: { fontSize: 24, fontWeight: 'bold', color: colors.white },
+  profileInfo: { flex: 1, gap: 2 },
+  profileName: { fontSize: 18, fontWeight: 'bold', color: colors.gray[900] },
+  profileEmail: { fontSize: 14, color: colors.gray[500] },
+  cardTitle: { fontSize: 18, fontWeight: '600', color: colors.gray[900] },
   sectionHeader: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.gray[500],
-    textTransform: 'uppercase',
-    paddingHorizontal: spacing.xs,
+    fontSize: 14, fontWeight: '600', color: colors.gray[500],
+    textTransform: 'uppercase', paddingHorizontal: spacing.xs,
   },
   settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[100],
+    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
+    paddingVertical: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.gray[100],
   },
-  settingText: {
-    flex: 1,
-    fontSize: 16,
-    color: colors.gray[700],
-  },
-  settingDetail: {
-    fontSize: 14,
-    color: colors.gray[400],
-  },
+  settingText: { flex: 1, fontSize: 16, color: colors.gray[700] },
+  settingDetail: { fontSize: 14, color: colors.gray[400] },
   logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    padding: spacing.md,
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.red[100],
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: spacing.sm, padding: spacing.md,
+    backgroundColor: colors.white, borderRadius: borderRadius.md,
+    borderWidth: 1, borderColor: colors.red[100],
   },
-  logoutText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.red[500],
-  },
-  versionText: {
-    fontSize: 12,
-    color: colors.gray[400],
-    textAlign: 'center',
-  },
+  logoutText: { fontSize: 16, fontWeight: '600', color: colors.red[500] },
+  versionText: { fontSize: 12, color: colors.gray[400], textAlign: 'center' },
 });

@@ -75,6 +75,17 @@ export default function FieldScan() {
     return () => clearInterval(interval);
   }, [processing]);
 
+  // Force hide loading after 10 seconds
+  useEffect(() => {
+    if (showCameraModal) {
+      const timer = setTimeout(() => {
+        setWebViewLoading(false);
+      }, 10000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showCameraModal]);
+
   const loadSettings = async () => {
     try {
       const res = await publicApi.getPublicSettings();
@@ -217,7 +228,6 @@ export default function FieldScan() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header with History */}
       <View style={styles.header}>
         <Text style={styles.title}>Field Scan</Text>
         <TouchableOpacity onPress={() => navigation.navigate('FieldScanHistory')}>
@@ -225,7 +235,6 @@ export default function FieldScan() {
         </TouchableOpacity>
       </View>
 
-      {/* Processing Card - shows inside page */}
       {processing && (
         <Card style={styles.processingCard}>
           <ActivityIndicator size="large" color={colors.primary[500]} />
@@ -261,7 +270,6 @@ export default function FieldScan() {
         </Card>
       )}
 
-      {/* Setup - hidden during processing */}
       {!processing && (
         <>
           <Card style={styles.card}>
@@ -328,7 +336,6 @@ export default function FieldScan() {
         </>
       )}
 
-      {/* External Camera Modal */}
       <Modal
         open={showCameraModal}
         onClose={() => setShowCameraModal(false)}
@@ -348,18 +355,68 @@ export default function FieldScan() {
             onMessage={handleWebViewMessage}
             onLoadStart={() => setWebViewLoading(true)}
             onLoadEnd={() => setWebViewLoading(false)}
+            onError={() => setWebViewLoading(false)}
             javaScriptEnabled
             domStorageEnabled
             allowsInlineMediaPlayback
             mediaPlaybackRequiresUserAction={false}
             startInLoadingState
+            originWhitelist={['*']}
+            mixedContentMode="always"
+            setSupportMultipleWindows={false}
             injectedJavaScript={`
-              if (!window.ReactNativeWebView) {
-                window.ReactNativeWebView = {
-                  postMessage: function(data) {}
+              (function() {
+                const originalPostMessage = window.postMessage;
+                
+                window.postMessage = function(message, targetOrigin) {
+                  try {
+                    if (typeof message === 'string') {
+                      try {
+                        const data = JSON.parse(message);
+                        if (data.type === 'farmvexa-field-scan-batch' || 
+                            data.type === 'farmvexa-crop-photo') {
+                          window.ReactNativeWebView.postMessage(JSON.stringify(data));
+                        }
+                      } catch (e) {}
+                    } else if (message && message.type) {
+                      window.ReactNativeWebView.postMessage(JSON.stringify(message));
+                    }
+                  } catch (e) {}
+                  
+                  if (originalPostMessage) {
+                    return originalPostMessage.call(this, message, targetOrigin);
+                  }
                 };
-              }
-              true;
+                
+                window.addEventListener('message', function(event) {
+                  try {
+                    if (event.data) {
+                      const data = typeof event.data === 'string' 
+                        ? JSON.parse(event.data) 
+                        : event.data;
+                      
+                      if (data.type === 'farmvexa-field-scan-batch' || 
+                          data.type === 'farmvexa-crop-photo') {
+                        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+                      }
+                    }
+                  } catch (e) {}
+                });
+                
+                document.addEventListener('farmvexa-field-scan-batch', function(event) {
+                  try {
+                    window.ReactNativeWebView.postMessage(JSON.stringify(event.detail));
+                  } catch (e) {}
+                });
+                
+                document.addEventListener('farmvexa-crop-photo', function(event) {
+                  try {
+                    window.ReactNativeWebView.postMessage(JSON.stringify(event.detail));
+                  } catch (e) {}
+                });
+                
+                true;
+              })();
             `}
             style={styles.webview}
           />

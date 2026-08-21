@@ -61,6 +61,17 @@ export default function CropScan() {
     }
   }, [presetFieldId]);
 
+  // Force hide loading after 10 seconds
+  useEffect(() => {
+    if (showCameraModal) {
+      const timer = setTimeout(() => {
+        setWebViewLoading(false);
+      }, 10000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showCameraModal]);
+
   const loadSettings = async () => {
     try {
       const res = await publicApi.getPublicSettings();
@@ -146,7 +157,6 @@ export default function CropScan() {
     setUploading(true);
     try {
       if (receivedImage) {
-        // External image - send URL
         const res = await imageApi.uploadImageByUrl({
           cropImageUrl: receivedImage,
           fieldId: selectedFieldId,
@@ -161,7 +171,6 @@ export default function CropScan() {
           Alert.alert('Error', 'Failed to get scan result');
         }
       } else {
-        // Local image - FormData
         const formData = new FormData();
         formData.append('cropImage', {
           uri: image,
@@ -330,18 +339,60 @@ export default function CropScan() {
             onMessage={handleWebViewMessage}
             onLoadStart={() => setWebViewLoading(true)}
             onLoadEnd={() => setWebViewLoading(false)}
+            onError={() => setWebViewLoading(false)}
             javaScriptEnabled
             domStorageEnabled
             allowsInlineMediaPlayback
             mediaPlaybackRequiresUserAction={false}
             startInLoadingState
+            originWhitelist={['*']}
+            mixedContentMode="always"
+            setSupportMultipleWindows={false}
             injectedJavaScript={`
-              if (!window.ReactNativeWebView) {
-                window.ReactNativeWebView = {
-                  postMessage: function(data) {}
+              (function() {
+                const originalPostMessage = window.postMessage;
+                
+                window.postMessage = function(message, targetOrigin) {
+                  try {
+                    if (typeof message === 'string') {
+                      try {
+                        const data = JSON.parse(message);
+                        if (data.type === 'farmvexa-crop-photo') {
+                          window.ReactNativeWebView.postMessage(JSON.stringify(data));
+                        }
+                      } catch (e) {}
+                    } else if (message && message.type) {
+                      window.ReactNativeWebView.postMessage(JSON.stringify(message));
+                    }
+                  } catch (e) {}
+                  
+                  if (originalPostMessage) {
+                    return originalPostMessage.call(this, message, targetOrigin);
+                  }
                 };
-              }
-              true;
+                
+                window.addEventListener('message', function(event) {
+                  try {
+                    if (event.data) {
+                      const data = typeof event.data === 'string' 
+                        ? JSON.parse(event.data) 
+                        : event.data;
+                      
+                      if (data.type === 'farmvexa-crop-photo') {
+                        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+                      }
+                    }
+                  } catch (e) {}
+                });
+                
+                document.addEventListener('farmvexa-crop-photo', function(event) {
+                  try {
+                    window.ReactNativeWebView.postMessage(JSON.stringify(event.detail));
+                  } catch (e) {}
+                });
+                
+                true;
+              })();
             `}
             style={styles.webview}
           />

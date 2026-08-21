@@ -1,13 +1,12 @@
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
-import { dialog } from 'electron';
 
 let mainWindow = null;
 
 export function initUpdater(window) {
   mainWindow = window;
   
-  autoUpdater.autoDownload = false;
+  autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.allowPrerelease = false;
   
@@ -18,21 +17,8 @@ export function initUpdater(window) {
   autoUpdater.on('update-available', (info) => {
     console.log('Update available:', info.version);
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('update-message', `FarmVexa v${info.version} is available`);
+      mainWindow.webContents.send('update-message', `Downloading FarmVexa v${info.version}...`);
     }
-    dialog.showMessageBox(mainWindow, {
-      type: 'info',
-      title: 'Update Available',
-      message: `FarmVexa version ${info.version} is available.`,
-      detail: 'Would you like to download it now?',
-      buttons: ['Download', 'Later'],
-      defaultId: 0,
-      cancelId: 1
-    }).then(({ response }) => {
-      if (response === 0) {
-        autoUpdater.downloadUpdate();
-      }
-    });
   });
   
   autoUpdater.on('update-not-available', () => {
@@ -52,19 +38,12 @@ export function initUpdater(window) {
   
   autoUpdater.on('update-downloaded', (info) => {
     console.log('Update downloaded:', info.version);
-    dialog.showMessageBox(mainWindow, {
-      type: 'info',
-      title: 'Update Ready',
-      message: `FarmVexa version ${info.version} has been downloaded.`,
-      detail: 'Restart now to install the update?',
-      buttons: ['Restart Now', 'Later'],
-      defaultId: 0,
-      cancelId: 1
-    }).then(({ response }) => {
-      if (response === 0) {
-        autoUpdater.quitAndInstall(false, true);
-      }
-    });
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('update-message', `FarmVexa v${info.version} downloaded. Restarting...`);
+    }
+    setTimeout(() => {
+      autoUpdater.quitAndInstall(false, true);
+    }, 3000);
   });
   
   autoUpdater.on('error', (error) => {

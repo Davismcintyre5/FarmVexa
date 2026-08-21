@@ -51,22 +51,6 @@ export default function ScanHome() {
         </Card>
       </TouchableOpacity>
 
-      {/* Scan History Card */}
-      <TouchableOpacity onPress={() => navigation.navigate('ScanHistory')}>
-        <Card style={styles.scanCard}>
-          <View style={[styles.iconContainer, { backgroundColor: colors.yellow[50] }]}>
-            <Ionicons name="time" size={32} color={colors.yellow[600]} />
-          </View>
-          <View style={styles.cardInfo}>
-            <Text style={styles.cardTitle}>Scan History</Text>
-            <Text style={styles.cardDescription}>
-              View all your past crop scans and results.
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={24} color={colors.gray[400]} />
-        </Card>
-      </TouchableOpacity>
-
       {/* Field Scan History Card */}
       <TouchableOpacity onPress={() => navigation.navigate('FieldScanHistory')}>
         <Card style={styles.scanCard}>
@@ -103,6 +87,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: colors.gray[500],
+    marginBottom: spacing.sm,
   },
   scanCard: {
     flexDirection: 'row',

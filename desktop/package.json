@@ -56,7 +56,7 @@
   "build": {
     "appId": "com.hdm.farmvexa",
     "productName": "FarmVexa",
-    "copyright": "Copyright © 2024 HDM - Davis Okoth",
+    "copyright": "Copyright © 2026 HDM - Davis Okoth",
     "publish": {
       "provider": "github",
       "owner": "Davismcintyre5",
@@ -86,8 +86,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "assets/icon.ico",
-      "publisherName": "HDM"
+      "icon": "assets/icon.ico"
     },
     "nsis": {
       "oneClick": false,

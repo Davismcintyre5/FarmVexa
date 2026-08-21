@@ -22,6 +22,18 @@ function setupWebviewMessaging(win) {
         win.webContents.send('farmvexa-message-from-webview', args[0]);
       }
     });
+
+    // Console bridge for hdmstream
+    webContents.on('console-message', (event, level, message) => {
+      if (message && message.startsWith('FARMVEXA_MSG:')) {
+        try {
+          const data = JSON.parse(message.replace('FARMVEXA_MSG:', ''));
+          win.webContents.send('farmvexa-message-from-webview', data);
+        } catch (err) {
+          console.error('Console bridge parse failed:', err);
+        }
+      }
+    });
   });
 
   ipcMain.on('farmvexa-message', (event, data) => {
@@ -55,7 +67,13 @@ function createWindow() {
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+    if (url.startsWith('about:') || url.startsWith('chrome:') || url.startsWith('file:')) {
+      return { action: 'deny' };
+    }
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      shell.openExternal(url);
+      return { action: 'deny' };
+    }
     return { action: 'deny' };
   });
 
@@ -104,6 +122,40 @@ app.whenReady().then(async () => {
 
   ipcMain.on('open-external', (event, url) => {
     shell.openExternal(url);
+  });
+
+  // Print report handler
+  ipcMain.handle('print-report', async (event, html) => {
+    console.log('📄 Print report received');
+    console.log('HTML length:', html?.length);
+
+    const printWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      show: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+      },
+    });
+
+    try {
+      console.log('Loading print window...');
+      await printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+      console.log('Print window loaded');
+
+      printWindow.webContents.print({}, (success, failureReason) => {
+        if (success) {
+          console.log('✅ Print successful');
+        } else {
+          console.error('❌ Print failed:', failureReason);
+        }
+        printWindow.close();
+      });
+    } catch (err) {
+      console.error('❌ Print window error:', err);
+      printWindow.close();
+    }
   });
 
   createWindow();

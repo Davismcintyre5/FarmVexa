@@ -1,8 +1,9 @@
+import Constants from 'expo-constants';
 import { getCountyOptions, getConstituencyOptions } from './counties';
 
 // App Constants
 export const APP_NAME = 'FarmVexa';
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = Constants.expoConfig?.version || '1.0.0';
 
 // County Options (from counties.ts)
 export const COUNTY_OPTIONS = getCountyOptions();
@@ -149,7 +150,7 @@ export const PRIORITY_COLORS = {
 };
 
 // File Upload Limits
-export const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+export const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 export const MAX_PRODUCT_PHOTOS = 5;
 export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
