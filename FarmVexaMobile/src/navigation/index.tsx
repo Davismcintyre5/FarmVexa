@@ -4,6 +4,7 @@ export { default as MainTabNavigator } from './MainTabNavigator';
 export { default as DashboardNavigator } from './DashboardNavigator';
 export { default as FarmsNavigator } from './FarmsNavigator';
 export { default as ScanNavigator } from './ScanNavigator';
+export { default as DevicesNavigator } from './DevicesNavigator';
 export { default as OperationsNavigator } from './OperationsNavigator';
 export { default as ProfileNavigator } from './ProfileNavigator';
 export { navigationRef, navigate, resetRoot } from './navigationRef';

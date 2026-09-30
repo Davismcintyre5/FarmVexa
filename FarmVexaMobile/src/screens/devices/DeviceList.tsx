@@ -11,12 +11,14 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../hooks/useAuth';
 import { useFarms } from '../../hooks/useFarms';
+import { usePlanAccess } from '../../hooks/usePlanAccess';
 import { deviceApi, publicApi } from '../../api/axios';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
+import PlanGate from '../../components/plan/PlanGate';
 import { colors, spacing, borderRadius } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { formatDate } from '../../utils/formatters';
@@ -32,15 +34,18 @@ export default function DeviceList() {
   const isFarmer = user?.role === 'farmer';
   const canManage = ['farmer', 'manager'].includes(user?.role);
 
+  // Plan gating via hook
+  const { allowed: hasIotAccess, loading: planLoading, planName } =
+    usePlanAccess('iot_field_sensors');
+
   const [devices, setDevices] = useState<any[]>([]);
   const [virtualDevices, setVirtualDevices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [virtualEnabled, setVirtualEnabled] = useState(false);
 
-  const hasIotAccess = ['Pro', 'Full Suite'].includes(user?.selectedPlan || '');
-
   useEffect(() => {
+    if (planLoading) return;
     if (!hasIotAccess) {
       setLoading(false);
       return;
@@ -49,14 +54,13 @@ export default function DeviceList() {
     loadSettings();
     loadPhysicalDevices();
     loadVirtualDevices();
-  }, [user, hasIotAccess]);
+  }, [user, hasIotAccess, planLoading]);
 
   const loadSettings = async () => {
     try {
       const res = await publicApi.getPublicSettings();
-      // Check admin settings for virtual devices
       setVirtualEnabled(res.data.data?.virtualDevicesEnabled !== false);
-    } catch (error) {
+    } catch {
       setVirtualEnabled(false);
     }
   };
@@ -69,9 +73,7 @@ export default function DeviceList() {
           try {
             const res = await deviceApi.getDevices(farm._id);
             allDevices.push(...(res.data.data?.devices || []));
-          } catch (error) {
-            // Skip failed farm
-          }
+          } catch {}
         }
         setDevices(allDevices);
       } else if (user?.farm) {
@@ -80,7 +82,7 @@ export default function DeviceList() {
       } else {
         setDevices([]);
       }
-    } catch (error) {
+    } catch {
       setDevices([]);
     } finally {
       setLoading(false);
@@ -93,14 +95,13 @@ export default function DeviceList() {
       setVirtualDevices([]);
       return;
     }
-
     try {
       const token = await AsyncStorage.getItem('token');
       const res = await axios.get(`${API_URL}/farm/devices/virtual`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setVirtualDevices(res.data.data?.devices || []);
-    } catch (error) {
+    } catch {
       setVirtualDevices([]);
     }
   };
@@ -121,7 +122,7 @@ export default function DeviceList() {
           try {
             await deviceApi.deleteDevice(id);
             setDevices((prev) => prev.filter((d) => d._id !== id));
-          } catch (error) {
+          } catch {
             Alert.alert('Error', 'Failed to delete device');
           }
         },
@@ -130,41 +131,32 @@ export default function DeviceList() {
   };
 
   const getZoneColor = (zone: string) => {
-    const zoneColors: Record<string, string> = {
-      field: '#dcfce7',
-      storage: '#fef9c3',
-      greenhouse: '#dbeafe',
-      livestock: '#f3e8ff',
+    const map: Record<string, string> = {
+      field: '#dcfce7', storage: '#fef9c3',
+      greenhouse: '#dbeafe', livestock: '#f3e8ff',
     };
-    return zoneColors[zone] || '#dcfce7';
+    return map[zone] || '#dcfce7';
   };
-
   const getZoneTextColor = (zone: string) => {
-    const zoneTextColors: Record<string, string> = {
-      field: '#166534',
-      storage: '#854d0e',
-      greenhouse: '#1e40af',
-      livestock: '#6b21a8',
+    const map: Record<string, string> = {
+      field: '#166534', storage: '#854d0e',
+      greenhouse: '#1e40af', livestock: '#6b21a8',
     };
-    return zoneTextColors[zone] || '#166534';
+    return map[zone] || '#166534';
   };
 
-  if (loading) {
-    return <Spinner size="lg" />;
-  }
+  if (planLoading) return <Spinner size="lg" />;
+  if (loading) return <Spinner size="lg" />;
 
+  // Plan gate (no IoT access)
   if (!hasIotAccess) {
     return (
-      <View style={styles.noAccessContainer}>
-        <Ionicons name="warning" size={64} color={colors.yellow[500]} />
-        <Text style={styles.noAccessTitle}>Feature Not Available</Text>
-        <Text style={styles.noAccessText}>
-          Your plan ({user?.selectedPlan || 'Basic'}) does not include IoT Devices.
-        </Text>
-        <Button onPress={() => navigation.navigate('Settings', { screen: 'Plans' })}>
-          Upgrade Plan
-        </Button>
-      </View>
+      <PlanGate
+        feature="iot_field_sensors"
+        planName={planName}
+        title="IoT Devices Not Available"
+        description={`Your plan (${planName}) does not include IoT Devices. Upgrade to Pro or Full Suite to connect sensors.`}
+      />
     );
   }
 
@@ -182,7 +174,6 @@ export default function DeviceList() {
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Devices</Text>
@@ -193,7 +184,11 @@ export default function DeviceList() {
         </View>
         {canManage && (
           <Button
-            onPress={() => navigation.navigate('DeviceRegister', { farmId: activeFarm?._id || farms[0]?._id })}
+            onPress={() =>
+              navigation.navigate('DeviceRegister', {
+                farmId: activeFarm?._id || farms[0]?._id,
+              })
+            }
             size="sm"
           >
             <Ionicons name="add" size={18} color={colors.white} /> Register
@@ -201,7 +196,6 @@ export default function DeviceList() {
         )}
       </View>
 
-      {/* Devices List */}
       {allDevices.length === 0 ? (
         <EmptyState
           icon="hardware-chip-outline"
@@ -285,9 +279,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full, backgroundColor: colors.blue[100],
   },
   virtualBadgeText: { fontSize: 10, fontWeight: '600', color: colors.blue[700] },
-  zoneBadge: {
-    paddingHorizontal: 8, paddingVertical: 2, borderRadius: borderRadius.full,
-  },
+  zoneBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: borderRadius.full },
   zoneText: { fontSize: 10, fontWeight: '600', textTransform: 'capitalize' },
   sensorBadge: {
     paddingHorizontal: 8, paddingVertical: 2,
@@ -297,7 +289,4 @@ const styles = StyleSheet.create({
   lastSeen: { fontSize: 12, color: colors.gray[400] },
   deviceActions: { alignItems: 'flex-end', gap: spacing.xs },
   batteryText: { fontSize: 12, color: colors.primary[600] },
-  noAccessContainer: { alignItems: 'center', gap: spacing.md, padding: spacing.xl },
-  noAccessTitle: { fontSize: 20, fontWeight: 'bold', color: colors.gray[900], textAlign: 'center' },
-  noAccessText: { fontSize: 14, color: colors.gray[500], textAlign: 'center' },
 });

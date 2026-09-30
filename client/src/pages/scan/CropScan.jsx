@@ -13,6 +13,22 @@ import ExternalCamera from '../../components/public/ExternalCamera';
 import { Camera, Upload, X, ImagePlus, Check, History, Video } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
+const FALLBACK_CROP_TYPES = [
+    'tomato',
+    'vegetable',
+    'maize',
+    'potato',
+    'bean',
+    'cassava',
+    'coffee',
+    'tea',
+    'wheat',
+    'rice',
+    'other',
+];
+
 export default function CropScan() {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -29,6 +45,7 @@ export default function CropScan() {
     const [cropType, setCropType] = useState('');
     const [farms, setFarms] = useState([]);
     const [fields, setFields] = useState([]);
+    const [cropTypes, setCropTypes] = useState(FALLBACK_CROP_TYPES);
     const [loading, setLoading] = useState(false);
     const [farmsLoaded, setFarmsLoaded] = useState(false);
     const [cameraOn, setCameraOn] = useState(false);
@@ -40,13 +57,35 @@ export default function CropScan() {
     const [receivingPhoto, setReceivingPhoto] = useState(false);
 
     useEffect(() => {
-        axios.get(`${import.meta.env.VITE_API_URL || '/api'}/admin/public/settings`)
+        // Public settings — external camera + field scan crop types
+        axios.get(`${API_BASE}/admin/public/settings`)
             .then((res) => {
-                setAllowExternalCamera(res.data.data?.allowExternalCamera || false);
-                setExternalCameraInUrl(res.data.data?.externalCameraInUrl || '');
-                setExternalCameraOutUrl(res.data.data?.externalCameraOutUrl || '');
+                const data = res.data.data || res.data;
+                setAllowExternalCamera(data.allowExternalCamera || false);
+                setExternalCameraInUrl(data.externalCameraInUrl || '');
+                setExternalCameraOutUrl(data.externalCameraOutUrl || '');
+
+                const allowed = data.fieldScan?.allowedCropTypes;
+                if (Array.isArray(allowed) && allowed.length > 0) {
+                    setCropTypes(allowed);
+                }
             })
             .catch(() => {});
+
+        // Field-scan settings — authoritative crop-type list
+        const token = localStorage.getItem('token');
+        axios.get(`${API_BASE}/farm/field-scan/settings`, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then((res) => {
+                const settings = res.data.data || res.data;
+                if (Array.isArray(settings?.allowedCropTypes) && settings.allowedCropTypes.length > 0) {
+                    setCropTypes(settings.allowedCropTypes);
+                }
+            })
+            .catch(() => {
+                // keep fallback
+            });
 
         if (!isFarmer && user?.farm) {
             setFarmId(user.farm);
@@ -54,7 +93,7 @@ export default function CropScan() {
             setFarmsLoaded(true);
             getFields(user.farm).then((res) => setFields(res.data.data.fields || [])).catch(() => {});
         }
-    }, [user]);
+    }, [user, isFarmer]);
 
     useEffect(() => {
         if (isFarmer) {
@@ -65,53 +104,38 @@ export default function CropScan() {
         }
     }, [isFarmer]);
 
-    // Message listener for hdmstream postMessage
     useEffect(() => {
         const handler = (event) => {
-            // Check message type
             if (event.data?.type === 'farmvexa-crop-photo') {
                 const imageUrl = event.data.imageUrl;
-                
+
                 if (!imageUrl) {
                     toast.error('No image URL received');
                     return;
                 }
 
-                // Validate URL (optional: check for Cloudinary domain)
-                // if (!imageUrl.includes('cloudinary.com')) {
-                //     toast.error('Invalid image source');
-                //     return;
-                // }
-
                 setReceivingPhoto(true);
-                
-                // Fetch the image from Cloudinary
+
                 fetch(imageUrl)
                     .then((res) => {
                         if (!res.ok) throw new Error('Failed to fetch image');
                         return res.blob();
                     })
                     .then((blob) => {
-                        // Check file size (max 10MB)
                         if (blob.size > 10 * 1024 * 1024) {
                             throw new Error('Image too large (max 10MB)');
                         }
 
-                        // Convert blob to File
-                        const file = new File([blob], `external-${Date.now()}.jpg`, { 
-                            type: blob.type || 'image/jpeg' 
+                        const file = new File([blob], `external-${Date.now()}.jpg`, {
+                            type: blob.type || 'image/jpeg',
                         });
-                        
-                        // Set in FarmVexa Crop Scan
+
                         setFile(file);
                         setPreview(URL.createObjectURL(blob));
-                        
-                        // Close the external camera modal
+
                         setShowExternalCamera(false);
-                        
-                        // Stop local camera if running
                         stopCamera();
-                        
+
                         toast.success('Photo received! Click Upload & Analyze.');
                     })
                     .catch((err) => {
@@ -123,14 +147,14 @@ export default function CropScan() {
                     });
             }
         };
-        
+
         window.addEventListener('message', handler);
         return () => window.removeEventListener('message', handler);
     }, []);
 
     useEffect(() => {
         return () => {
-            if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+            if (streamRef.current) streamRef.current.getTracks().forEach((t) => t.stop());
         };
     }, []);
 
@@ -145,13 +169,24 @@ export default function CropScan() {
 
     const handleFile = (e) => {
         const f = e.target.files[0];
-        if (f) { setFile(f); setPreview(URL.createObjectURL(f)); stopCamera(); }
+        if (f) {
+            setFile(f);
+            setPreview(URL.createObjectURL(f));
+            stopCamera();
+        }
     };
 
-    const clearFile = () => { setFile(null); setPreview(null); if (fileRef.current) fileRef.current.value = ''; };
+    const clearFile = () => {
+        setFile(null);
+        setPreview(null);
+        if (fileRef.current) fileRef.current.value = '';
+    };
 
     const stopCamera = () => {
-        if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((t) => t.stop());
+            streamRef.current = null;
+        }
         if (videoRef.current) videoRef.current.srcObject = null;
         setCameraOn(false);
     };
@@ -161,11 +196,15 @@ export default function CropScan() {
         setFile(null);
         setPreview(null);
         if (fileRef.current) fileRef.current.value = '';
-        if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((t) => t.stop());
+            streamRef.current = null;
+        }
         setCameraOn(false);
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false,
+                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false,
             });
             streamRef.current = stream;
             setCameraOn(true);
@@ -176,7 +215,12 @@ export default function CropScan() {
                 }
             }, 100);
         } catch (err) {
-            const msg = err.name === 'NotAllowedError' ? 'Camera permission denied.' : err.name === 'NotFoundError' ? 'No camera found.' : err.message;
+            const msg =
+                err.name === 'NotAllowedError'
+                    ? 'Camera permission denied.'
+                    : err.name === 'NotFoundError'
+                    ? 'No camera found.'
+                    : err.message;
             setCameraError(msg);
             toast.error(msg);
         }
@@ -235,27 +279,42 @@ export default function CropScan() {
                     {isFarmer ? (
                         <>
                             {farmsLoaded && (
-                                <Select label="Farm" value={farmId} onChange={(e) => handleFarmChange(e.target.value)}
-                                    options={farms.map((f) => ({ value: f._id, label: f.name }))} />
+                                <Select
+                                    label="Farm"
+                                    value={farmId}
+                                    onChange={(e) => handleFarmChange(e.target.value)}
+                                    options={farms.map((f) => ({ value: f._id, label: f.name }))}
+                                />
                             )}
-                            <Select label="Field" value={fieldId} onChange={(e) => setFieldId(e.target.value)}
-                                options={fields.map((f) => ({ value: f._id, label: f.name }))} />
+                            <Select
+                                label="Field"
+                                value={fieldId}
+                                onChange={(e) => setFieldId(e.target.value)}
+                                options={fields.map((f) => ({ value: f._id, label: f.name }))}
+                            />
                         </>
                     ) : (
                         <>
-                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">📍 {farms[0]?.name || 'Assigned Farm'}</p>
-                            <Select label="Field" value={fieldId} onChange={(e) => setFieldId(e.target.value)}
-                                options={fields.map((f) => ({ value: f._id, label: f.name }))} />
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                📍 {farms[0]?.name || 'Assigned Farm'}
+                            </p>
+                            <Select
+                                label="Field"
+                                value={fieldId}
+                                onChange={(e) => setFieldId(e.target.value)}
+                                options={fields.map((f) => ({ value: f._id, label: f.name }))}
+                            />
                         </>
                     )}
-                    <Select label="Crop Type" value={cropType} onChange={(e) => setCropType(e.target.value)}
-                        options={[
-                            { value: 'tomato', label: 'Tomato' }, { value: 'maize', label: 'Maize' },
-                            { value: 'potato', label: 'Potato' }, { value: 'bean', label: 'Bean' },
-                            { value: 'cassava', label: 'Cassava' }, { value: 'coffee', label: 'Coffee' },
-                            { value: 'tea', label: 'Tea' }, { value: 'wheat', label: 'Wheat' },
-                            { value: 'rice', label: 'Rice' },
-                        ]} />
+                    <Select
+                        label="Crop Type"
+                        value={cropType}
+                        onChange={(e) => setCropType(e.target.value)}
+                        options={cropTypes.map((c) => ({
+                            value: c,
+                            label: c.charAt(0).toUpperCase() + c.slice(1),
+                        }))}
+                    />
                 </div>
             </Card>
 
@@ -263,18 +322,33 @@ export default function CropScan() {
                 {cameraOn ? (
                     <div className="space-y-3">
                         <div className="relative rounded-xl overflow-hidden bg-black">
-                            <video key={cameraOn ? 'on' : 'off'} ref={videoRef} autoPlay playsInline muted className="w-full h-64 object-cover" />
-                            <button onClick={stopCamera} className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full">
+                            <video
+                                key={cameraOn ? 'on' : 'off'}
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                muted
+                                className="w-full h-64 object-cover"
+                            />
+                            <button
+                                onClick={stopCamera}
+                                className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full"
+                            >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
-                        <Button onClick={capturePhoto} className="w-full"><Check className="w-4 h-4" /> Capture Photo</Button>
+                        <Button onClick={capturePhoto} className="w-full">
+                            <Check className="w-4 h-4" /> Capture Photo
+                        </Button>
                     </div>
                 ) : preview ? (
                     <div className="space-y-3">
                         <div className="relative rounded-xl overflow-hidden">
                             <img src={preview} alt="Preview" className="w-full h-64 object-cover" />
-                            <button onClick={clearFile} className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full">
+                            <button
+                                onClick={clearFile}
+                                className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full"
+                            >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
@@ -283,14 +357,20 @@ export default function CropScan() {
                             <span>{(file?.size / 1024 / 1024).toFixed(1)} MB</span>
                         </div>
                         <div className="flex gap-2">
-                            <Button variant="outline" onClick={clearFile} className="flex-1">Remove</Button>
-                            <Button variant="outline" onClick={() => fileRef.current?.click()} className="flex-1">Change</Button>
+                            <Button variant="outline" onClick={clearFile} className="flex-1">
+                                Remove
+                            </Button>
+                            <Button variant="outline" onClick={() => fileRef.current?.click()} className="flex-1">
+                                Change
+                            </Button>
                         </div>
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        <div onClick={() => fileRef.current?.click()}
-                            className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center cursor-pointer hover:border-primary-500 transition-colors">
+                        <div
+                            onClick={() => fileRef.current?.click()}
+                            className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center cursor-pointer hover:border-primary-500 transition-colors"
+                        >
                             <ImagePlus className="w-12 h-12 mx-auto text-gray-400 mb-3" />
                             <p className="text-gray-500 dark:text-gray-400 font-medium">Tap to select image</p>
                             <p className="text-sm text-gray-400 mt-1">JPG, PNG or WEBP (max 10MB)</p>
@@ -303,7 +383,11 @@ export default function CropScan() {
                                 <Camera className="w-4 h-4" /> Camera
                             </Button>
                             {allowExternalCamera && (
-                                <Button variant="outline" onClick={() => setShowExternalCamera(true)} className="flex-1">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setShowExternalCamera(true)}
+                                    className="flex-1"
+                                >
                                     <Video className="w-4 h-4" /> External
                                 </Button>
                             )}
@@ -314,13 +398,13 @@ export default function CropScan() {
                 <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
             </Card>
 
-            {/* External Camera Modal */}
-            <Modal open={showExternalCamera} onClose={() => setShowExternalCamera(false)} title="📹 External Camera Stream" size="xl">
-                <ExternalCamera
-                    inUrl={externalCameraInUrl}
-                    outUrl={externalCameraOutUrl}
-                    title="Crop Scan Camera"
-                />
+            <Modal
+                open={showExternalCamera}
+                onClose={() => setShowExternalCamera(false)}
+                title="📹 External Camera Stream"
+                size="xl"
+            >
+                <ExternalCamera inUrl={externalCameraInUrl} outUrl={externalCameraOutUrl} title="Crop Scan Camera" />
                 {receivingPhoto && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl">
                         <div className="text-center">
@@ -331,7 +415,13 @@ export default function CropScan() {
                 )}
             </Modal>
 
-            <Button onClick={handleUpload} loading={loading} disabled={!file || !fieldId || !cropType} className="w-full" size="lg">
+            <Button
+                onClick={handleUpload}
+                loading={loading}
+                disabled={!file || !fieldId || !cropType}
+                className="w-full"
+                size="lg"
+            >
                 {loading ? 'Analyzing...' : 'Upload & Analyze Crop'}
             </Button>
         </div>

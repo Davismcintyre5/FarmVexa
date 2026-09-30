@@ -5,8 +5,8 @@ import { MainTabParamList } from '../types';
 import DashboardNavigator from './DashboardNavigator';
 import FarmsNavigator from './FarmsNavigator';
 import ScanNavigator from './ScanNavigator';
-import OperationsNavigator from './OperationsNavigator';
 import DevicesNavigator from './DevicesNavigator';
+import OperationsNavigator from './OperationsNavigator';
 import ProfileNavigator from './ProfileNavigator';
 import { colors } from '../theme';
 
@@ -25,30 +25,15 @@ export default function MainTabNavigator() {
         },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
-
           switch (route.name) {
-            case 'Dashboard':
-              iconName = focused ? 'home' : 'home-outline';
-              break;
-            case 'Farms':
-              iconName = focused ? 'leaf' : 'leaf-outline';
-              break;
-            case 'Scan':
-              iconName = focused ? 'camera' : 'camera-outline';
-              break;
-            case 'Devices':
-              iconName = focused ? 'hardware-chip' : 'hardware-chip-outline';
-              break;
-            case 'Operations':
-              iconName = focused ? 'grid' : 'grid-outline';
-              break;
-            case 'Settings':
-              iconName = focused ? 'settings' : 'settings-outline';
-              break;
-            default:
-              iconName = 'ellipse';
+            case 'Dashboard': iconName = focused ? 'home' : 'home-outline'; break;
+            case 'Farms': iconName = focused ? 'leaf' : 'leaf-outline'; break;
+            case 'Scan': iconName = focused ? 'camera' : 'camera-outline'; break;
+            case 'Devices': iconName = focused ? 'hardware-chip' : 'hardware-chip-outline'; break;
+            case 'Operations': iconName = focused ? 'grid' : 'grid-outline'; break;
+            case 'Settings': iconName = focused ? 'settings' : 'settings-outline'; break;
+            default: iconName = 'ellipse';
           }
-
           return <Ionicons name={iconName} size={size} color={color} />;
         },
       })}

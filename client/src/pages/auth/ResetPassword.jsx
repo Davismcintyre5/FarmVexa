@@ -24,7 +24,7 @@ export default function ResetPassword() {
         }
         setLoading(true);
         try {
-            await resetPassword({ token, newPassword: form.newPassword });
+            await resetPassword({ token, password: form.newPassword });
             setAlert({ type: 'success', message: 'Password reset. Redirecting...' });
             setTimeout(() => navigate('/login'), 2000);
         } catch (err) {
@@ -35,15 +35,41 @@ export default function ResetPassword() {
     };
 
     return (
-        <div>
-            <h2 className="text-2xl font-bold text-center mb-6">Reset Password</h2>
+        <>
+            <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Reset Password</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+                    Choose a new password for your account
+                </p>
+            </div>
+
             {alert && <AlertComponent type={alert.type} message={alert.message} className="mb-4" />}
+
             <form onSubmit={handleSubmit} className="space-y-4">
-                <Input label="New Password" type="password" value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} placeholder="Min 6 characters" />
-                <Input label="Confirm Password" type="password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} placeholder="Repeat password" />
-                <Button type="submit" loading={loading} className="w-full">Reset Password</Button>
+                <Input
+                    label="New Password"
+                    type="password"
+                    value={form.newPassword}
+                    onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
+                    placeholder="Min 6 characters"
+                />
+                <Input
+                    label="Confirm Password"
+                    type="password"
+                    value={form.confirmPassword}
+                    onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                    placeholder="Repeat password"
+                />
+                <Button type="submit" loading={loading} className="w-full">
+                    Reset Password
+                </Button>
             </form>
-            <p className="text-sm text-center mt-6"><Link to="/login" className="text-primary-500">Back to Login</Link></p>
-        </div>
+
+            <p className="text-sm text-center mt-6">
+                <Link to="/login" className="text-primary-500 hover:underline">
+                    Back to Login
+                </Link>
+            </p>
+        </>
     );
 }

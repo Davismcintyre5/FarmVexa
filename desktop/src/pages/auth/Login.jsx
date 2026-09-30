@@ -36,8 +36,9 @@ export default function Login() {
         setLoading(true);
         setAlert(null);
         try {
-            const user = await login(form);
-            if (user.approvalStatus === 'pending') navigate('/pending');
+            const { scope } = await login(form);
+            if (scope === 'pending' || scope === 'rejected') navigate('/pending');
+            else if (scope === 'expired') navigate('/renewal');
             else navigate('/dashboard');
         } catch (err) {
             if (err.response?.status === 402) {

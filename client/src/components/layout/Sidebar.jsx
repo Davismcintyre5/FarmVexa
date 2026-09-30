@@ -45,7 +45,6 @@ export default function Sidebar() {
                     <button onClick={() => setOpen(false)} className="md:hidden p-1 text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
                 </div>
 
-                {/* Scrollable nav area */}
                 <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
                     {filteredLinks.map(({ to, icon: Icon, label }) => (
                         <NavLink key={to} to={to} onClick={() => setOpen(false)}
@@ -55,7 +54,6 @@ export default function Sidebar() {
                     ))}
                 </nav>
 
-                {/* Footer — fixed at bottom */}
                 <div className="p-3 border-t border-gray-200 dark:border-gray-800 space-y-1 flex-shrink-0">
                     {showAI && (
                         <NavLink to="/ai-chat" onClick={() => setOpen(false)}

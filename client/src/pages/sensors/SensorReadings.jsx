@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import usePlanAccess from '../../hooks/usePlanAccess';
 import axios from 'axios';
 import { getFarms } from '../../api/farms';
 import { getFields } from '../../api/fields';
@@ -18,6 +19,8 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api';
 export default function SensorReadings() {
     const { user } = useAuth();
     const isFarmer = user?.role === 'farmer';
+    const { allowed: hasIotAccess, planName } = usePlanAccess('iot_field_sensors');
+    const { allowed: hasStorageAccess } = usePlanAccess('storage_monitoring');
 
     const [activeTab, setActiveTab] = useState('field');
     const [farms, setFarms] = useState([]);
@@ -36,9 +39,6 @@ export default function SensorReadings() {
     const [virtualDeviceId, setVirtualDeviceId] = useState('');
     const [virtualReadings, setVirtualReadings] = useState([]);
     const [showVirtualTab, setShowVirtualTab] = useState(false);
-
-    const hasIotAccess = ['Pro', 'Full Suite'].includes(user?.selectedPlan);
-    const hasStorageAccess = user?.selectedPlan === 'Full Suite';
 
     useEffect(() => {
         if (!hasIotAccess) return;
@@ -81,46 +81,56 @@ export default function SensorReadings() {
         if (virtualDeviceId && activeTab === 'virtual') {
             setLoading(true);
             getDeviceReadings(virtualDeviceId, 50)
-                .then((res) => {
-                    console.log('Virtual readings fetched:', res.data.data?.readings);
-                    setVirtualReadings(res.data.data?.readings || []);
-                })
-                .catch((err) => console.error('Readings fetch failed:', err))
+                .then((res) => setVirtualReadings(res.data.data?.readings || []))
+                .catch(() => {})
                 .finally(() => setLoading(false));
         }
     }, [virtualDeviceId, activeTab]);
 
     const fetchVirtualDevices = async () => {
+        const token = localStorage.getItem('token');
+
+        // 1. Fetch the list — only this decides whether the tab is visible
+        let devices = [];
         try {
-            const token = localStorage.getItem('token');
             const res = await axios.get(`${API_BASE}/farm/devices/virtual`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            const devices = res.data.data?.devices || [];
-            console.log('Virtual devices:', devices);
+            devices = res.data.data?.devices || [];
+            devices.sort((a, b) => new Date(b.lastReadingAt || 0) - new Date(a.lastReadingAt || 0));
             setVirtualDevices(devices);
             setShowVirtualTab(devices.length > 0);
-
-            // Auto-select first device and fetch readings
-            if (devices.length > 0) {
-                setVirtualDeviceId(devices[0]._id);
-
-                const readingsRes = await axios.get(`${API_BASE}/farm/sensors/device/${devices[0]._id}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                console.log('Initial virtual readings:', readingsRes.data.data?.readings);
-                setVirtualReadings(readingsRes.data.data?.readings || []);
-            }
         } catch (err) {
             console.error('Virtual devices fetch failed:', err);
             setVirtualDevices([]);
             setShowVirtualTab(false);
+            return;
+        }
+
+        if (devices.length === 0) return;
+
+        // 2. Fetch readings for the most recent device — failure here is non-fatal
+        const firstId = devices[0]._id;
+        setVirtualDeviceId(firstId);
+
+        try {
+            const readingsRes = await axios.get(`${API_BASE}/farm/sensors/device/${firstId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setVirtualReadings(readingsRes.data.data?.readings || []);
+        } catch (err) {
+            console.error('Virtual readings fetch failed:', err);
+            setVirtualReadings([]);
         }
     };
 
     const handleFarmChange = async (id) => {
-        setFarmId(id); setFieldId(''); setReadings([]);
-        setStorageDevices([]); setStorageDeviceId(''); setStorageReadings([]);
+        setFarmId(id);
+        setFieldId('');
+        setReadings([]);
+        setStorageDevices([]);
+        setStorageDeviceId('');
+        setStorageReadings([]);
         if (id) {
             const res = await getFields(id);
             setFields(res.data.data.fields || []);
@@ -128,12 +138,11 @@ export default function SensorReadings() {
         }
     };
 
-    const fetchStorageDevices = async (farmId) => {
+    const fetchStorageDevices = async (id) => {
         try {
-            const res = await getDevices(farmId);
+            const res = await getDevices(id);
             const devices = res.data.data.devices || [];
-            const storageOnly = devices.filter((d) => d.zone === 'storage');
-            setStorageDevices(storageOnly);
+            setStorageDevices(devices.filter((d) => d.zone === 'storage'));
         } catch {
             setStorageDevices([]);
         }
@@ -159,12 +168,9 @@ export default function SensorReadings() {
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Sensor Readings</h1>
                 <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl border-2 border-yellow-300 dark:border-yellow-700 text-center">
                     <AlertTriangle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-                    <h2 className="text-xl font-bold text-yellow-800 dark:text-yellow-300 mb-2">
-                        Feature Not Available
-                    </h2>
+                    <h2 className="text-xl font-bold text-yellow-800 dark:text-yellow-300 mb-2">Feature Not Available</h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
-                        Your plan ({user?.selectedPlan || 'Basic'}) does not include IoT Sensors.
-                        Upgrade to Pro or Full Suite to monitor field conditions.
+                        Your plan ({planName || 'Basic'}) does not include IoT Sensors. Upgrade to monitor field conditions.
                     </p>
                     <Link to="/plans" className="inline-block px-6 py-3 bg-yellow-600 text-white rounded-xl font-semibold hover:bg-yellow-700">
                         Upgrade Plan
@@ -184,32 +190,20 @@ export default function SensorReadings() {
             <div className="flex gap-2">
                 <button
                     onClick={() => setActiveTab('field')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
-                        activeTab === 'field'
-                            ? 'bg-primary-500 text-white'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${activeTab === 'field' ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'}`}
                 >
                     <Activity className="w-4 h-4" /> Field
                 </button>
                 <button
                     onClick={() => setActiveTab('storage')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
-                        activeTab === 'storage'
-                            ? 'bg-primary-500 text-white'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${activeTab === 'storage' ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'}`}
                 >
                     <Box className="w-4 h-4" /> Storage
                 </button>
                 {showVirtualTab && (
                     <button
                         onClick={() => setActiveTab('virtual')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
-                            activeTab === 'virtual'
-                                ? 'bg-primary-500 text-white'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
-                        }`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${activeTab === 'virtual' ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'}`}
                     >
                         <Sparkles className="w-4 h-4" /> Virtual
                     </button>
@@ -224,9 +218,9 @@ export default function SensorReadings() {
                             label="Virtual Device"
                             value={virtualDeviceId}
                             onChange={(e) => setVirtualDeviceId(e.target.value)}
-                            options={virtualDevices.map((d) => ({ 
-                                value: d._id, 
-                                label: d.farm?.name ? `${d.farm.name} — ${d.name}` : d.name 
+                            options={virtualDevices.map((d) => ({
+                                value: d._id,
+                                label: d.farm?.name ? `${d.farm.name} — ${d.name}` : d.name,
                             }))}
                         />
                     </Card>
@@ -239,23 +233,43 @@ export default function SensorReadings() {
                         <>
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Thermometer className="w-5 h-5 text-red-500" />{trend(virtualLatest?.temperature, virtualPrev?.temperature)}</div>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{virtualLatest?.temperature !== undefined ? formatTemperature(virtualLatest.temperature) : 'N/A'}</p>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Thermometer className="w-5 h-5 text-red-500" />
+                                        {trend(virtualLatest?.temperature, virtualPrev?.temperature)}
+                                    </div>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                        {virtualLatest?.temperature !== undefined ? formatTemperature(virtualLatest.temperature) : 'N/A'}
+                                    </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Temperature</p>
                                 </Card>
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Droplets className="w-5 h-5 text-blue-500" />{trend(virtualLatest?.humidity, virtualPrev?.humidity)}</div>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{virtualLatest?.humidity !== undefined ? `${virtualLatest.humidity}%` : 'N/A'}</p>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Droplets className="w-5 h-5 text-blue-500" />
+                                        {trend(virtualLatest?.humidity, virtualPrev?.humidity)}
+                                    </div>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                        {virtualLatest?.humidity !== undefined ? `${virtualLatest.humidity}%` : 'N/A'}
+                                    </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Humidity</p>
                                 </Card>
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Droplets className="w-5 h-5 text-green-500" />{trend(virtualLatest?.soilMoisture, virtualPrev?.soilMoisture)}</div>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{virtualLatest?.soilMoisture !== undefined ? `${virtualLatest.soilMoisture}%` : 'N/A'}</p>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Droplets className="w-5 h-5 text-green-500" />
+                                        {trend(virtualLatest?.soilMoisture, virtualPrev?.soilMoisture)}
+                                    </div>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                        {virtualLatest?.soilMoisture !== undefined ? `${virtualLatest.soilMoisture}%` : 'N/A'}
+                                    </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Soil Moisture</p>
                                 </Card>
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Sun className="w-5 h-5 text-yellow-500" />{trend(virtualLatest?.lightLevel, virtualPrev?.lightLevel)}</div>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{virtualLatest?.lightLevel !== undefined ? virtualLatest.lightLevel : 'N/A'}</p>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Sun className="w-5 h-5 text-yellow-500" />
+                                        {trend(virtualLatest?.lightLevel, virtualPrev?.lightLevel)}
+                                    </div>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                        {virtualLatest?.lightLevel !== undefined ? virtualLatest.lightLevel : 'N/A'}
+                                    </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Light Level</p>
                                 </Card>
                             </div>
@@ -263,8 +277,26 @@ export default function SensorReadings() {
                             <Card title="Virtual Reading History">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
-                                        <thead><tr className="border-b border-gray-200 dark:border-gray-700"><th className="px-4 py-3 text-left font-medium text-gray-500">Time</th><th className="px-4 py-3 text-left font-medium text-gray-500">Temp</th><th className="px-4 py-3 text-left font-medium text-gray-500">Humidity</th><th className="px-4 py-3 text-left font-medium text-gray-500">Soil</th><th className="px-4 py-3 text-left font-medium text-gray-500">Light</th></tr></thead>
-                                        <tbody>{virtualReadings.map((r, i) => (<tr key={i} className="border-b border-gray-100 dark:border-gray-800"><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{formatDate(r.timestamp, 'time')}</td><td className="px-4 py-3">{formatTemperature(r.temperature)}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.humidity ? `${r.humidity}%` : 'N/A'}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.soilMoisture ? `${r.soilMoisture}%` : 'N/A'}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.lightLevel || 'N/A'}</td></tr>))}</tbody>
+                                        <thead>
+                                            <tr className="border-b border-gray-200 dark:border-gray-700">
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Time</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Temp</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Humidity</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Soil</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Light</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {virtualReadings.map((r, i) => (
+                                                <tr key={i} className="border-b border-gray-100 dark:border-gray-800">
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{formatDate(r.timestamp, 'time')}</td>
+                                                    <td className="px-4 py-3">{formatTemperature(r.temperature)}</td>
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.humidity ? `${r.humidity}%` : 'N/A'}</td>
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.soilMoisture ? `${r.soilMoisture}%` : 'N/A'}</td>
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.lightLevel || 'N/A'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
                                     </table>
                                 </div>
                             </Card>
@@ -292,26 +324,42 @@ export default function SensorReadings() {
                         </div>
                     </Card>
 
-                    {loading ? <Spinner size="lg" className="mt-10" /> : !fieldId ? <EmptyState icon={Activity} title="Select a field" description="Choose a farm and field to view sensor data." /> : readings.length === 0 ? <EmptyState icon={Activity} title="No readings yet" description="No sensor data for this field. Connect a device to start monitoring." /> : (
+                    {loading ? <Spinner size="lg" className="mt-10" /> : !fieldId ? (
+                        <EmptyState icon={Activity} title="Select a field" description="Choose a farm and field to view sensor data." />
+                    ) : readings.length === 0 ? (
+                        <EmptyState icon={Activity} title="No readings yet" description="No sensor data for this field. Connect a device to start monitoring." />
+                    ) : (
                         <>
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Thermometer className="w-5 h-5 text-red-500" />{trend(latest?.temperature, prev?.temperature)}</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Thermometer className="w-5 h-5 text-red-500" />
+                                        {trend(latest?.temperature, prev?.temperature)}
+                                    </div>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatTemperature(latest?.temperature)}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Temperature</p>
                                 </Card>
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Droplets className="w-5 h-5 text-blue-500" />{trend(latest?.humidity, prev?.humidity)}</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Droplets className="w-5 h-5 text-blue-500" />
+                                        {trend(latest?.humidity, prev?.humidity)}
+                                    </div>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{latest?.humidity ? `${latest.humidity}%` : 'N/A'}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Humidity</p>
                                 </Card>
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Droplets className="w-5 h-5 text-green-500" />{trend(latest?.soilMoisture, prev?.soilMoisture)}</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Droplets className="w-5 h-5 text-green-500" />
+                                        {trend(latest?.soilMoisture, prev?.soilMoisture)}
+                                    </div>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{latest?.soilMoisture ? `${latest.soilMoisture}%` : 'N/A'}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Soil Moisture</p>
                                 </Card>
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Sun className="w-5 h-5 text-yellow-500" />{trend(latest?.lightLevel, prev?.lightLevel)}</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Sun className="w-5 h-5 text-yellow-500" />
+                                        {trend(latest?.lightLevel, prev?.lightLevel)}
+                                    </div>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{latest?.lightLevel || 'N/A'}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Light Level</p>
                                 </Card>
@@ -320,8 +368,26 @@ export default function SensorReadings() {
                             <Card title="Reading History">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
-                                        <thead><tr className="border-b border-gray-200 dark:border-gray-700"><th className="px-4 py-3 text-left font-medium text-gray-500">Time</th><th className="px-4 py-3 text-left font-medium text-gray-500">Temp</th><th className="px-4 py-3 text-left font-medium text-gray-500">Humidity</th><th className="px-4 py-3 text-left font-medium text-gray-500">Soil</th><th className="px-4 py-3 text-left font-medium text-gray-500">Light</th></tr></thead>
-                                        <tbody>{readings.map((r, i) => (<tr key={i} className="border-b border-gray-100 dark:border-gray-800"><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{formatDate(r.timestamp, 'time')}</td><td className="px-4 py-3">{formatTemperature(r.temperature)}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.humidity ? `${r.humidity}%` : 'N/A'}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.soilMoisture ? `${r.soilMoisture}%` : 'N/A'}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.lightLevel || 'N/A'}</td></tr>))}</tbody>
+                                        <thead>
+                                            <tr className="border-b border-gray-200 dark:border-gray-700">
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Time</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Temp</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Humidity</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Soil</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Light</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {readings.map((r, i) => (
+                                                <tr key={i} className="border-b border-gray-100 dark:border-gray-800">
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{formatDate(r.timestamp, 'time')}</td>
+                                                    <td className="px-4 py-3">{formatTemperature(r.temperature)}</td>
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.humidity ? `${r.humidity}%` : 'N/A'}</td>
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.soilMoisture ? `${r.soilMoisture}%` : 'N/A'}</td>
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.lightLevel || 'N/A'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
                                     </table>
                                 </div>
                             </Card>
@@ -334,12 +400,9 @@ export default function SensorReadings() {
             {activeTab === 'storage' && !hasStorageAccess && (
                 <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl border-2 border-yellow-300 dark:border-yellow-700 text-center">
                     <AlertTriangle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-                    <h2 className="text-xl font-bold text-yellow-800 dark:text-yellow-300 mb-2">
-                        Storage Monitoring Not Available
-                    </h2>
+                    <h2 className="text-xl font-bold text-yellow-800 dark:text-yellow-300 mb-2">Storage Monitoring Not Available</h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
-                        Your plan ({user?.selectedPlan}) does not include Storage Monitoring.
-                        Upgrade to Full Suite to access CO2 and PIR sensors.
+                        Your plan ({planName}) does not include Storage Monitoring. Upgrade to access CO2 and PIR sensors.
                     </p>
                     <Link to="/plans" className="inline-block px-6 py-3 bg-yellow-600 text-white rounded-xl font-semibold hover:bg-yellow-700">
                         Upgrade Plan
@@ -364,22 +427,34 @@ export default function SensorReadings() {
                         <>
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Thermometer className="w-5 h-5 text-red-500" />{trend(storageLatest?.temperature, storagePrev?.temperature)}</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Thermometer className="w-5 h-5 text-red-500" />
+                                        {trend(storageLatest?.temperature, storagePrev?.temperature)}
+                                    </div>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatTemperature(storageLatest?.temperature)}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Temperature</p>
                                 </Card>
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Droplets className="w-5 h-5 text-blue-500" />{trend(storageLatest?.humidity, storagePrev?.humidity)}</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Droplets className="w-5 h-5 text-blue-500" />
+                                        {trend(storageLatest?.humidity, storagePrev?.humidity)}
+                                    </div>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{storageLatest?.humidity ? `${storageLatest.humidity}%` : 'N/A'}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Humidity</p>
                                 </Card>
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Bug className="w-5 h-5 text-purple-500" />{trend(storageLatest?.co2, storagePrev?.co2)}</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Bug className="w-5 h-5 text-purple-500" />
+                                        {trend(storageLatest?.co2, storagePrev?.co2)}
+                                    </div>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{storageLatest?.co2 ? `${storageLatest.co2} ppm` : 'N/A'}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">CO2 Level</p>
                                 </Card>
                                 <Card>
-                                    <div className="flex items-center justify-between mb-2"><Rat className="w-5 h-5 text-orange-500" />{storageLatest?.motion ? <span className="text-xs text-red-500 font-bold">🐀 Active</span> : <span className="text-xs text-green-500">Clear</span>}</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Rat className="w-5 h-5 text-orange-500" />
+                                        {storageLatest?.motion ? <span className="text-xs text-red-500 font-bold">🐀 Active</span> : <span className="text-xs text-green-500">Clear</span>}
+                                    </div>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{storageLatest?.motion ? 'Detected' : 'None'}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Motion (Rats)</p>
                                 </Card>
@@ -388,8 +463,26 @@ export default function SensorReadings() {
                             <Card title="Storage Reading History">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
-                                        <thead><tr className="border-b border-gray-200 dark:border-gray-700"><th className="px-4 py-3 text-left font-medium text-gray-500">Time</th><th className="px-4 py-3 text-left font-medium text-gray-500">Temp</th><th className="px-4 py-3 text-left font-medium text-gray-500">Humidity</th><th className="px-4 py-3 text-left font-medium text-gray-500">CO2</th><th className="px-4 py-3 text-left font-medium text-gray-500">Motion</th></tr></thead>
-                                        <tbody>{storageReadings.map((r, i) => (<tr key={i} className="border-b border-gray-100 dark:border-gray-800"><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{formatDate(r.timestamp, 'time')}</td><td className="px-4 py-3">{formatTemperature(r.temperature)}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.humidity ? `${r.humidity}%` : 'N/A'}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.co2 ? `${r.co2} ppm` : 'N/A'}</td><td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.motion ? '🐀 Detected' : 'Clear'}</td></tr>))}</tbody>
+                                        <thead>
+                                            <tr className="border-b border-gray-200 dark:border-gray-700">
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Time</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Temp</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Humidity</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">CO2</th>
+                                                <th className="px-4 py-3 text-left font-medium text-gray-500">Motion</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {storageReadings.map((r, i) => (
+                                                <tr key={i} className="border-b border-gray-100 dark:border-gray-800">
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{formatDate(r.timestamp, 'time')}</td>
+                                                    <td className="px-4 py-3">{formatTemperature(r.temperature)}</td>
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.humidity ? `${r.humidity}%` : 'N/A'}</td>
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.co2 ? `${r.co2} ppm` : 'N/A'}</td>
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.motion ? '🐀 Detected' : 'Clear'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
                                     </table>
                                 </div>
                             </Card>

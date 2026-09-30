@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { usePlanAccess } from '../../hooks/usePlanAccess';
 import { getFarms } from '../../api/farms';
 import { getDevices, deleteDevice } from '../../api/devices';
 import axios from 'axios';
@@ -20,14 +21,15 @@ export default function DeviceList() {
     const isFarmer = user?.role === 'farmer';
     const canManage = ['farmer', 'manager'].includes(user?.role);
 
+    const { allowed: hasIotAccess, loading: planLoading, planName } = usePlanAccess('iot_field_sensors');
+
     const [devices, setDevices] = useState([]);
     const [virtualDevices, setVirtualDevices] = useState([]);
     const [farms, setFarms] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const hasIotAccess = ['Pro', 'Full Suite'].includes(user?.selectedPlan);
-
     useEffect(() => {
+        if (planLoading) return;
         if (!hasIotAccess) {
             setLoading(false);
             return;
@@ -53,13 +55,12 @@ export default function DeviceList() {
             setLoading(false);
         }
 
-        // Fetch virtual devices
         axios.get(`${API_BASE}/farm/devices/virtual`, {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then((res) => setVirtualDevices(res.data.data?.devices || []))
             .catch(() => setVirtualDevices([]));
-    }, [isFarmer, user, hasIotAccess]);
+    }, [isFarmer, user, hasIotAccess, planLoading]);
 
     const handleDelete = async (id) => {
         if (confirm('Delete?')) {
@@ -78,7 +79,7 @@ export default function DeviceList() {
         return colors[zone] || colors.field;
     };
 
-    if (loading) return <Spinner size="lg" className="mt-20" />;
+    if (loading || planLoading) return <Spinner size="lg" className="mt-20" />;
 
     if (!hasIotAccess) {
         return (
@@ -90,8 +91,8 @@ export default function DeviceList() {
                         Feature Not Available
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
-                        Your plan ({user?.selectedPlan || 'Basic'}) does not include IoT Devices.
-                        Upgrade to Pro or Full Suite to connect sensors.
+                        Your plan ({planName || 'Basic'}) does not include IoT Devices.
+                        Upgrade to access sensor nodes.
                     </p>
                     <Link to="/plans" className="inline-block px-6 py-3 bg-yellow-600 text-white rounded-xl font-semibold hover:bg-yellow-700">
                         Upgrade Plan
@@ -152,8 +153,8 @@ export default function DeviceList() {
                                             )}
                                         </div>
                                         <p className="text-sm text-gray-500">
-                                            {device.isVirtualDevice 
-                                                ? 'Auto-generated from weather + location' 
+                                            {device.isVirtualDevice
+                                                ? 'Auto-generated from weather + location'
                                                 : `Last seen: ${formatDate(device.lastSeen, 'relative')}`}
                                         </p>
                                     </div>

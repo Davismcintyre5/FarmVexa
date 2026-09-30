@@ -1,7 +1,12 @@
+// ==================== SCOPE TYPES ====================
+
+export type Scope = 'pending' | 'active' | 'expired' | 'rejected';
+
 // ==================== USER TYPES ====================
 
 export interface User {
-  _id: string;
+  _id?: string;
+  id?: string;
   name: string;
   email: string;
   phone?: string;
@@ -10,13 +15,92 @@ export interface User {
   subCounty?: string;
   approvalStatus?: 'pending' | 'approved' | 'rejected';
   selectedPlan?: string;
+  paymentStatus?: 'paid' | 'unpaid' | 'failed' | 'pending_verification';
+  paymentMethod?: string;
+  paymentReference?: string;
+  paymentDate?: string;
+  subscriptionStatus?: 'active' | 'expired' | 'pending_renewal' | 'cancelled';
+  subscriptionExpiry?: string | null;
   farm?: string;
   lastLogin?: string;
-  subscriptionExpiry?: string;
-  subscriptionStatus?: 'active' | 'expired' | 'pending';
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// ==================== INVOICE + PAYMENT TYPES ====================
+
+export interface PaymentInstruction {
+  code: 'mpesa_stk' | 'mpesa_send_money' | 'mpesa_till' | 'mpesa_paybill' | 'bank' | 'cash' | 'stripe';
+  title: string;
+  description: string;
+  steps: string[];
+  recipient: {
+    phone?: string;
+    tillNumber?: string;
+    paybillNumber?: string;
+    accountNumber?: string;
+    bankName?: string;
+    accountName?: string;
+    branch?: string;
+    swift?: string;
+  };
+  action?: {
+    type: 'stk' | 'stripe';
+    label: string;
+  };
+}
+
+export interface InvoiceLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+}
+
+export interface Invoice {
+  _id?: string;
+  invoiceNumber: string;
+  amountDue: number;
+  amountPaid: number;
+  total: number;
+  currency: string;
+  dueDate?: string;
+  paidAt?: string;
+  status: 'unpaid' | 'paid' | 'failed' | 'pending_verification' | 'cancelled';
+  paymentMethod?: string;
+  paymentRef?: string;
+  paymentInstructions?: PaymentInstruction[];
+  invoiceUrl?: string;
+  lineItems?: InvoiceLineItem[];
+  subtotal?: number;
+  discount?: number;
+  tax?: number;
+}
+
+export interface PaymentMethod {
+  id: string;
+  code: 'mpesa_stk' | 'mpesa_send_money' | 'mpesa_till' | 'mpesa_paybill' | 'bank' | 'cash' | 'stripe';
+  label: string;
+  mode: 'auto' | 'manual';
+  config?: Record<string, any>;
+  title: string;
+  description?: string;
+  steps?: string[];
+  recipient?: {
+    phone?: string;
+    tillNumber?: string;
+    paybillNumber?: string;
+    accountNumber?: string;
+    bankName?: string;
+    accountName?: string;
+    branch?: string;
+    swift?: string;
+  };
+  action?: {
+    type: 'stk' | 'stripe';
+    label: string;
+  };
 }
 
 // ==================== FARM TYPES ====================
@@ -63,11 +147,21 @@ export interface Field {
 export interface Device {
   _id: string;
   name: string;
-  type: string;
+  deviceId?: string;
+  type?: string;
   serialNumber?: string;
-  farm: string;
+  sensorType?: string;
+  zone?: 'field' | 'storage' | 'greenhouse' | 'livestock';
+  farm: string | { _id: string; name: string };
+  field?: { _id: string; name: string };
   status?: 'online' | 'offline' | 'maintenance';
+  batteryLevel?: number;
+  firmwareVersion?: string;
+  lastSeen?: string;
   lastReading?: string;
+  lastReadingAt?: string;
+  isVirtual?: boolean;
+  isVirtualDevice?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -78,10 +172,18 @@ export interface Animal {
   _id: string;
   name?: string;
   tag?: string;
+  tagId?: string;
   type: string;
   breed?: string;
+  category?: string;
+  gender?: 'male' | 'female';
+  weight?: number;
   farm: string;
   status?: 'active' | 'sold' | 'dead';
+  isBatch?: boolean;
+  batchName?: string;
+  batchQuantity?: number;
+  batchCurrent?: number;
   birthDate?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -91,12 +193,20 @@ export interface Animal {
 
 export interface HealthRecord {
   _id: string;
-  animal: string;
-  type: 'vaccination' | 'treatment' | 'checkup';
+  animal: string | { _id: string; name?: string; tagId?: string };
+  type?: 'vaccination' | 'treatment' | 'checkup' | 'disease' | 'deworming';
+  recordType?: 'vaccination' | 'treatment' | 'checkup' | 'disease' | 'deworming';
   description?: string;
+  diagnosis?: string;
+  treatment?: string;
+  medication?: string;
+  dosage?: string;
   date: string;
   cost?: number;
   vet?: string;
+  vetName?: string;
+  vetContact?: string;
+  nextCheckup?: string;
 }
 
 // ==================== PRODUCTION TYPES ====================
@@ -104,11 +214,16 @@ export interface HealthRecord {
 export interface ProductionRecord {
   _id: string;
   farm: string;
-  product: string;
+  type: string;
+  product?: string;
   quantity: number;
   unit: string;
+  quality?: 'grade_a' | 'grade_b' | 'grade_c';
   date: string;
   notes?: string;
+  animal?: { _id: string; name?: string; tagId?: string };
+  field?: { _id: string; name: string };
+  totalValue?: number;
 }
 
 // ==================== INVENTORY TYPES ====================
@@ -117,11 +232,18 @@ export interface InventoryItem {
   _id: string;
   farm: string;
   name: string;
+  product?: string;
   category: string;
   quantity: number;
   unit: string;
   pricePerUnit?: number;
+  cost?: number;
+  minimumStock?: number;
   reorderLevel?: number;
+  lowStockAlert?: number;
+  purchaseDate?: string;
+  expiryDate?: string;
+  supplier?: string;
 }
 
 // ==================== EQUIPMENT TYPES ====================
@@ -130,10 +252,15 @@ export interface Equipment {
   _id: string;
   farm: string;
   name: string;
-  type: string;
+  type?: string;
+  category?: string;
   status?: 'active' | 'maintenance' | 'retired';
+  condition?: 'new' | 'good' | 'fair' | 'poor' | 'broken';
   purchaseDate?: string;
   lastMaintenance?: string;
+  nextMaintenance?: string;
+  cost?: number;
+  maintenanceFrequency?: string;
 }
 
 // ==================== FINANCE TYPES ====================
@@ -146,6 +273,16 @@ export interface Transaction {
   amount: number;
   date: string;
   description?: string;
+}
+
+export interface PriceItem {
+  _id: string;
+  farm: string;
+  product: string;
+  category: string;
+  unit: string;
+  pricePerUnit: number;
+  quality?: 'grade_a' | 'grade_b' | 'grade_c';
 }
 
 // ==================== TEAM TYPES ====================
@@ -224,14 +361,28 @@ export interface Alert {
 // ==================== WEATHER TYPES ====================
 
 export interface WeatherData {
-  temperature: number;
+  temperature: {
+    min?: number;
+    max?: number;
+    avg?: number;
+  } | number;
   humidity: number;
   rainfall?: number;
+  windSpeed?: number;
   condition: string;
+  updatedAt?: string;
   forecast?: Array<{
     date: string;
-    temperature: number;
+    temperature?: number;
+    tempMin?: number;
+    tempMax?: number;
     condition: string;
+    rainfall?: number;
+  }>;
+  alerts?: Array<{
+    message: string;
+    severity: 'low' | 'medium' | 'high';
+    recommendation?: string;
   }>;
 }
 
@@ -241,9 +392,15 @@ export interface SensorReading {
   _id: string;
   field?: string;
   device?: string;
-  type: string;
-  value: number;
-  unit: string;
+  type?: string;
+  value?: number;
+  unit?: string;
+  temperature?: number;
+  humidity?: number;
+  soilMoisture?: number;
+  lightLevel?: number;
+  co2?: number;
+  motion?: boolean;
   timestamp: string;
 }
 
@@ -300,22 +457,6 @@ export interface Subscription {
   };
 }
 
-// ==================== PAYMENT TYPES ====================
-
-export interface PaymentMethod {
-  id: string;
-  type: 'mpesa_stk' | 'mpesa_send_money' | 'mpesa_till' | 'mpesa_paybill' | 'bank' | 'card';
-  name: string;
-  details?: {
-    phoneNumber?: string;
-    tillNumber?: string;
-    paybill?: string;
-    accountNumber?: string;
-    bankName?: string;
-    accountName?: string;
-  };
-}
-
 // ==================== SCAN TYPES ====================
 
 export interface CropScanResult {
@@ -323,7 +464,12 @@ export interface CropScanResult {
   field: Field;
   cropType: string;
   imageUrl: string;
-  analysis: {
+  diseaseDetected?: string;
+  severity?: 'low' | 'moderate' | 'high';
+  confidence?: number;
+  symptoms?: string;
+  recommendation?: string;
+  analysis?: {
     disease?: string;
     confidence?: number;
     severity?: string;
@@ -339,17 +485,12 @@ export interface FieldScanResult {
   status: 'completed' | 'failed' | 'processing';
   summary?: {
     diseaseCount?: number;
-    weeds?: {
-      hotspots?: any[];
-    };
+    weeds?: { hotspots?: any[] };
     healthyPercentage?: number;
     diseases?: Array<{
       name: string;
       severity: string;
-      location?: {
-        lat: number;
-        lng: number;
-      };
+      location?: { lat: number; lng: number };
     }>;
   };
   photos?: Array<{
@@ -385,6 +526,7 @@ export interface PublicSettings {
   externalCameraInUrl?: string;
   externalCameraOutUrl?: string;
   marketEnabled?: boolean;
+  virtualDevicesEnabled?: boolean;
   downloads?: Array<{
     _id: string;
     name: string;
@@ -398,16 +540,8 @@ export interface PublicSettings {
     enabled: boolean;
     maxPhotosPerScan?: number;
     captureInterval?: number;
-    farmerLimits?: {
-      daily: number;
-      weekly: number;
-      monthly: number;
-    };
-    fieldLimits?: {
-      daily: number;
-      weekly: number;
-      monthly: number;
-    };
+    farmerLimits?: { daily: number; weekly: number; monthly: number };
+    fieldLimits?: { daily: number; weekly: number; monthly: number };
     allowedCropTypes?: string[];
     requireGpsAccuracy?: number;
     preFilterEnabled?: boolean;
@@ -444,11 +578,11 @@ export type AuthStackParamList = {
   Pricing: undefined;
   Register: { plan?: string } | undefined;
   GetAccess: undefined;
-  Checkout: undefined;
+  Pending: undefined;
+  Invoice: { invoiceNumber: string };
   Renewal: undefined;
-  PendingApproval: undefined;
   ForgotPassword: undefined;
-  ResetPassword: undefined;
+  ResetPassword: { token: string };
 };
 
 export type MainTabParamList = {
@@ -511,5 +645,26 @@ export type ProfileStackParamList = {
   DownloadsTab: undefined;
   SupportTab: undefined;
   Plans: undefined;
-  UpgradeCheckout: { planName: string };
 };
+
+// ==================== FEATURE KEY TYPES ====================
+
+export type FeatureKey =
+  | 'crop_scan'
+  | 'field_scan'
+  | 'field_scan_manual'
+  | 'livestock'
+  | 'health'
+  | 'production'
+  | 'inventory'
+  | 'finance'
+  | 'weather'
+  | 'ai_chat'
+  | 'team'
+  | 'market'
+  | 'reports'
+  | 'alerts'
+  | 'iot_field_sensors'
+  | 'storage_monitoring'
+  | 'co2_detection'
+  | 'pir_detection';

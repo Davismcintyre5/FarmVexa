@@ -1,7 +1,4 @@
-import Login from './Login';
-import Register from './Register';
-import ForgotPassword from './ForgotPassword';
-import ResetPassword from './ResetPassword';
-import PendingApproval from './PendingApproval';
-
-export { Login, Register, ForgotPassword, ResetPassword, PendingApproval };
+export { default as Login } from './Login';
+export { default as Register } from './Register';
+export { default as ForgotPassword } from './ForgotPassword';
+export { default as ResetPassword } from './ResetPassword';

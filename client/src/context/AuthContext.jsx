@@ -1,72 +1,135 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import * as authApi from '../api/auth';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [invoice, setInvoice] = useState(null);
+    const [scope, setScope] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        if (token) {
-            authApi.getProfile()
-                .then((res) => setUser(res.data.data.user))
-                .catch((err) => {
-                    if (err.response?.status === 401) {
-                        logout();
-                    }
-                })
-                .finally(() => setIsLoading(false));
-        } else {
-            setIsLoading(false);
+    const applySession = useCallback((data) => {
+        if (data?.token) {
+            localStorage.setItem('token', data.token);
+            setToken(data.token);
         }
-    }, [token]);
-
-    const login = async (data) => {
-        try {
-            const res = await authApi.login(data);
-            const { user, token } = res.data.data;
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
-            setToken(token);
-            setUser(user);
-            return user;
-        } catch (err) {
-            if (err.response?.status === 402) {
-                const responseData = err.response.data?.data;
-                if (responseData?.token) {
-                    localStorage.setItem('token', responseData.token);
-                    localStorage.setItem('user', JSON.stringify(responseData.user));
-                    setToken(responseData.token);
-                    setUser(responseData.user);
-                }
-                throw err;
-            }
-            throw err;
+        if (data?.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            setUser(data.user);
         }
-    };
+        setInvoice(data?.invoice || null);
+        setScope(data?.scope || (data?.user?.approvalStatus === 'pending' ? 'pending' : 'active'));
+    }, []);
 
-    const logout = () => {
+    const clearSession = useCallback(() => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setToken(null);
         setUser(null);
+        setInvoice(null);
+        setScope(null);
+    }, []);
+
+    const refresh = useCallback(async () => {
+        try {
+            const res = await authApi.me();
+            const data = res.data?.data || {};
+            setUser(data.user || null);
+            setInvoice(data.invoice || null);
+            setScope(data.scope || null);
+            if (data.user) {
+                localStorage.setItem('user', JSON.stringify(data.user));
+            }
+            return data;
+        } catch (err) {
+            if (err.response?.status === 401) clearSession();
+            throw err;
+        }
+    }, [clearSession]);
+
+    // Initial load
+    useEffect(() => {
+        if (!token) {
+            setIsLoading(false);
+            return;
+        }
+
+        authApi.me()
+            .then((res) => {
+                const data = res.data?.data || {};
+                setUser(data.user || null);
+                setInvoice(data.invoice || null);
+                setScope(data.scope || null);
+                if (data.user) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                }
+            })
+            .catch((err) => {
+                if (err.response?.status === 401) clearSession();
+            })
+            .finally(() => setIsLoading(false));
+    }, [token, clearSession]);
+
+    // Auto-refresh session every 60s while logged in
+    useEffect(() => {
+        if (!token) return;
+        const id = setInterval(() => {
+            refresh().catch(() => {});
+        }, 60000);
+        return () => clearInterval(id);
+    }, [token, refresh]);
+
+    // Refresh on window focus (user returns to tab)
+    useEffect(() => {
+        if (!token) return;
+        const handler = () => {
+            refresh().catch(() => {});
+        };
+        window.addEventListener('focus', handler);
+        return () => window.removeEventListener('focus', handler);
+    }, [token, refresh]);
+
+    const login = async (data) => {
+        const res = await authApi.login(data);
+        const payload = res.data?.data || {};
+        applySession(payload);
+        return payload;
+    };
+
+    const logout = () => {
+        clearSession();
     };
 
     const register = async (data) => {
         const res = await authApi.register(data);
-        return res.data;
+        const payload = res.data?.data || {};
+        applySession(payload);
+        return payload;
     };
 
     const updateUser = (userData) => {
-        setUser((prev) => ({ ...prev, ...userData }));
+        setUser((prev) => {
+            const merged = { ...prev, ...userData };
+            localStorage.setItem('user', JSON.stringify(merged));
+            return merged;
+        });
     };
 
     return (
         <AuthContext.Provider value={{
-            user, token, isAuthenticated: !!token, isLoading,
-            login, logout, register, updateUser,
+            user,
+            invoice,
+            scope,
+            token,
+            isAuthenticated: !!token,
+            isLoading,
+            login,
+            logout,
+            register,
+            updateUser,
+            refresh,
         }}>
             {children}
         </AuthContext.Provider>

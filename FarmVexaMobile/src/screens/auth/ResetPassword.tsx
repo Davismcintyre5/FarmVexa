@@ -3,25 +3,22 @@ import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import axios from 'axios';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { authApi } from '../../api/axios';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
-import Logo from '../../components/ui/Logo';
+import AuthFrame from '../../components/layout/AuthFrame';
 import { colors, spacing } from '../../theme';
-import { Ionicons } from '@expo/vector-icons';
-
-const API_URL = 'https://farmvexaserver.pxxl.click/api';
 
 export default function ResetPassword() {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const tokenFromUrl = route.params?.token || '';
+
   const [form, setForm] = useState({
-    token: '',
+    token: tokenFromUrl,
     newPassword: '',
     confirmPassword: '',
   });
@@ -48,29 +45,11 @@ export default function ResetPassword() {
 
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${API_URL}/farm/auth/reset-password`,
-        {
-          token: form.token,
-          newPassword: form.newPassword,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      if (response.data?.success) {
-        setSuccess(true);
-      } else {
-        Alert.alert('Error', response.data?.message || 'Failed to reset password');
-      }
+      // Token in URL, password in body
+      await authApi.resetPassword(form.token, form.newPassword);
+      setSuccess(true);
     } catch (err: any) {
-      Alert.alert(
-        'Error',
-        err.response?.data?.message || 'Failed to reset password. Please check your token and try again.'
-      );
+      Alert.alert('Error', err.response?.data?.message || 'Failed to reset password');
     } finally {
       setLoading(false);
     }
@@ -78,138 +57,78 @@ export default function ResetPassword() {
 
   if (success) {
     return (
-      <View style={styles.successContainer}>
-        <Logo size="md" />
-        <View style={styles.successIconContainer}>
-          <Ionicons name="checkmark-circle" size={64} color={colors.primary[500]} />
-        </View>
+      <AuthFrame>
         <Text style={styles.successTitle}>Password Reset!</Text>
         <Text style={styles.successText}>
-          Your password has been successfully changed. You can now login with your new password.
+          Your password has been changed successfully.
         </Text>
         <Button onPress={() => navigation.navigate('Login')} fullWidth size="lg">
           Go to Login
         </Button>
-      </View>
+      </AuthFrame>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.header}>
-          <Logo size="md" />
-        </View>
+    <AuthFrame>
+      <Text style={styles.title}>Reset Password</Text>
+      <Text style={styles.subtitle}>
+        Enter the reset token from your email and choose a new password.
+      </Text>
 
-        <Text style={styles.title}>Reset Password</Text>
-        <Text style={styles.subtitle}>
-          Enter the reset token from your email and your new password.
-        </Text>
+      <Input
+        label="Reset Token"
+        value={form.token}
+        onChangeText={(text) => handleChange('token', text)}
+        placeholder="Paste token from email"
+        autoCapitalize="none"
+        editable={!tokenFromUrl}
+      />
+      <Input
+        label="New Password"
+        value={form.newPassword}
+        onChangeText={(text) => handleChange('newPassword', text)}
+        placeholder="Min 6 characters"
+        secureTextEntry
+      />
+      <Input
+        label="Confirm New Password"
+        value={form.confirmPassword}
+        onChangeText={(text) => handleChange('confirmPassword', text)}
+        placeholder="Repeat new password"
+        secureTextEntry
+      />
 
-        <View style={styles.form}>
-          <Input
-            label="Reset Token"
-            value={form.token}
-            onChangeText={(text) => handleChange('token', text)}
-            placeholder="Enter reset token from email"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <Input
-            label="New Password"
-            value={form.newPassword}
-            onChangeText={(text) => handleChange('newPassword', text)}
-            placeholder="Min 6 characters"
-            secureTextEntry
-          />
-
-          <Input
-            label="Confirm New Password"
-            value={form.confirmPassword}
-            onChangeText={(text) => handleChange('confirmPassword', text)}
-            placeholder="Repeat new password"
-            secureTextEntry
-          />
-
-          <Button onPress={handleSubmit} loading={loading} fullWidth size="lg">
-            Reset Password
-          </Button>
-
-          <Button
-            onPress={() => navigation.navigate('Login')}
-            variant="ghost"
-            fullWidth
-          >
-            Back to Login
-          </Button>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <Button onPress={handleSubmit} loading={loading} fullWidth size="lg">
+        Reset Password
+      </Button>
+    </AuthFrame>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: spacing.lg,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.gray[900],
-    marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: colors.gray[500],
-    marginBottom: spacing.lg,
-    lineHeight: 22,
-  },
-  form: {
-    gap: spacing.md,
-  },
-  successContainer: {
-    flex: 1,
-    backgroundColor: colors.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.lg,
-    gap: spacing.md,
-  },
-  successIconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: colors.primary[50],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  successTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.gray[900],
-  },
-  successText: {
-    fontSize: 16,
+    fontSize: 13,
     color: colors.gray[500],
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  successTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: colors.primary[700],
+    textAlign: 'center',
+  },
+  successText: {
+    fontSize: 14,
+    color: colors.gray[600],
+    textAlign: 'center',
+    marginBottom: spacing.md,
   },
 });

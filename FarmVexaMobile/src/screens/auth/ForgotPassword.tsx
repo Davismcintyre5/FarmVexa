@@ -3,21 +3,16 @@ import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import axios from 'axios';
+import { authApi } from '../../api/axios';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
-import Logo from '../../components/ui/Logo';
+import AuthFrame from '../../components/layout/AuthFrame';
 import { colors, spacing } from '../../theme';
 import { isValidEmail } from '../../utils/validators';
 import { Ionicons } from '@expo/vector-icons';
-
-const API_URL = 'https://farmvexaserver.pxxl.click/api';
 
 export default function ForgotPassword() {
   const navigation = useNavigation<any>();
@@ -33,39 +28,10 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${API_URL}/farm/auth/forgot-password`,
-        { email },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      // Check if response is successful
-      if (response.data?.success === true) {
-        setSent(true);
-      } else {
-        // Server returns success:false but might still send email
-        // Check message
-        const message = response.data?.message || '';
-        if (message.includes('sent')) {
-          setSent(true);
-        } else {
-          Alert.alert('Error', message || 'Failed to send reset email');
-        }
-      }
+      await authApi.forgotPassword(email);
+      setSent(true);
     } catch (err: any) {
-      // Network error
-      if (err.message === 'Network Error') {
-        Alert.alert('Error', 'Network error. Please check your connection and try again.');
-      } else {
-        Alert.alert(
-          'Error',
-          err.response?.data?.message || 'Failed to send reset email. Please try again.'
-        );
-      }
+      Alert.alert('Error', err.response?.data?.message || 'Failed to send reset email');
     } finally {
       setLoading(false);
     }
@@ -73,137 +39,94 @@ export default function ForgotPassword() {
 
   if (sent) {
     return (
-      <View style={styles.successContainer}>
-        <Logo size="md" />
-        <View style={styles.successIconContainer}>
-          <Ionicons name="mail" size={64} color={colors.primary[500]} />
+      <AuthFrame>
+        <View style={styles.iconBox}>
+          <Ionicons name="mail" size={48} color={colors.primary[500]} />
         </View>
         <Text style={styles.successTitle}>Check Your Email</Text>
         <Text style={styles.successText}>
-          We've sent password reset instructions to{' '}
-          <Text style={styles.successEmail}>{email}</Text>
+          We've sent password reset instructions to {email}
         </Text>
         <Text style={styles.successNote}>
-          The link will expire in 30 minutes. Didn't receive it? Check your spam folder.
+          The link expires in 30 minutes.
         </Text>
         <Button onPress={() => navigation.navigate('Login')} fullWidth size="lg">
           Back to Login
         </Button>
-      </View>
+      </AuthFrame>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+    <AuthFrame>
+      <Text style={styles.title}>Forgot Password</Text>
+      <Text style={styles.subtitle}>
+        Enter your email and we'll send you reset instructions.
+      </Text>
+
+      <Input
+        label="Email Address"
+        value={email}
+        onChangeText={setEmail}
+        placeholder="hdm@gmail.com"
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+
+      <Button onPress={handleSubmit} loading={loading} fullWidth size="lg">
+        Send Reset Link
+      </Button>
+
+      <Button
+        onPress={() => navigation.navigate('Login')}
+        variant="ghost"
+        fullWidth
       >
-        <View style={styles.header}>
-          <Logo size="md" />
-        </View>
-        
-        <Text style={styles.title}>Forgot Password</Text>
-        <Text style={styles.subtitle}>
-          Enter your email address and we'll send you instructions to reset your password.
-        </Text>
-
-        <View style={styles.form}>
-          <Input
-            label="Email Address"
-            value={email}
-            onChangeText={setEmail}
-            placeholder="hdm@gmail.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <Button onPress={handleSubmit} loading={loading} fullWidth size="lg">
-            Send Reset Link
-          </Button>
-
-          <Button
-            onPress={() => navigation.navigate('Login')}
-            variant="ghost"
-            fullWidth
-          >
-            Back to Login
-          </Button>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        Back to Login
+      </Button>
+    </AuthFrame>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: spacing.lg,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.gray[900],
-    marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 13,
     color: colors.gray[500],
-    marginBottom: spacing.lg,
-    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: spacing.md,
   },
-  form: {
-    gap: spacing.md,
-  },
-  successContainer: {
-    flex: 1,
-    backgroundColor: colors.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.lg,
-    gap: spacing.md,
-  },
-  successIconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+  iconBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: colors.primary[50],
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: spacing.md,
   },
   successTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.gray[900],
+    textAlign: 'center',
   },
   successText: {
-    fontSize: 16,
-    color: colors.gray[500],
+    fontSize: 14,
+    color: colors.gray[600],
     textAlign: 'center',
-    lineHeight: 24,
-  },
-  successEmail: {
-    fontWeight: '600',
-    color: colors.gray[900],
+    lineHeight: 20,
   },
   successNote: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.gray[400],
     textAlign: 'center',
-    marginBottom: spacing.lg,
-    lineHeight: 20,
+    marginBottom: spacing.md,
   },
 });

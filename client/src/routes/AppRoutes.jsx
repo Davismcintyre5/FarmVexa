@@ -6,7 +6,9 @@ import MobileLayout from '../components/layout/MobileLayout';
 import AuthLayout from '../components/layout/AuthLayout';
 import PublicLayout from '../components/public/PublicLayout';
 
-import { Login, Register, ForgotPassword, ResetPassword, PendingApproval } from '../pages/auth/auth';
+import { Login, Register, ForgotPassword, ResetPassword } from '../pages/auth/auth';
+import Invoice from '../pages/auth/Invoice';
+import Pending from '../pages/pending/Pending';
 import { FarmerDashboard } from '../pages/dashboard/dashboard';
 import { FarmList, FarmDetail, FarmCreate, FarmEdit } from '../pages/farms/farms';
 import { FieldList, FieldDetail, FieldCreate, FieldEdit } from '../pages/fields/fields';
@@ -26,20 +28,23 @@ import GetAccess from '../pages/public/GetAccess';
 import Market from '../pages/public/Market';
 import Documents from '../pages/public/Documents';
 import Pricing from '../pages/public/Pricing';
-import Checkout from '../pages/auth/Checkout';
 import Renewal from '../pages/auth/Renewal';
 import Plans from '../pages/plan/Plans';
 import UpgradeCheckout from '../pages/plan/UpgradeCheckout';
 import NotFound from '../pages/NotFound';
 
 const AppRoutes = () => {
-    const { user, isAuthenticated, isLoading } = useAuth();
+    const { user, isAuthenticated, isLoading, scope } = useAuth();
 
-    if (isLoading) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-            <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-    );
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+                <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    const isApprovedActive = isAuthenticated && scope === 'active';
 
     return (
         <Routes>
@@ -52,21 +57,32 @@ const AppRoutes = () => {
                 <Route path="/pricing" element={<Pricing />} />
             </Route>
 
+            {/* Public invoice (no layout — email link target) */}
+            <Route path="/invoice/:invoiceNumber" element={<Invoice />} />
+
             {/* Auth Routes */}
             <Route element={<AuthLayout />}>
-                <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
-                <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />} />
+                <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to={scope === 'pending' ? '/pending' : scope === 'expired' ? '/renewal' : '/dashboard'} />} />
+                <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to={scope === 'pending' ? '/pending' : '/dashboard'} />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
-                <Route path="/checkout" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Checkout />} />
                 <Route path="/renewal" element={<Renewal />} />
             </Route>
 
-            {/* Pending Approval */}
-            <Route path="/pending" element={isAuthenticated && user?.approvalStatus === 'pending' ? <PendingApproval /> : <Navigate to="/dashboard" />} />
+            {/* Pending hub */}
+            <Route
+                path="/pending"
+                element={
+                    !isAuthenticated
+                        ? <Navigate to="/login" replace />
+                        : scope === 'active'
+                        ? <Navigate to="/dashboard" replace />
+                        : <Pending />
+                }
+            />
 
             {/* Protected Dashboard Routes */}
-            <Route element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />}>
+            <Route element={isApprovedActive ? <DashboardLayout /> : <Navigate to={isAuthenticated ? '/pending' : '/login'} />}>
                 <Route path="/dashboard" element={<FarmerDashboard />} />
                 <Route path="/farms" element={<FarmList />} />
                 <Route path="/farms/new" element={<FarmCreate />} />
@@ -97,7 +113,7 @@ const AppRoutes = () => {
             </Route>
 
             {/* Mobile Routes */}
-            <Route element={isAuthenticated ? <MobileLayout /> : <Navigate to="/login" />}>
+            <Route element={isApprovedActive ? <MobileLayout /> : <Navigate to={isAuthenticated ? '/pending' : '/login'} />}>
                 <Route path="/m/" element={<FarmerDashboard />} />
                 <Route path="/m/farms" element={<FarmList />} />
                 <Route path="/m/scan" element={<CropScan />} />
@@ -113,7 +129,6 @@ const AppRoutes = () => {
                 <Route path="/m/settings" element={<Settings />} />
             </Route>
 
-            {/* Fallback */}
             <Route path="*" element={<NotFound />} />
         </Routes>
     );

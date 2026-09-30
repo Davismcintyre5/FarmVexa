@@ -6,6 +6,13 @@ import toast from 'react-hot-toast';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
+const planIcons = {
+    'Basic Monthly': '🌱',
+    'Basic': '🌱',
+    'Pro': '🚀',
+    'Full Suite': '💎',
+};
+
 export default function Plans() {
     const navigate = useNavigate();
     const [plansData, setPlansData] = useState(null);
@@ -26,20 +33,6 @@ export default function Plans() {
             .catch(() => toast.error('Failed to load plans'))
             .finally(() => setLoading(false));
     }, [navigate]);
-
-    const planIcons = {
-        'Basic Monthly': '🌱',
-        'Basic': '🌱',
-        'Pro': '🚀',
-        'Full Suite': '💎',
-    };
-
-    const features = {
-        'Basic Monthly': ['AI Crop Scanning', 'Field Scan (Phone)', 'Livestock', 'Finance', 'AI Chat', 'Market'],
-        'Basic': ['AI Crop Scanning', 'Field Scan (Phone)', 'Livestock', 'Finance', 'AI Chat', 'Market'],
-        'Pro': ['Everything in Basic', 'IoT Field Sensors', 'Field Scan with GPS', 'Soil Moisture', 'Temp & Humidity', 'Real-time Dashboard'],
-        'Full Suite': ['Everything in Pro', 'Storage Monitoring', 'CO2 Insect Detection', 'PIR Rat Detection', 'Pest Alert System', 'Priority Support'],
-    };
 
     const hasPendingUpgrade = !!plansData?.pendingUpgrade;
 
@@ -67,7 +60,6 @@ export default function Plans() {
                     )}
                 </div>
 
-                {/* Pending Upgrade Banner */}
                 {hasPendingUpgrade && (
                     <div className="mb-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl border-2 border-yellow-300 dark:border-yellow-700">
                         <div className="flex items-start gap-3">
@@ -131,14 +123,16 @@ export default function Plans() {
                                     </div>
                                 )}
 
-                                <ul className="space-y-2 mb-6 flex-grow">
-                                    {features[plan.name]?.map((feature, i) => (
-                                        <li key={i} className="flex items-start gap-2 text-xs text-gray-600">
-                                            <span className="text-green-600 font-bold flex-shrink-0">✓</span>
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
+                                {plan.features?.length > 0 && (
+                                    <ul className="space-y-2 mb-6 flex-grow">
+                                        {plan.features.slice(0, 6).map((feature, i) => (
+                                            <li key={i} className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                                <span className="text-green-600 font-bold flex-shrink-0">✓</span>
+                                                {feature.replace(/_/g, ' ')}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
 
                                 <div className="mt-auto">
                                     {isPendingTarget && (
@@ -146,12 +140,12 @@ export default function Plans() {
                                             <Clock className="w-4 h-4" /> Upgrade In Progress
                                         </button>
                                     )}
-                                    {!isPendingTarget && plan.status === 'current' && !allBlocked && (
+                                    {!isPendingTarget && plan.status === 'current' && (
                                         <button disabled className="w-full py-2.5 rounded-xl bg-green-100 text-green-700 font-semibold flex items-center justify-center gap-2">
                                             <CheckCircle className="w-4 h-4" /> Current Plan
                                         </button>
                                     )}
-                                    {!isPendingTarget && plan.status === 'purchased' && !allBlocked && (
+                                    {!isPendingTarget && plan.status === 'purchased' && (
                                         <button disabled className="w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-semibold flex items-center justify-center gap-2">
                                             <CheckCircle className="w-4 h-4" /> Purchased
                                         </button>
@@ -167,16 +161,6 @@ export default function Plans() {
                                     {allBlocked && !isPendingTarget && plan.status === 'upgrade_available' && (
                                         <button disabled className="w-full py-2.5 rounded-xl bg-gray-200 text-gray-500 font-semibold flex items-center justify-center gap-2">
                                             <Clock className="w-4 h-4" /> Blocked — Pending Upgrade
-                                        </button>
-                                    )}
-                                    {allBlocked && plan.status === 'current' && (
-                                        <button disabled className="w-full py-2.5 rounded-xl bg-green-100 text-green-700 font-semibold flex items-center justify-center gap-2">
-                                            <CheckCircle className="w-4 h-4" /> Current Plan
-                                        </button>
-                                    )}
-                                    {allBlocked && plan.status === 'purchased' && (
-                                        <button disabled className="w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-semibold flex items-center justify-center gap-2">
-                                            <CheckCircle className="w-4 h-4" /> Purchased
                                         </button>
                                     )}
                                     {plan.status === 'available' && !allBlocked && (

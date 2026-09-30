@@ -12,13 +12,14 @@ router.use('/models', require('./modelRoutes'));
 router.use('/public', require('./publicRoutes'));
 router.use('/payment-methods', require('./paymentMethodsRoutes'));
 router.use('/payment-models', require('./paymentModelsRoutes'));
+router.use('/payments', require('./paymentRecordsRoutes'));
 router.use('/weather-test', require('./weatherTestRoutes'));
 router.use('/backups', require('./backupRoutes'));
 router.use('/market', require('./marketRoutes'));
 router.use('/documents', require('./documentRoutes'));
-router.use('/payments', require('./paymentRecordsRoutes'));
+router.use('/virtual-device', require('./virtualDeviceRoutes'));
+router.use('/invoices', require('./invoiceRoutes'));
 router.use('/renewals', require('./renewalRoutes'));
 router.use('/plans', require('./planRoutes'));
-router.use('/virtual-device', require('./virtualDeviceRoutes'));
 
 module.exports = router;

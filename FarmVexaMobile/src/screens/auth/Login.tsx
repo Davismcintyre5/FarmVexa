@@ -4,8 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   TouchableOpacity,
   Alert,
 } from 'react-native';
@@ -13,7 +11,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { validateLogin } from '../../utils/validators';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
-import Logo from '../../components/ui/Logo';
+import AuthFrame from '../../components/layout/AuthFrame';
 import { colors, spacing } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
 import { publicApi } from '../../api/axios';
@@ -27,7 +25,8 @@ export default function Login() {
   const [allowRegister, setAllowRegister] = useState(true);
 
   React.useEffect(() => {
-    publicApi.getPublicSettings()
+    publicApi
+      .getPublicSettings()
       .then((res) => setAllowRegister(res.data.data?.allowSelfRegistration ?? true))
       .catch(() => setAllowRegister(true));
   }, []);
@@ -47,8 +46,16 @@ export default function Login() {
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
-      if (user.approvalStatus === 'pending') {
-        navigation.navigate('PendingApproval');
+
+      // Route by scope
+      const scope = (user as any).scope || 'active';
+
+      if (scope === 'pending' || scope === 'rejected') {
+        navigation.reset({ index: 0, routes: [{ name: 'Pending' }] });
+      } else if (scope === 'expired') {
+        navigation.reset({ index: 0, routes: [{ name: 'Renewal' }] });
+      } else {
+        // RootNavigator will handle transition to Main on auth success
       }
     } catch (err: any) {
       if (err.response?.status === 402) {
@@ -62,100 +69,75 @@ export default function Login() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+    <AuthFrame>
+      <Text style={styles.title}>Welcome Back</Text>
+      <Text style={styles.subtitle}>Sign in to your account</Text>
+
+      <Input
+        label="Email"
+        value={form.email}
+        onChangeText={(text) => handleChange('email', text)}
+        placeholder="you@example.com"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        error={errors.email}
+      />
+
+      <Input
+        label="Password"
+        value={form.password}
+        onChangeText={(text) => handleChange('password', text)}
+        placeholder="••••••••"
+        secureTextEntry
+        error={errors.password}
+      />
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ForgotPassword')}
+        style={styles.forgotPassword}
       >
-        <View style={styles.header}>
-          <Logo size="lg" showTagline />
-          <Text style={styles.subtitle}>Welcome Back</Text>
-        </View>
+        <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+      </TouchableOpacity>
 
-        <View style={styles.form}>
-          <Input
-            label="Email"
-            value={form.email}
-            onChangeText={(text) => handleChange('email', text)}
-            placeholder="hdm@gmail.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={errors.email}
-          />
+      <Button onPress={handleSubmit} loading={loading} fullWidth size="lg">
+        Sign In
+      </Button>
 
-          <Input
-            label="Password"
-            value={form.password}
-            onChangeText={(text) => handleChange('password', text)}
-            placeholder="••••••••"
-            secureTextEntry
-            error={errors.password}
-          />
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ForgotPassword')}
-            style={styles.forgotPassword}
-          >
-            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+      {allowRegister ? (
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Pricing')}>
+            <Text style={styles.footerLink}>Create one</Text>
           </TouchableOpacity>
-
-          <Button
-            onPress={handleSubmit}
-            loading={loading}
-            fullWidth
-            size="lg"
-          >
-            Sign In
-          </Button>
-
-          {allowRegister ? (
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Pricing')}>
-                <Text style={styles.footerLink}>Create one</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Access is by invitation. </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('GetAccess')}>
-                <Text style={styles.footerLink}>Request access</Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      ) : (
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Access is by invitation. </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('GetAccess')}>
+            <Text style={styles.footerLink}>Request access</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </AuthFrame>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: spacing.lg,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-    gap: spacing.md,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.gray[900],
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 14,
     color: colors.gray[500],
-  },
-  form: {
-    gap: spacing.md,
+    textAlign: 'center',
+    marginBottom: spacing.md,
   },
   forgotPassword: {
     alignSelf: 'flex-end',
+    marginTop: -spacing.sm,
   },
   forgotPasswordText: {
     color: colors.primary[500],
@@ -164,7 +146,7 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
   },
   footerText: {
     color: colors.gray[500],

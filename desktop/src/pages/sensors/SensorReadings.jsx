@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { usePlanAccess } from '../../hooks/usePlanAccess';
 import axios from 'axios';
 import { getFarms } from '../../api/farms';
 import { getFields } from '../../api/fields';
@@ -18,6 +19,9 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api';
 export default function SensorReadings() {
     const { user } = useAuth();
     const isFarmer = user?.role === 'farmer';
+
+    const { allowed: hasIotAccess, loading: iotLoading, planName } = usePlanAccess('iot_field_sensors');
+    const { allowed: hasStorageAccess, loading: storageLoading } = usePlanAccess('storage_monitoring');
 
     const [activeTab, setActiveTab] = useState('field');
     const [farms, setFarms] = useState([]);
@@ -37,10 +41,8 @@ export default function SensorReadings() {
     const [virtualReadings, setVirtualReadings] = useState([]);
     const [showVirtualTab, setShowVirtualTab] = useState(false);
 
-    const hasIotAccess = ['Pro', 'Full Suite'].includes(user?.selectedPlan);
-    const hasStorageAccess = user?.selectedPlan === 'Full Suite';
-
     useEffect(() => {
+        if (iotLoading) return;
         if (!hasIotAccess) return;
         if (!isFarmer && user?.farm) {
             setFarmId(user.farm);
@@ -50,9 +52,10 @@ export default function SensorReadings() {
             fetchStorageDevices(user.farm);
             fetchVirtualDevices();
         }
-    }, [user, hasIotAccess]);
+    }, [user, hasIotAccess, iotLoading]);
 
     useEffect(() => {
+        if (iotLoading) return;
         if (!hasIotAccess) return;
         if (isFarmer) {
             getFarms().then((res) => {
@@ -61,7 +64,7 @@ export default function SensorReadings() {
             });
             fetchVirtualDevices();
         }
-    }, [isFarmer, hasIotAccess]);
+    }, [isFarmer, hasIotAccess, iotLoading]);
 
     useEffect(() => {
         if (fieldId && activeTab === 'field' && hasIotAccess) {
@@ -81,11 +84,8 @@ export default function SensorReadings() {
         if (virtualDeviceId && activeTab === 'virtual') {
             setLoading(true);
             getDeviceReadings(virtualDeviceId, 50)
-                .then((res) => {
-                    console.log('Virtual readings fetched:', res.data.data?.readings);
-                    setVirtualReadings(res.data.data?.readings || []);
-                })
-                .catch((err) => console.error('Readings fetch failed:', err))
+                .then((res) => setVirtualReadings(res.data.data?.readings || []))
+                .catch(() => setVirtualReadings([]))
                 .finally(() => setLoading(false));
         }
     }, [virtualDeviceId, activeTab]);
@@ -97,22 +97,18 @@ export default function SensorReadings() {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const devices = res.data.data?.devices || [];
-            console.log('Virtual devices:', devices);
             setVirtualDevices(devices);
             setShowVirtualTab(devices.length > 0);
 
-            // Auto-select first device and fetch readings
             if (devices.length > 0) {
                 setVirtualDeviceId(devices[0]._id);
 
                 const readingsRes = await axios.get(`${API_BASE}/farm/sensors/device/${devices[0]._id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                console.log('Initial virtual readings:', readingsRes.data.data?.readings);
                 setVirtualReadings(readingsRes.data.data?.readings || []);
             }
-        } catch (err) {
-            console.error('Virtual devices fetch failed:', err);
+        } catch {
             setVirtualDevices([]);
             setShowVirtualTab(false);
         }
@@ -153,6 +149,10 @@ export default function SensorReadings() {
         return <Minus className="w-4 h-4 text-gray-400" />;
     };
 
+    if (iotLoading) {
+        return <Spinner size="lg" className="mt-20" />;
+    }
+
     if (!hasIotAccess) {
         return (
             <div className="page-container max-w-lg mx-auto space-y-6">
@@ -163,8 +163,8 @@ export default function SensorReadings() {
                         Feature Not Available
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
-                        Your plan ({user?.selectedPlan || 'Basic'}) does not include IoT Sensors.
-                        Upgrade to Pro or Full Suite to monitor field conditions.
+                        Your plan ({planName || 'Basic'}) does not include IoT Sensors.
+                        Upgrade to access field monitoring.
                     </p>
                     <Link to="/plans" className="inline-block px-6 py-3 bg-yellow-600 text-white rounded-xl font-semibold hover:bg-yellow-700">
                         Upgrade Plan
@@ -224,9 +224,9 @@ export default function SensorReadings() {
                             label="Virtual Device"
                             value={virtualDeviceId}
                             onChange={(e) => setVirtualDeviceId(e.target.value)}
-                            options={virtualDevices.map((d) => ({ 
-                                value: d._id, 
-                                label: d.farm?.name ? `${d.farm.name} — ${d.name}` : d.name 
+                            options={virtualDevices.map((d) => ({
+                                value: d._id,
+                                label: d.farm?.name ? `${d.farm.name} — ${d.name}` : d.name
                             }))}
                         />
                     </Card>
@@ -331,15 +331,19 @@ export default function SensorReadings() {
             )}
 
             {/* STORAGE TAB */}
-            {activeTab === 'storage' && !hasStorageAccess && (
+            {activeTab === 'storage' && storageLoading && (
+                <Spinner size="lg" className="mt-10" />
+            )}
+
+            {activeTab === 'storage' && !storageLoading && !hasStorageAccess && (
                 <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl border-2 border-yellow-300 dark:border-yellow-700 text-center">
                     <AlertTriangle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
                     <h2 className="text-xl font-bold text-yellow-800 dark:text-yellow-300 mb-2">
                         Storage Monitoring Not Available
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
-                        Your plan ({user?.selectedPlan}) does not include Storage Monitoring.
-                        Upgrade to Full Suite to access CO2 and PIR sensors.
+                        Your plan ({planName || 'Basic'}) does not include Storage Monitoring.
+                        Upgrade to access CO2 and PIR sensors.
                     </p>
                     <Link to="/plans" className="inline-block px-6 py-3 bg-yellow-600 text-white rounded-xl font-semibold hover:bg-yellow-700">
                         Upgrade Plan
@@ -347,7 +351,7 @@ export default function SensorReadings() {
                 </div>
             )}
 
-            {activeTab === 'storage' && hasStorageAccess && (
+            {activeTab === 'storage' && !storageLoading && hasStorageAccess && (
                 <>
                     <Card>
                         <div className="grid md:grid-cols-2 gap-4">
