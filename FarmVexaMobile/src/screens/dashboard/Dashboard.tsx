@@ -10,7 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../hooks/useAuth';
 import { useFarms } from '../../hooks/useFarms';
-import { alertApi, animalApi, inventoryApi } from '../../api/axios';
+import { alertApi, animalApi, inventoryApi, stockApi } from '../../api/axios';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Spinner from '../../components/ui/Spinner';
@@ -39,32 +39,34 @@ export default function Dashboard() {
     loadFarms();
   }, []);
 
+  // Wait for activeFarm to exist before loading data
   useEffect(() => {
     if (activeFarm?._id) {
-      loadDashboardData();
+      loadDashboardData(activeFarm._id);
     }
   }, [activeFarm?._id]);
 
-  const loadDashboardData = async () => {
-    if (!activeFarm?._id) return;
-
+  const loadDashboardData = async (farmId: string) => {
     setLoading(true);
     try {
       const [alertsRes, animalsRes, stockRes] = await Promise.all([
-        alertApi.getAlerts(activeFarm._id).catch(() => ({ data: { data: { alerts: [] } } })),
-        animalApi.getAnimals(activeFarm._id).catch(() => ({ data: { data: { animals: [] } } })),
-        inventoryApi.getInventory(activeFarm._id).catch(() => ({ data: { data: { items: [] } } })),
+        alertApi.getAlerts(farmId).catch(() => ({ data: { data: { alerts: [] } } })),
+        animalApi.getAnimals(farmId).catch(() => ({ data: { data: { animals: [] } } })),
+        // Use stockApi (production stock) — this is what web dashboard uses
+        stockApi.getStock(farmId).catch(() => ({ data: { data: { items: [] } } })),
       ]);
 
-      const unreadAlerts = (alertsRes.data?.data?.alerts || []).filter((a: any) => !a.isRead);
+      const alertsList = alertsRes.data?.data?.alerts || alertsRes.data?.alerts || [];
+      const unreadAlerts = alertsList.filter((a: any) => !a.isRead);
       setAlerts(unreadAlerts);
 
-      const animals = animalsRes.data?.data?.animals || [];
-      setAnimalCount(animals.length);
+      const animalsList = animalsRes.data?.data?.animals || animalsRes.data?.animals || [];
+      setAnimalCount(animalsList.length);
 
-      const items = stockRes.data?.data?.items || [];
+      const items = stockRes.data?.data?.items || stockRes.data?.items || [];
       const totalValue = items.reduce(
-        (sum: number, item: any) => sum + (item.quantity || 0) * (item.pricePerUnit || 0),
+        (sum: number, item: any) =>
+          sum + (item.quantity || 0) * (item.pricePerUnit || 0),
         0
       );
       setStockValue(totalValue);
@@ -78,8 +80,8 @@ export default function Dashboard() {
   const onRefresh = async () => {
     setRefreshing(true);
     await loadFarms();
-    if (activeFarm) {
-      await loadDashboardData();
+    if (activeFarm?._id) {
+      await loadDashboardData(activeFarm._id);
     }
     setRefreshing(false);
   };
@@ -87,6 +89,7 @@ export default function Dashboard() {
   const handleFarmSelect = (farm: Farm) => {
     setActiveFarm(farm);
     setShowFarmPicker(false);
+    // Data will auto-load via useEffect on activeFarm?._id change
   };
 
   if (farmsLoading && farms.length === 0) {
@@ -313,183 +316,75 @@ export default function Dashboard() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.gray[50],
-  },
-  content: {
-    padding: spacing.md,
-    gap: spacing.md,
-  },
+  container: { flex: 1, backgroundColor: colors.gray[50] },
+  content: { padding: spacing.md, gap: spacing.md },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
-  headerLeft: {
-    flex: 1,
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.gray[900],
-  },
+  headerLeft: { flex: 1 },
+  welcomeText: { fontSize: 24, fontWeight: 'bold', color: colors.gray[900] },
   roleText: {
-    fontSize: 14,
-    color: colors.gray[500],
-    marginTop: 2,
-    textTransform: 'capitalize',
+    fontSize: 14, color: colors.gray[500], marginTop: 2, textTransform: 'capitalize',
   },
   farmSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.gray[200],
-    maxWidth: 150,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
+    backgroundColor: colors.white, borderRadius: borderRadius.md,
+    borderWidth: 1, borderColor: colors.gray[200], maxWidth: 150,
   },
   farmSelectorText: {
-    fontSize: 14,
-    color: colors.gray[700],
-    fontWeight: '500',
-    flex: 1,
+    fontSize: 14, color: colors.gray[700], fontWeight: '500', flex: 1,
   },
   assignedFarm: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    maxWidth: 150,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.xs, maxWidth: 150,
   },
   assignedFarmText: {
-    fontSize: 14,
-    color: colors.gray[700],
-    fontWeight: '500',
-    flex: 1,
+    fontSize: 14, color: colors.gray[700], fontWeight: '500', flex: 1,
   },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   statCard: {
-    flex: 1,
-    minWidth: '45%',
-    alignItems: 'center',
-    padding: spacing.md,
+    flex: 1, minWidth: '45%', alignItems: 'center', padding: spacing.md,
   },
   statValue: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: colors.gray[900],
-    marginTop: spacing.xs,
+    fontSize: 28, fontWeight: 'bold', color: colors.gray[900], marginTop: spacing.xs,
   },
   statValueSmall: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.gray[900],
-    marginTop: spacing.xs,
+    fontSize: 18, fontWeight: 'bold', color: colors.gray[900], marginTop: spacing.xs,
   },
-  statLabel: {
-    fontSize: 12,
-    color: colors.gray[500],
-    marginTop: 2,
-  },
-  card: {
-    marginBottom: spacing.sm,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  quickAction: {
-    alignItems: 'center',
-    gap: spacing.xs,
-    width: '22%',
-  },
+  statLabel: { fontSize: 12, color: colors.gray[500], marginTop: 2 },
+  card: { marginBottom: spacing.sm },
+  quickActions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  quickAction: { alignItems: 'center', gap: spacing.xs, width: '22%' },
   quickActionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 48, height: 48, borderRadius: 24,
+    alignItems: 'center', justifyContent: 'center',
   },
-  quickActionText: {
-    fontSize: 12,
-    color: colors.gray[600],
-    textAlign: 'center',
-  },
+  quickActionText: { fontSize: 12, color: colors.gray[600], textAlign: 'center' },
   emptyText: {
-    fontSize: 14,
-    color: colors.gray[400],
-    textAlign: 'center',
-    paddingVertical: spacing.md,
+    fontSize: 14, color: colors.gray[400], textAlign: 'center', paddingVertical: spacing.md,
   },
-  alertsList: {
-    gap: spacing.sm,
-  },
+  alertsList: { gap: spacing.sm },
   alertItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    paddingVertical: spacing.xs,
+    flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, paddingVertical: spacing.xs,
   },
-  alertContent: {
-    flex: 1,
-    gap: 2,
-  },
-  alertMessage: {
-    fontSize: 14,
-    color: colors.gray[700],
-  },
-  alertDate: {
-    fontSize: 12,
-    color: colors.gray[400],
-  },
+  alertContent: { flex: 1, gap: 2 },
+  alertMessage: { fontSize: 14, color: colors.gray[700] },
+  alertDate: { fontSize: 12, color: colors.gray[400] },
   farmSummary: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
-  farmInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  farmName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.gray[900],
-  },
-  farmLocation: {
-    fontSize: 14,
-    color: colors.gray[500],
-  },
-  farmList: {
-    gap: spacing.sm,
-  },
+  farmInfo: { flex: 1, gap: 4 },
+  farmName: { fontSize: 18, fontWeight: '600', color: colors.gray[900] },
+  farmLocation: { fontSize: 14, color: colors.gray[500] },
+  farmList: { gap: spacing.sm },
   farmOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.gray[200],
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    padding: spacing.md, borderRadius: borderRadius.md,
+    borderWidth: 1, borderColor: colors.gray[200],
   },
   farmOptionSelected: {
-    borderColor: colors.primary[500],
-    backgroundColor: colors.primary[50],
+    borderColor: colors.primary[500], backgroundColor: colors.primary[50],
   },
-  farmOptionText: {
-    fontSize: 16,
-    color: colors.gray[700],
-  },
-  farmOptionTextSelected: {
-    color: colors.primary[500],
-    fontWeight: '600',
-  },
+  farmOptionText: { fontSize: 16, color: colors.gray[700] },
+  farmOptionTextSelected: { color: colors.primary[500], fontWeight: '600' },
 });
