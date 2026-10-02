@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { usePlanAccess } from '../../hooks/usePlanAccess';
+import usePlanAccess from '../../hooks/usePlanAccess';
 import { getFarms } from '../../api/farms';
 import { getDevices, deleteDevice } from '../../api/devices';
 import axios from 'axios';

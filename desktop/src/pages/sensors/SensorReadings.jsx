@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { usePlanAccess } from '../../hooks/usePlanAccess';
+import usePlanAccess from '../../hooks/usePlanAccess';
 import axios from 'axios';
 import { getFarms } from '../../api/farms';
 import { getFields } from '../../api/fields';
@@ -149,9 +149,7 @@ export default function SensorReadings() {
         return <Minus className="w-4 h-4 text-gray-400" />;
     };
 
-    if (iotLoading) {
-        return <Spinner size="lg" className="mt-20" />;
-    }
+    if (iotLoading) return <Spinner size="lg" className="mt-20" />;
 
     if (!hasIotAccess) {
         return (
@@ -216,7 +214,6 @@ export default function SensorReadings() {
                 )}
             </div>
 
-            {/* VIRTUAL TAB */}
             {activeTab === 'virtual' && (
                 <>
                     <Card>
@@ -273,7 +270,6 @@ export default function SensorReadings() {
                 </>
             )}
 
-            {/* FIELD TAB */}
             {activeTab === 'field' && (
                 <>
                     <Card>
@@ -330,7 +326,6 @@ export default function SensorReadings() {
                 </>
             )}
 
-            {/* STORAGE TAB */}
             {activeTab === 'storage' && storageLoading && (
                 <Spinner size="lg" className="mt-10" />
             )}

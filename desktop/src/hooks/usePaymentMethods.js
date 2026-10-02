@@ -1,12 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { getPaymentMethods } from '../api/invoices';
+import api from '../api/axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+let cachedSettings = null;
 
-export const usePaymentMethods = ({ amount, invoiceNumber, currency } = {}) => {
+export default function usePaymentMethods({ amount, currency = 'KES', invoiceNumber } = {}) {
     const [methods, setMethods] = useState([]);
-    const [settings, setSettings] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -14,46 +12,46 @@ export const usePaymentMethods = ({ amount, invoiceNumber, currency } = {}) => {
         setLoading(true);
         setError(null);
         try {
-            const settingsRes = await axios.get(`${API_BASE}/admin/public/settings`);
-            const data = settingsRes.data.data || {};
-            setSettings(data);
-
-            let list = data.paymentMethods || [];
+            const res = await api.get('/admin/public/settings');
+            const all = res.data?.data?.paymentMethods || [];
 
             if (amount || invoiceNumber) {
                 try {
-                    const res = await getPaymentMethods({
-                        amount,
-                        currency,
-                        invoiceNumber,
+                    const fresh = await api.get('/public/payment/methods', {
+                        params: { amount, currency, invoiceNumber },
                     });
-                    const serverMethods = res.data.data?.methods || res.data.methods;
-                    if (Array.isArray(serverMethods) && serverMethods.length > 0) {
-                        list = serverMethods;
+                    const freshList = fresh.data?.data?.methods || [];
+                    if (freshList.length > 0) {
+                        setMethods(freshList);
+                        return;
                     }
-                } catch {}
+                } catch {
+                    // fall through to the settings-derived list
+                }
             }
 
-            setMethods(list);
+            setMethods(all);
         } catch (err) {
-            setError(err);
+            setError(err.response?.data?.message || 'Failed to load payment methods');
+            setMethods([]);
         } finally {
             setLoading(false);
         }
-    }, [amount, invoiceNumber, currency]);
+    }, [amount, currency, invoiceNumber]);
 
-    useEffect(() => { load(); }, [load]);
+    useEffect(() => {
+        load();
+    }, [load]);
 
-    const stkMethod = methods.find((m) => m.code === 'mpesa_stk') || null;
+    const stkMethod = methods.find((m) => m.code === 'mpesa_stk' && m.mode === 'auto');
     const manualMethods = methods.filter((m) => m.code !== 'mpesa_stk');
 
     return {
         methods,
         stkMethod,
         manualMethods,
-        settings,
         loading,
         error,
         reload: load,
     };
-};
+}
