@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HDM — Software for Agriculture & Business</title>
+<meta name="description" content="HDM builds AI-powered software for agriculture and business in Kenya. Products: FarmVexa, HDM Stream, HDM Bridge, HDM AI.">
+<meta name="theme-color" content="#2d6a4f">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%232d6a4f'/%3E%3Ctext x='256' y='220' text-anchor='middle' fill='white' font-size='140'%3E🌾%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+    --green-950: #052e16;
+    --green-900: #14532d;
+    --green-800: #166534;
+    --green-700: #15803d;
+    --green-500: #22c55e;
+    --green-400: #4ade80;
+    --green-200: #bbf7d0;
+    --green-100: #dcfce7;
+    --green-50: #f0fdf4;
+    --gold: #fbbf24;
+    --gold-light: #fde68a;
+    --text: #0f172a;
+    --text-2: #334155;
+    --text-3: #64748b;
+    --bg: #ffffff;
+    --bg-alt: #f8fafc;
+    --border: #e2e8f0;
+    --radius: 14px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.06);
+    --shadow-lg: 0 20px 60px rgba(20,83,45,0.15);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--green-700); text-decoration: none; }
+a:hover { color: var(--green-900); }
+
+.container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ============ NAV ============ */
+.nav {
+    position: sticky;
+    top: 0;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 50;
+}
+.nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+}
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--green-700);
+    letter-spacing: -0.5px;
+}
+.nav-brand:hover { color: var(--green-900); }
+.nav-logo {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--green-800), var(--green-500));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 20px;
+    box-shadow: var(--shadow-sm);
+}
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-size: 15px;
+    font-weight: 500;
+}
+.nav-links a {
+    color: var(--text-2);
+    transition: color 0.15s;
+}
+.nav-links a:hover { color: var(--green-700); }
+.nav-cta {
+    padding: 9px 20px;
+    background: var(--green-700);
+    color: #fff !important;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: background 0.2s, transform 0.15s;
+}
+.nav-cta:hover {
+    background: var(--green-900);
+    transform: translateY(-1px);
+}
+.nav-burger {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 26px;
+    color: var(--text-2);
+    cursor: pointer;
+}
+
+/* ============ HERO ============ */
+.hero {
+    padding: 90px 0 70px;
+    background: linear-gradient(180deg, var(--green-50) 0%, #ffffff 100%);
+    position: relative;
+    overflow: hidden;
+}
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    right: -200px;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(34,197,94,0.08), transparent 70%);
+    pointer-events: none;
+}
+.hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+}
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: var(--green-100);
+    color: var(--green-800);
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 22px;
+}
+.hero-badge::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green-500);
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+.hero h1 {
+    font-size: clamp(34px, 5vw, 56px);
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    color: var(--text);
+    margin-bottom: 22px;
+}
+.hero h1 .accent {
+    background: linear-gradient(120deg, var(--green-700), var(--green-500));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.hero p {
+    font-size: clamp(16px, 1.6vw, 19px);
+    color: var(--text-3);
+    max-width: 620px;
+    margin-bottom: 32px;
+    line-height: 1.65;
+}
+.hero-cta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 26px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn-primary {
+    background: var(--green-700);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(21,128,61,0.25);
+}
+.btn-primary:hover {
+    background: var(--green-900);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(21,128,61,0.3);
+}
+.btn-ghost {
+    background: #fff;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+}
+.btn-ghost:hover {
+    border-color: var(--green-700);
+    color: var(--green-700);
+}
+
+/* ============ STATS BAR ============ */
+.stats {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-alt);
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+.stat { text-align: center; }
+.stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--green-700);
+    letter-spacing: -0.5px;
+}
+.stat-label {
+    font-size: 13px;
+    color: var(--text-3);
+    margin-top: 2px;
+}
+
+/* ============ SERVICES ============ */
+.services {
+    padding: 90px 0;
+}
+.section-head {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 60px;
+}
+.section-head h2 {
+    font-size: clamp(28px, 3.5vw, 40px);
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--text);
+    margin-bottom: 14px;
+}
+.section-head p {
+    font-size: 17px;
+    color: var(--text-3);
+}
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 22px;
+}
+.service-card {
+    position: relative;
+    padding: 30px 28px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.25s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.service-card::after {
+    content: '→';
+    position: absolute;
+    top: 30px;
+    right: 28px;
+    font-size: 20px;
+    color: var(--text-3);
+    transition: all 0.25s;
+}
+.service-card:hover {
+    border-color: var(--green-400);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    color: inherit;
+}
+.service-card:hover::after {
+    color: var(--green-700);
+    transform: translate(4px, -4px);
+}
+.service-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--green-100), var(--green-200));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 18px;
+}
+.service-name {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+.service-domain {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 12.5px;
+    color: var(--green-700);
+    background: var(--green-50);
+    padding: 3px 9px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 14px;
+    border: 1px solid var(--green-100);
+}
+.service-desc {
+    font-size: 14.5px;
+    color: var(--text-3);
+    line-height: 1.6;
+    flex: 1;
+}
+.service-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+.tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    background: var(--green-50);
+    color: var(--green-800);
+    border-radius: 20px;
+    border: 1px solid var(--green-100);
+}
+
+/* FarmVexa card is featured */
+.service-card.featured {
+    border: 2px solid var(--green-500);
+    background: linear-gradient(180deg, #ffffff 0%, var(--green-50) 100%);
+}
+.service-card.featured .service-icon {
+    background: linear-gradient(135deg, var(--green-700), var(--green-500));
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(21,128,61,0.25);
+}
+.featured-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    padding: 4px 11px;
+    background: var(--gold);
+    color: var(--green-950);
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.service-card.featured::after {
+    top: 52px;
+}
+
+/* ============ ABOUT ============ */
+.about {
+    padding: 90px 0;
+    background: var(--bg-alt);
+    border-top: 1px solid var(--border);
+}
+.about-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+.about h2 {
+    font-size: clamp(26px, 3vw, 36px);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    margin-bottom: 18px;
+}
+.about p {
+    font-size: 16px;
+    color: var(--text-2);
+    line-height: 1.75;
+    margin-bottom: 14px;
+}
+.about-highlight {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 26px 28px;
+}
+.about-highlight h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-3);
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+.about-highlight ul {
+    list-style: none;
+}
+.about-highlight li {
+    padding: 9px 0;
+    font-size: 14.5px;
+    color: var(--text-2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.about-highlight li:last-child { border-bottom: none; }
+.about-highlight li::before {
+    content: '✓';
+    color: var(--green-500);
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+/* ============ CONTACT ============ */
+.contact {
+    padding: 80px 0;
+    text-align: center;
+}
+.contact h2 {
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+.contact p {
+    color: var(--text-3);
+    font-size: 16px;
+    margin-bottom: 32px;
+}
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    max-width: 880px;
+    margin: 0 auto;
+}
+.contact-card {
+    padding: 22px 20px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+}
+.contact-card:hover {
+    border-color: var(--green-400);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    color: inherit;
+}
+.contact-icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+.contact-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-3);
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.contact-value {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text);
+    word-break: break-word;
+}
+
+/* ============ FOOTER ============ */
+.footer {
+    padding: 44px 0 32px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-alt);
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--text-3);
+    line-height: 1.9;
+}
+.footer .brand {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--green-700);
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+}
+.footer a { color: var(--text-3); }
+.footer a:hover { color: var(--green-700); }
+.footer .copyright {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--text-3);
+}
+.footer .gold {
+    color: var(--gold);
+    font-weight: 600;
+}
+.footer .services-line {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-3);
+}
+.footer .services-line a {
+    margin: 0 4px;
+}
+
+/* ============ DARK MODE ============ */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: #f1f5f9;
+        --text-2: #cbd5e1;
+        --text-3: #94a3b8;
+        --bg: #0a0f1a;
+        --bg-alt: #111827;
+        --border: #1f2937;
+    }
+    body { background: var(--bg); color: var(--text); }
+    .nav { background: rgba(10,15,26,0.85); }
+    .nav-brand { color: var(--green-400); }
+    .nav-brand:hover { color: var(--green-200); }
+    .nav-links a { color: var(--text-2); }
+    .nav-links a:hover { color: var(--green-400); }
+    .nav-cta { background: var(--green-700); }
+    .hero {
+        background: linear-gradient(180deg, #0f1a12 0%, var(--bg) 100%);
+    }
+    .hero-badge {
+        background: rgba(34,197,94,0.15);
+        color: var(--green-300, #86efac);
+    }
+    .hero h1 { color: var(--text); }
+    .hero p { color: var(--text-3); }
+    .btn-ghost {
+        background: #1f2937;
+        color: var(--text);
+        border-color: var(--border);
+    }
+    .btn-ghost:hover {
+        border-color: var(--green-500);
+        color: var(--green-400);
+    }
+    .service-card {
+        background: var(--bg-alt);
+        border-color: var(--border);
+    }
+    .service-card:hover {
+        border-color: var(--green-500);
+    }
+    .service-card.featured {
+        background: linear-gradient(180deg, var(--bg-alt) 0%, #0d1b12 100%);
+        border-color: var(--green-500);
+    }
+    .service-domain {
+        background: rgba(34,197,94,0.1);
+        border-color: rgba(34,197,94,0.2);
+        color: var(--green-400);
+    }
+    .tag {
+        background: rgba(34,197,94,0.1);
+        color: var(--green-300, #86efac);
+        border-color: rgba(34,197,94,0.2);
+    }
+    .about-highlight {
+        background: var(--bg-alt);
+        border-color: var(--border);
+    }
+    .contact-card {
+        background: var(--bg-alt);
+        border-color: var(--border);
+    }
+    .stat { color: var(--text); }
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 900px) {
+    .about-grid {
+        grid-template-columns: 1fr;
+        gap: 34px;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 26px;
+    }
+}
+@media (max-width: 700px) {
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: 68px;
+        left: 0;
+        right: 0;
+        background: #fff;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px 24px;
+        gap: 18px;
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow-md);
+    }
+    .nav-links.open { display: flex; }
+    .nav-burger { display: block; }
+    .hero { padding: 60px 0 50px; }
+    .services, .about, .contact { padding: 60px 0; }
+    .section-head { margin-bottom: 40px; }
+    .service-card { padding: 24px 22px; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .container { padding: 0 20px; }
+}
+@media (max-width: 420px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .btn { width: 100%; justify-content: center; }
+    .hero-cta { flex-direction: column; }
+}
+
+/* ============ PRINT ============ */
+@media print {
+    .nav, .hero-cta, .footer .services-line { display: none; }
+    body { font-size: 11px; background: #fff; color: #000; }
+    .service-card { break-inside: avoid; box-shadow: none !important; border-color: #ccc; }
+    a { color: #000; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+    <div class="container nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-logo">🌾</span>
+            <span>HDM</span>
+        </a>
+        <div class="nav-links" id="navLinks">
+            <a href="#services">Services</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+            <a href="https://farmvexa.hdm.co.ke" class="nav-cta">Open FarmVexa</a>
+        </div>
+        <button class="nav-burger" id="navBurger" aria-label="Menu">☰</button>
+    </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+    <div class="container hero-inner">
+        <span class="hero-badge">Live · 5 services running</span>
+        <h1>
+            Software for <span class="accent">agriculture</span><br>
+            and business in Kenya.
+        </h1>
+        <p>
+            HDM builds AI-powered tools that help farmers monitor, understand,
+            and respond to real-world conditions — from a phone in the field
+            to a cloud-based intelligence engine.
+        </p>
+        <div class="hero-cta">
+            <a href="https://farmvexa.hdm.co.ke" class="btn btn-primary">
+                🚀 Open FarmVexa
+            </a>
+            <a href="#services" class="btn btn-ghost">
+                Explore our services
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- ============ STATS ============ -->
+<section class="stats">
+    <div class="container stats-grid">
+        <div class="stat">
+            <div class="stat-value">5</div>
+            <div class="stat-label">Live services</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">1</div>
+            <div class="stat-label">Registered copyright</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">24/7</div>
+            <div class="stat-label">Sensors running</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">EN / SW</div>
+            <div class="stat-label">Bilingual AI</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section class="services" id="services">
+    <div class="container">
+        <div class="section-head">
+            <h2>Our services</h2>
+            <p>Four independent products, one company — built to work together.</p>
+        </div>
+
+        <div class="services-grid">
+
+            <!-- FarmVexa -->
+            <a href="https://farmvexa.hdm.co.ke" class="service-card featured">
+                <span class="featured-badge">Flagship</span>
+                <div class="service-icon">🌾</div>
+                <div class="service-name">FarmVexa</div>
+                <span class="service-domain">farmvexa.hdm.co.ke</span>
+                <p class="service-desc">
+                    AI-powered farm intelligence platform. Crop disease scanning,
+                    IoT field and storage sensors, livestock, finance, M-Pesa
+                    payments, and a public farmers market — all in one app.
+                </p>
+                <div class="service-tags">
+                    <span class="tag">AI Vision</span>
+                    <span class="tag">IoT</span>
+                    <span class="tag">M-Pesa</span>
+                    <span class="tag">Copyright RZ104490</span>
+                </div>
+            </a>
+
+            <!-- HDM Stream -->
+            <a href="https://stream.hdm.co.ke" class="service-card">
+                <div class="service-icon">📹</div>
+                <div class="service-name">HDM Stream</div>
+                <span class="service-domain">stream.hdm.co.ke</span>
+                <p class="service-desc">
+                    Live camera streaming with photo capture, video recording,
+                    and field-scan batch capture. Bridges phone or drone cameras
+                    directly into FarmVexa's AI pipeline.
+                </p>
+                <div class="service-tags">
+                    <span class="tag">Live video</span>
+                    <span class="tag">Photo batch</span>
+                    <span class="tag">GPS tagging</span>
+                </div>
+            </a>
+
+            <!-- HDM Bridge -->
+            <a href="https://bridge.hdm.co.ke" class="service-card">
+                <div class="service-icon">📨</div>
+                <div class="service-name">HDM Bridge</div>
+                <span class="service-domain">bridge.hdm.co.ke</span>
+                <p class="service-desc">
+                    Unified email and SMS delivery service. Template-driven,
+                    toggle-controlled, and integrated across all FarmVexa
+                    notifications — alerts, invoices, and reminders.
+                </p>
+                <div class="service-tags">
+                    <span class="tag">Email</span>
+                    <span class="tag">SMS</span>
+                    <span class="tag">Templates</span>
+                </div>
+            </a>
+
+            <!-- HDM Bridge API -->
+            <a href="https://bridgeapi.hdm.co.ke" class="service-card">
+                <div class="service-icon">🔌</div>
+                <div class="service-name">HDM Bridge API</div>
+                <span class="service-domain">bridgeapi.hdm.co.ke</span>
+                <p class="service-desc">
+                    The programmatic endpoint behind HDM Bridge. RESTful,
+                    Cloudflare-protected, and designed for high-deliverability
+                    transactional messaging at scale.
+                </p>
+                <div class="service-tags">
+                    <span class="tag">REST API</span>
+                    <span class="tag">Cloudflare</span>
+                    <span class="tag">Rate-limited</span>
+                </div>
+            </a>
+
+            <!-- HDM AI -->
+            <a href="https://ai.hdm.co.ke" class="service-card">
+                <div class="service-icon">🧠</div>
+                <div class="service-name">HDM AI</div>
+                <span class="service-domain">ai.hdm.co.ke</span>
+                <p class="service-desc">
+                    Our AI engine. Runs crop disease detection, field scan
+                    analysis, and the bilingual farm chat assistant. Combines
+                    Gemini vision with our own inference layer.
+                </p>
+                <div class="service-tags">
+                    <span class="tag">Vision</span>
+                    <span class="tag">Chat</span>
+                    <span class="tag">Gemini + HDM</span>
+                </div>
+            </a>
+
+        </div>
+    </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section class="about" id="about">
+    <div class="container about-grid">
+        <div>
+            <h2>Built in Kenya, for Kenya.</h2>
+            <p>
+                HDM is a software company based in Eldoret, Kenya. We build
+                practical tools for agriculture and business — designed around
+                the phone in a farmer's hand and the realities of East African
+                infrastructure.
+            </p>
+            <p>
+                Our flagship product, FarmVexa, is a registered copyright work
+                (RZ104490) and runs on a live MERN stack with integrated
+                M-Pesa payments, IoT sensors, and AI-driven crop diagnostics.
+            </p>
+            <p>
+                We believe the next decade of agricultural productivity in
+                Africa will come from tools that start where farmers already
+                are — not from systems that ask them to change everything.
+            </p>
+        </div>
+
+        <div class="about-highlight">
+            <h3>Company facts</h3>
+            <ul>
+                <li>Based in Eldoret, Kenya</li>
+                <li>Founder: Davis Okoth</li>
+                <li>Registered Copyright: RZ104490</li>
+                <li>Live platform: farmvexa.hdm.co.ke</li>
+                <li>Stack: MERN + Python AI</li>
+                <li>Payments: Safaricom Daraja</li>
+                <li>Support: Mon–Sat, 8 AM – 6 PM EAT</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<section class="contact" id="contact">
+    <div class="container">
+        <h2>Get in touch</h2>
+        <p>We respond within 24 hours.</p>
+
+        <div class="contact-grid">
+            <a href="mailto:support@farmvexa.com" class="contact-card">
+                <div class="contact-icon">📧</div>
+                <div class="contact-label">Email</div>
+                <div class="contact-value">support@farmvexa.com</div>
+            </a>
+            <a href="tel:+254768784909" class="contact-card">
+                <div class="contact-icon">📞</div>
+                <div class="contact-label">Phone</div>
+                <div class="contact-value">+254 768 784 909</div>
+            </a>
+            <a href="https://wa.me/254768784909" class="contact-card">
+                <div class="contact-icon">💬</div>
+                <div class="contact-label">WhatsApp</div>
+                <div class="contact-value">+254 768 784 909</div>
+            </a>
+            <a href="https://farmvexa.hdm.co.ke" class="contact-card">
+                <div class="contact-icon">🌾</div>
+                <div class="contact-label">Product</div>
+                <div class="contact-value">farmvexa.hdm.co.ke</div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+    <div class="container">
+        <div class="brand">🌾 HDM</div>
+        <p>Software for agriculture and business in Kenya.</p>
+        <p>
+            <a href="mailto:davismcintyre5@gmail.com">davismcintyre5@gmail.com</a>
+            · <a href="tel:+254768784909">+254 768 784 909</a>
+        </p>
+        <p class="copyright">
+            © 2026 HDM — Davis Okoth · <span class="gold">Registered Copyright RZ104490</span>
+        </p>
+        <p class="services-line">
+            Products:
+            <a href="https://farmvexa.hdm.co.ke">FarmVexa</a> ·
+            <a href="https://stream.hdm.co.ke">HDM Stream</a> ·
+            <a href="https://bridge.hdm.co.ke">HDM Bridge</a> ·
+            <a href="https://ai.hdm.co.ke">HDM AI</a>
+        </p>
+    </div>
+</footer>
+
+<script>
+    // Simple mobile nav toggle
+    const burger = document.getElementById('navBurger');
+    const links  = document.getElementById('navLinks');
+    burger?.addEventListener('click', () => {
+        links.classList.toggle('open');
+        burger.textContent = links.classList.contains('open') ? '✕' : '☰';
+    });
+    // Close menu when a link is clicked
+    links?.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+            links.classList.remove('open');
+            burger.textContent = '☰';
+        });
+    });
+</script>
+
+</body>
+</html>

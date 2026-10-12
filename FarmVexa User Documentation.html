@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FarmVexa — User Documentation v2.0.0</title>
+<meta name="description" content="FarmVexa User Guide — AI-powered farm intelligence platform. Modules, sensors, field scan, storage monitoring, market, AI chat.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%232d6a4f'/%3E%3Ctext x='256' y='220' text-anchor='middle' fill='white' font-size='140'%3E🌾%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+    --primary: #2d6a4f;
+    --primary-dark: #1b5e20;
+    --accent: #4ade80;
+    --gold: #fbbf24;
+    --text: #1a1a2e;
+    --text-light: #555;
+    --text-muted: #777;
+    --bg: #ffffff;
+    --bg-alt: #f8f9fa;
+    --border: #e0e0e0;
+    --blue: #3b82f6;
+    --radius: 10px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Cover ---------- */
+.cover {
+    background: linear-gradient(135deg, #1b5e20 0%, #2d6a4f 50%, #4ade80 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    padding: 40px 20px;
+    position: relative;
+    overflow: hidden;
+}
+.cover::before {
+    content: '';
+    position: absolute;
+    top: -120px; right: -120px;
+    width: 340px; height: 340px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+}
+.cover::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: -100px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+}
+.cover .logo-icon { font-size: 80px; margin-bottom: 16px; position: relative; z-index: 1; }
+.cover h1 {
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    position: relative;
+    z-index: 1;
+}
+.cover .tagline {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.95);
+    margin-top: 8px;
+    position: relative;
+    z-index: 1;
+}
+.cover .subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 24px;
+    position: relative;
+    z-index: 1;
+}
+.cover .meta {
+    margin-top: 40px;
+    padding: 24px 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    font-size: 14px;
+    line-height: 2;
+    position: relative;
+    z-index: 1;
+}
+.cover .meta strong { color: #fff; }
+.cover .meta a { color: rgba(255, 255, 255, 0.9); text-decoration: none; border-bottom: 1px dotted rgba(255, 255, 255, 0.4); }
+.cover .meta a:hover { color: var(--gold); border-bottom-color: var(--gold); }
+.cover .copyright-line {
+    margin-top: 20px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    position: relative;
+    z-index: 1;
+}
+.cover .copyright-line .gold { color: var(--gold); font-weight: 600; }
+
+/* ---------- Page structure ---------- */
+.page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 32px;
+}
+.page-break { page-break-before: always; }
+
+/* ---------- Typography ---------- */
+h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--primary);
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+}
+h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary);
+    border-left: 4px solid var(--accent);
+    padding-left: 12px;
+    margin-top: 32px;
+    margin-bottom: 14px;
+}
+h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-top: 22px;
+    margin-bottom: 10px;
+}
+p { color: var(--text-light); margin-bottom: 12px; }
+ul, ol { color: var(--text-light); margin-bottom: 14px; padding-left: 22px; }
+li { margin-bottom: 4px; }
+strong { color: var(--text); }
+a { color: var(--primary); }
+a:hover { color: var(--primary-dark); }
+
+code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: #f1f3f5;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #c7254e;
+}
+
+/* ---------- Tables ---------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 22px;
+    font-size: 14px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+th {
+    background: var(--primary);
+    color: #fff;
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 13px;
+}
+td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-light);
+}
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: var(--bg-alt); }
+
+/* ---------- Notes / callouts ---------- */
+.note, .warning, .tip {
+    border-left: 4px solid;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 14px;
+}
+.note {
+    background: #f0fdf4;
+    border-color: var(--accent);
+    color: #14532d;
+}
+.note strong { color: var(--primary); }
+.warning {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #991b1b;
+}
+.warning strong { color: #dc2626; }
+.tip {
+    background: #eff6ff;
+    border-color: var(--blue);
+    color: #1e40af;
+}
+.tip strong { color: var(--blue); }
+
+/* ---------- TOC ---------- */
+.toc {
+    background: var(--bg-alt);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    margin: 16px 0;
+}
+.toc ol { padding-left: 22px; }
+.toc ol ol { padding-left: 24px; margin-top: 4px; }
+.toc a { text-decoration: none; color: var(--text-light); }
+.toc a:hover { color: var(--primary); }
+
+/* ---------- Info grid ---------- */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+.info-card {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+}
+.info-card h3 { margin-top: 0; margin-bottom: 8px; }
+.info-card p { margin-bottom: 6px; }
+
+/* ---------- Steps ---------- */
+.steps {
+    list-style: none;
+    counter-reset: step;
+    padding-left: 0;
+    margin: 14px 0 20px;
+}
+.steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 34px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--text-light);
+}
+.steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0; top: 0;
+    width: 22px; height: 22px;
+    background: var(--accent);
+    color: var(--primary-dark);
+    border-radius: 50%;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 22px;
+}
+
+/* ---------- Footer ---------- */
+.footer {
+    border-top: 2px solid var(--border);
+    padding: 30px 32px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    max-width: 900px;
+    margin: 40px auto 0;
+    line-height: 1.9;
+}
+.footer a { color: var(--primary); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+.footer .services {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+.footer .services a { color: var(--text-muted); }
+.footer .services a:hover { color: var(--primary); }
+
+/* ---------- Print ---------- */
+@media print {
+    body { font-size: 11px; }
+    .cover { min-height: auto; padding: 60px 20px; page-break-after: always; }
+    .page { padding: 20px 0; max-width: 100%; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 16px; }
+    h3 { font-size: 13px; }
+    th, td { padding: 6px 10px; }
+    a { color: var(--text); text-decoration: none; }
+    .page-break { page-break-before: always; }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 640px) {
+    .cover h1 { font-size: 36px; }
+    .cover .logo-icon { font-size: 60px; }
+    .page { padding: 40px 20px; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 19px; }
+    .cover .meta { padding: 18px 22px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="cover">
+    <div class="logo-icon">🌾</div>
+    <h1>FarmVexa User Guide</h1>
+    <div class="tagline">See. Sense. Predict. Grow.</div>
+    <div class="subtitle">AI-Powered Farm Intelligence Platform</div>
+
+    <div class="meta">
+        <strong>Version:</strong> 2.0.0<br>
+        <strong>Company:</strong> HDM · Davis Okoth<br>
+        <strong>Date:</strong> August 2026<br>
+        <strong>Website:</strong> <a href="https://farmvexa.hdm.co.ke">farmvexa.hdm.co.ke</a><br>
+        <strong>Company:</strong> <a href="https://hdm.co.ke">hdm.co.ke</a>
+    </div>
+
+    <div class="copyright-line">
+        <span class="gold">Registered Copyright RZ104490</span> · © 2026 HDM
+    </div>
+</section>
+
+<!-- ============================ COMPANY ============================ -->
+<div class="page page-break">
+    <h1>Company &amp; Developer Information</h1>
+
+    <div class="info-grid">
+        <div class="info-card">
+            <h3>🏢 Company</h3>
+            <p><strong>Name:</strong> HDM</p>
+            <p><strong>Website:</strong> <a href="https://hdm.co.ke">hdm.co.ke</a></p>
+            <p><strong>Email:</strong> <a href="mailto:davismcintyre5@gmail.com">davismcintyre5@gmail.com</a></p>
+            <p><strong>Phone:</strong> <a href="tel:+254768784909">+254 768 784 909</a></p>
+        </div>
+
+        <div class="info-card">
+            <h3>👨‍💻 Developer</h3>
+            <p><strong>Name:</strong> Davis Okoth</p>
+            <p><strong>Role:</strong> Full Stack Developer &amp; Founder</p>
+            <p><strong>Email:</strong> <a href="mailto:davismcintyre5@gmail.com">davismcintyre5@gmail.com</a></p>
+        </div>
+    </div>
+
+    <h2>About HDM</h2>
+    <p>HDM is a software development company based in Kenya, building modern solutions for agriculture and business. FarmVexa is our AI-powered farm intelligence platform.</p>
+
+    <h2>Our Services</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Domain</th>
+                <th>Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>FarmVexa</strong></td><td><a href="https://farmvexa.hdm.co.ke">farmvexa.hdm.co.ke</a></td><td>AI-powered farm intelligence platform</td></tr>
+            <tr><td><strong>HDM Stream</strong></td><td><a href="https://stream.hdm.co.ke">stream.hdm.co.ke</a></td><td>Live camera streaming &amp; field scan capture</td></tr>
+            <tr><td><strong>HDM Bridge</strong></td><td><a href="https://bridge.hdm.co.ke">bridge.hdm.co.ke</a></td><td>Email &amp; SMS delivery</td></tr>
+            <tr><td><strong>HDM AI</strong></td><td><a href="https://ai.hdm.co.ke">ai.hdm.co.ke</a></td><td>AI engine for chat &amp; vision analysis</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ============================ SUPPORT ============================ -->
+<div class="page page-break">
+    <h1>Support Contact</h1>
+
+    <div class="info-grid">
+        <div class="info-card">
+            <h3>📞 Phone</h3>
+            <p><a href="tel:+254768784909">+254 768 784 909</a></p>
+        </div>
+        <div class="info-card">
+            <h3>📧 Email</h3>
+            <p><a href="mailto:support@farmvexa.com">support@farmvexa.com</a></p>
+        </div>
+        <div class="info-card">
+            <h3>💬 WhatsApp</h3>
+            <p><a href="https://wa.me/254768784909">+254 768 784 909</a></p>
+        </div>
+        <div class="info-card">
+            <h3>🌐 Website</h3>
+            <p><a href="https://farmvexa.hdm.co.ke">farmvexa.hdm.co.ke</a></p>
+        </div>
+    </div>
+
+    <p><strong>⏱ Response Time:</strong> Within 24 hours<br>
+    <strong>📅 Hours:</strong> Monday – Saturday, 8 AM – 6 PM EAT</p>
+</div>
+
+<!-- ============================ ACKNOWLEDGMENTS ============================ -->
+<div class="page page-break">
+    <h1>Acknowledgments</h1>
+    <p>We extend our sincere gratitude to the farming community whose challenges inspired this platform. Special thanks to agricultural extension officers, early adopters, and the open-source community.</p>
+</div>
+
+<!-- ============================ DEDICATION ============================ -->
+<div class="page page-break">
+    <h1>Dedication</h1>
+    <p style="text-align:center;font-style:italic;font-size:17px;color:var(--primary);margin-top:40px;">
+        "To every farmer who rises before the sun, who works the land with calloused hands, and who feeds the world with quiet dignity — this platform is for you."
+    </p>
+</div>
+
+<!-- ============================ LICENSE ============================ -->
+<div class="page page-break">
+    <h1>License</h1>
+    <h2>MIT License — Proprietary Extension</h2>
+    <p><strong>Copyright © 2026 HDM</strong></p>
+    <p>All proprietary components including the FarmVexa brand, logo, and tagline remain the exclusive intellectual property of HDM.</p>
+    <p><strong>Registered Copyright:</strong> RZ104490 — Certificate of Registration of a Copyright Work, Literary Works category, registered in the name of Davis Okoth.</p>
+</div>
+
+<!-- ============================ PREFACE ============================ -->
+<div class="page page-break">
+    <h1>Preface</h1>
+    <p>Welcome to the FarmVexa User Documentation. This guide will help you understand and effectively use every feature of the FarmVexa AI-Powered Farm Intelligence Platform.</p>
+    <p>Whether you are a small-scale farmer, commercial farmer, farm worker, veterinarian, farm manager, or a buyer browsing the Farmers Market — this manual will walk you through every step.</p>
+
+    <h2>How to Use This Manual</h2>
+    <ul>
+        <li><strong>New users:</strong> Start with Getting Started.</li>
+        <li><strong>Farm owners:</strong> Review User Roles and Settings.</li>
+        <li><strong>Specific tasks:</strong> Jump to the relevant module.</li>
+    </ul>
+</div>
+
+<!-- ============================ TOC ============================ -->
+<div class="page page-break">
+    <h1>Table of Contents</h1>
+    <div class="toc">
+        <ol>
+            <li><a href="#getting-started">Getting Started</a></li>
+            <li><a href="#roles">User Roles &amp; Permissions</a></li>
+            <li>
+                <a href="#modules">Module Guides</a>
+                <ol>
+                    <li><a href="#m-dashboard">Dashboard</a></li>
+                    <li><a href="#m-farms">Farms &amp; Fields</a></li>
+                    <li><a href="#m-iot">IoT &amp; Sensors</a></li>
+                    <li><a href="#m-sensors">How Sensors Work</a></li>
+                    <li><a href="#m-stream">Connecting HDM Stream</a></li>
+                    <li><a href="#m-fieldscan">Field Scan</a></li>
+                    <li><a href="#m-storage">Storage Monitoring</a></li>
+                    <li><a href="#m-livestock">Livestock</a></li>
+                    <li><a href="#m-health">Health</a></li>
+                    <li><a href="#m-production">Production</a></li>
+                    <li><a href="#m-inventory">Inventory &amp; Stock</a></li>
+                    <li><a href="#m-finance">Finance</a></li>
+                    <li><a href="#m-weather">Weather</a></li>
+                    <li><a href="#m-team">Team &amp; Tasks</a></li>
+                    <li><a href="#m-market">Farmers Market</a></li>
+                    <li><a href="#m-reports">Reports</a></li>
+                    <li><a href="#m-chat">AI Chat</a></li>
+                    <li><a href="#m-alerts">Alerts &amp; Notifications</a></li>
+                    <li><a href="#m-settings">Settings</a></li>
+                </ol>
+            </li>
+            <li><a href="#mobile">Mobile Access</a></li>
+            <li><a href="#faq">Frequently Asked Questions</a></li>
+        </ol>
+    </div>
+</div>
+
+<!-- ============================ GETTING STARTED ============================ -->
+<div class="page page-break" id="getting-started">
+    <h1>Getting Started</h1>
+
+    <h2>System Requirements</h2>
+    <table>
+        <thead>
+            <tr><th>Platform</th><th>Requirements</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Web App</td><td>Chrome 90+, Firefox 88+, Edge 90+, Safari 14+</td></tr>
+            <tr><td>Desktop</td><td>Windows 10+, macOS 12+, Ubuntu 20.04+</td></tr>
+            <tr><td>Android</td><td>Android 8.0 or later</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Accessing FarmVexa</h2>
+    <p>Available via web browser at <a href="https://farmvexa.hdm.co.ke">farmvexa.hdm.co.ke</a>, desktop applications for Windows/macOS/Linux, and Android APK.</p>
+
+    <h2>Registration</h2>
+    <ol class="steps">
+        <li>Visit <a href="https://farmvexa.hdm.co.ke">farmvexa.hdm.co.ke</a>.</li>
+        <li>Click Register or Get Access.</li>
+        <li>Fill in your details: name, email, phone, password, county, sub-county.</li>
+        <li>Agree to terms and submit.</li>
+        <li>Wait for admin approval (within 24 hours).</li>
+        <li>Receive welcome email with login instructions.</li>
+    </ol>
+
+    <div class="note"><strong>Note:</strong> If self-registration is disabled, use the Get Access page to request an account.</div>
+
+    <h2>Creating Your First Farm</h2>
+    <ol class="steps">
+        <li>Login to your account.</li>
+        <li>Click Create Farm.</li>
+        <li>Enter farm name, county, sub-county, and size.</li>
+        <li>Your farm is ready.</li>
+    </ol>
+</div>
+
+<!-- ============================ ROLES ============================ -->
+<div class="page page-break" id="roles">
+    <h1>User Roles &amp; Permissions</h1>
+
+    <table>
+        <thead>
+            <tr><th>Role</th><th>Modules</th><th>Permissions</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Farmer</strong></td><td>All modules</td><td>Full access, team management, finances, market, settings</td></tr>
+            <tr><td><strong>Manager</strong></td><td>8 modules</td><td>Livestock, Health, Production, Inventory, Equipment, Finance, Tasks, Reports</td></tr>
+            <tr><td><strong>Worker</strong></td><td>7 modules</td><td>View livestock, record production, view tasks</td></tr>
+            <tr><td><strong>Veterinarian</strong></td><td>2 modules</td><td>View livestock, full health CRUD</td></tr>
+        </tbody>
+    </table>
+
+    <div class="note"><strong>Note:</strong> Farmers Market is only for farmers. Workers and vets cannot access it.</div>
+</div>
+
+<!-- ============================ MODULES ============================ -->
+<div class="page page-break" id="modules">
+    <h1>Module Guides</h1>
+
+    <!-- 1. Dashboard -->
+    <h2 id="m-dashboard">1. Dashboard</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <p>The dashboard is the first screen after login. It shows:</p>
+    <ul>
+        <li><strong>Farms:</strong> Number of farms (farmers) or assigned farm (team).</li>
+        <li><strong>Alerts:</strong> Unread high/critical alerts count.</li>
+        <li><strong>Animals:</strong> Total active animals.</li>
+        <li><strong>Stock Value:</strong> Total production stock value in KES.</li>
+    </ul>
+    <p>Recent alerts show the latest 4 unread alerts. Quick actions provide shortcuts to Scan Crop, Field Scan, AI Chat, Production, and Alerts.</p>
+
+    <!-- 2. Farms -->
+    <h2 id="m-farms">2. Farms &amp; Fields</h2>
+    <p><strong>Available for:</strong> Farmer (CRUD), Team (view)</p>
+    <p>Farms have name, location (county/sub-county), and size. Fields within farms have crop type and soil type. Farm detail shows Fields, Animals, Stock Value, and Alerts stats.</p>
+
+    <!-- 3. IoT -->
+    <h2 id="m-iot">3. IoT &amp; Sensors</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <p><strong>Scan Crop:</strong> Capture or upload crop leaf photos for AI disease detection.</p>
+    <p><strong>Sensors:</strong> Real-time temperature, humidity, soil moisture, and light with trend indicators. Includes Field and Storage tabs.</p>
+    <p><strong>Devices:</strong> ESP32 registration with zone (Field/Storage/Greenhouse/Livestock) and sensor type (DHT/CO2/PIR). Auto online/offline detection.</p>
+
+    <!-- 4. How Sensors Work -->
+    <h2 id="m-sensors">4. How Sensors Work</h2>
+    <p>FarmVexa uses small electronic devices called sensors to monitor your farm automatically. These devices are placed in your field or storage room and send readings to your dashboard every minute without you doing anything.</p>
+
+    <h3>Types of Sensors</h3>
+    <table>
+        <thead>
+            <tr><th>Sensor</th><th>What It Measures</th><th>Where It Goes</th><th>What It Detects</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>DHT22</td><td>Temperature + Humidity</td><td>Field or Storage</td><td>Heat, moisture, disease risk</td></tr>
+            <tr><td>Soil Moisture</td><td>Water content in soil</td><td>Field</td><td>Dry soil, overwatering</td></tr>
+            <tr><td>Light Sensor</td><td>Sunlight level</td><td>Field</td><td>Shade, cloud cover</td></tr>
+            <tr><td>CO2 Sensor</td><td>Carbon dioxide</td><td>Storage</td><td>Insect activity (weevils, beetles)</td></tr>
+            <tr><td>PIR Motion</td><td>Movement</td><td>Storage</td><td>Rats and rodents</td></tr>
+        </tbody>
+    </table>
+
+    <h3>How to Connect a Sensor</h3>
+    <ol class="steps">
+        <li>Purchase an ESP32 sensor device.</li>
+        <li>Power it on and connect to WiFi.</li>
+        <li>Go to Devices → Register Device.</li>
+        <li>Enter the Device ID (unique name for your sensor).</li>
+        <li>Select Zone: Field or Storage.</li>
+        <li>Select Sensor Type: DHT, CO2, PIR, etc.</li>
+        <li>Click Register Device.</li>
+    </ol>
+    <p>Once registered, the sensor starts sending data automatically. You'll see readings under Sensors and receive alerts when conditions are unfavourable.</p>
+
+    <div class="note"><strong>Example:</strong> A DHT sensor in your storage room sends temperature and humidity every minute. If temperature goes above 30°C, you get an alert saying "Storage temperature high" with advice to ventilate.</div>
+
+    <h3>Where to View Sensor Data</h3>
+    <ul>
+        <li><strong>Field tab:</strong> Temperature, humidity, soil moisture, light level</li>
+        <li><strong>Storage tab:</strong> Temperature, humidity, CO2, motion (rats)</li>
+        <li><strong>Device detail:</strong> Recent readings + battery level</li>
+    </ul>
+</div>
+
+<!-- ============================ HDM STREAM ============================ -->
+<div class="page page-break" id="m-stream">
+    <h1>5. Connecting HDM Stream</h1>
+    <p><strong>HDM Stream</strong> (<a href="https://stream.hdm.co.ke">stream.hdm.co.ke</a>) is a camera streaming system that works with FarmVexa. It allows live video streaming, photo capture, video recording, and field scanning from your phone or drone camera.</p>
+
+    <h2>What You Need</h2>
+    <ul>
+        <li>A phone or device with HDM Stream open</li>
+        <li>Internet connection (WiFi or mobile data)</li>
+        <li>Your FarmVexa account</li>
+    </ul>
+
+    <h2>HDM Stream Modes</h2>
+    <table>
+        <thead>
+            <tr><th>Mode</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Send Mode (<code>stream.hdm.co.ke/out</code>)</td><td>Camera device — streams video, captures photos, records video</td></tr>
+            <tr><td>Receive Mode (<code>stream.hdm.co.ke/in</code>)</td><td>Viewer — watches live stream, captures photos</td></tr>
+        </tbody>
+    </table>
+
+    <h2>How HDM Stream Captures Photos</h2>
+    <ol class="steps">
+        <li>Open HDM Stream on your camera device.</li>
+        <li>Camera starts automatically.</li>
+        <li>Tap 📸 Capture to take a photo.</li>
+        <li>The photo uploads automatically with a watermark.</li>
+        <li>Photo appears in Gallery.</li>
+    </ol>
+
+    <h2>How HDM Stream Records Video</h2>
+    <ol class="steps">
+        <li>Open HDM Stream on your camera device.</li>
+        <li>Tap ⏺ Record to start recording.</li>
+        <li>The video records from the live camera.</li>
+        <li>Tap ⏹ Stop Rec to stop.</li>
+        <li>Video saves to Gallery for download.</li>
+    </ol>
+
+    <h2>How HDM Stream Streams Live Video</h2>
+    <ol class="steps">
+        <li>Open HDM Stream Send Mode on the camera device.</li>
+        <li>Open HDM Stream Receive Mode on the viewer device.</li>
+        <li>Both devices must be logged in.</li>
+        <li>On Send Mode, select the receiver and tap Send.</li>
+        <li>Live video appears on the Receive Mode screen.</li>
+        <li>Frames stream every 0.2 seconds (5 frames per second).</li>
+    </ol>
+
+    <h2>How HDM Stream Sends Photos to FarmVexa</h2>
+    <p>When HDM Stream is opened inside FarmVexa (via External Camera button), captured photos can be sent directly to FarmVexa:</p>
+    <ol class="steps">
+        <li>Open FarmVexa → Scan Crop or Field Scan.</li>
+        <li>Click Open External Camera.</li>
+        <li>HDM Stream opens inside FarmVexa.</li>
+        <li>Capture photos on HDM Stream.</li>
+        <li>Tap 🌾 Send to FarmVexa on the photo.</li>
+        <li>The photo appears in FarmVexa ready for AI analysis.</li>
+    </ol>
+
+    <div class="note"><strong>Note:</strong> The "Send to FarmVexa" button only appears when HDM Stream is opened from FarmVexa. If opened directly in a browser, it shows "Open from FarmVexa to send photos."</div>
+</div>
+
+<!-- ============================ FIELD SCAN ============================ -->
+<div class="page page-break" id="m-fieldscan">
+    <h1>6. Field Scan</h1>
+    <p><strong>Available for:</strong> Farmer, Manager, Worker, Vet</p>
+    <p>Field Scan allows you to scan an entire field using the HDM Stream live camera. Photos are auto-captured at intervals with GPS coordinates and analyzed by AI for diseases, weeds, and pests.</p>
+
+    <h2>How Field Scan Works</h2>
+    <ol class="steps">
+        <li>Go to Field Scan from the sidebar.</li>
+        <li>Select your farm and field.</li>
+        <li>Select the crop type.</li>
+        <li>Click Open External Camera.</li>
+        <li>On HDM Stream, tap 🌾 Start Field Scan.</li>
+        <li>Walk or fly the camera across the field.</li>
+        <li>Photos capture automatically every few seconds with GPS.</li>
+        <li>Tap ⏹ Stop when done.</li>
+        <li>All photos auto-send to FarmVexa.</li>
+        <li>AI analyzes the photos (under 5 minutes).</li>
+        <li>Results show disease count, weed spots, and health percentage.</li>
+    </ol>
+
+    <h2>During the Scan You'll See</h2>
+    <ul>
+        <li>📸 Photo counter (e.g., 26/80)</li>
+        <li>⏱ Elapsed time</li>
+        <li>📍 GPS coordinates with accuracy</li>
+        <li>📡 Live stream indicator</li>
+        <li>Progress bar</li>
+    </ul>
+
+    <h2>Field Scan Results</h2>
+    <ul>
+        <li><strong>Diseases:</strong> Count, severity, and GPS locations.</li>
+        <li><strong>Weed Spots:</strong> Areas with weed pressure.</li>
+        <li><strong>Healthy Percentage:</strong> Overall crop health.</li>
+        <li><strong>Photos:</strong> All analyzed frames with AI results.</li>
+        <li><strong>Recommendations:</strong> Treatment advice from AI.</li>
+    </ul>
+
+    <h2>Viewing Scan History</h2>
+    <p>Click History on the Field Scan page. Each scan shows date, field, crop, photos analyzed, diseases detected, and health percentage. Click any scan for full details.</p>
+
+    <div class="note"><strong>Note:</strong> Field Scan must be enabled by the administrator. If disabled, you'll see a message with support contacts.</div>
+</div>
+
+<!-- ============================ STORAGE ============================ -->
+<div class="page page-break" id="m-storage">
+    <h1>7. Storage Monitoring</h1>
+    <p><strong>Available for:</strong> Farmer, Manager</p>
+    <p>Storage Monitoring keeps watch over your grain store or storage room. Sensors detect unfavourable conditions that attract pests or cause spoilage.</p>
+
+    <h2>What Storage Monitoring Detects</h2>
+    <table>
+        <thead>
+            <tr><th>Sensor</th><th>What It Detects</th><th>Warning</th><th>Critical</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>DHT22 (Temperature)</td><td>Heat that speeds up insect breeding</td><td>Above 30°C</td><td>Above 35°C</td></tr>
+            <tr><td>DHT22 (Humidity)</td><td>Moisture that causes mould</td><td>Above 65%</td><td>Above 75%</td></tr>
+            <tr><td>CO2 (MH-Z19)</td><td>Insect respiration (weevils, beetles)</td><td>Above 800 ppm</td><td>Above 1200 ppm</td></tr>
+            <tr><td>PIR Motion</td><td>Rats and rodents at night</td><td>—</td><td>Motion detected</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Setting Up Storage Monitoring</h2>
+    <ol class="steps">
+        <li>Register a device with zone: Storage.</li>
+        <li>Select sensor type: DHT, CO2, or PIR.</li>
+        <li>Place the ESP32 with sensors in your storage room.</li>
+        <li>Sensors send data every 60 seconds automatically.</li>
+        <li>Alerts trigger when thresholds are crossed.</li>
+    </ol>
+
+    <h2>Alert Notifications</h2>
+    <ul>
+        <li><strong>Warning alerts:</strong> Shown in your dashboard only.</li>
+        <li><strong>Critical alerts:</strong> Email + SMS sent immediately.</li>
+        <li><strong>Cooldown:</strong> Same alert not sent more than once per 6 hours.</li>
+    </ul>
+
+    <div class="warning"><strong>Example:</strong> If temperature hits 36°C and humidity 78%, you receive "Storage temperature critical" and "Storage humidity critical" alerts with recommendations to ventilate and dehumidify.</div>
+
+    <h2>Viewing Storage Data</h2>
+    <p>Go to Sensors → Storage tab. Select your storage device. You'll see:</p>
+    <ul>
+        <li>Current temperature and humidity</li>
+        <li>CO2 level (if CO2 sensor connected)</li>
+        <li>Motion status (if PIR sensor connected)</li>
+        <li>Reading history table</li>
+    </ul>
+</div>
+
+<!-- ============================ MODULES 8-11 ============================ -->
+<div class="page page-break">
+    <h2 id="m-livestock">8. Livestock</h2>
+    <p><strong>Available for:</strong> Farmer/Manager (CRUD), Worker/Vet (view)</p>
+    <p>Individual animal registration with tag ID, type, breed, weight, and status. Poultry batch mode for bulk registration with mortality tracking.</p>
+
+    <h2 id="m-health">9. Health</h2>
+    <p><strong>Available for:</strong> Farmer/Vet/Manager (CRUD), Worker (locked)</p>
+    <p>Record vaccinations, treatments, checkups, diseases, and deworming. Track upcoming and overdue vaccinations. System sends reminders at 7, 3, and 0 days before due date.</p>
+    <div class="warning"><strong>Warning:</strong> Workers see "accessible by farm management and veterinarians only."</div>
+
+    <h2 id="m-production">10. Production</h2>
+    <p><strong>Available for:</strong> Farmer/Manager/Worker (record), Vet (view)</p>
+    <p>Dual-mode: Animal (milk, eggs, meat) and Crop (harvest). Field selection auto-fills crop type. Quantity auto-calculates value from pricing. Production auto-adds to stock.</p>
+
+    <h2 id="m-inventory">11. Inventory &amp; Stock</h2>
+    <p><strong>Available for:</strong> Farmer/Manager (CRUD), others (view)</p>
+    <p>Prod Stock (auto from production) and Farm Inventory (purchased items). Stock in/out with full movement history. Low stock alerts with minimum thresholds.</p>
+</div>
+
+<!-- ============================ MODULES 12-15 ============================ -->
+<div class="page page-break">
+    <h2 id="m-finance">12. Finance</h2>
+    <p><strong>Available for:</strong> Farmer/Manager only</p>
+    <p>Sales cart with multiple items, discounts, and printable receipts. Expense recording by category. Product pricing with auto-suggestions from farm data. Income/Expense/Net summaries.</p>
+
+    <h2 id="m-weather">13. Weather</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <p>Current conditions, 7-day forecast, severe weather alerts (rain, heatwave, frost, drought, storm), and farming recommendations. Weather is auto-fetched from your farm's county/sub-county location.</p>
+
+    <h2 id="m-team">14. Team &amp; Tasks</h2>
+    <p><strong>Available for:</strong> Farmer (CRUD), Manager (tasks), Worker/Vet (view)</p>
+    <p><strong>Team:</strong> Add workers, managers, and vets. Members receive login credentials via email.</p>
+    <p><strong>Tasks:</strong> Create tasks, assign to team members, set priority (Low/Medium/High/Urgent), track status (Pending → In Progress → Completed).</p>
+
+    <h2 id="m-market">15. Farmers Market</h2>
+    <p><strong>Available for:</strong> Farmer only (in dashboard), Public (browse + inquire)</p>
+    <p>Farmers list their farm products for public viewing. Buyers browse products, view farm details, and contact farmers directly via SMS or email inquiry. The market can be enabled or disabled by the platform administrator.</p>
+
+    <h3>Adding Products</h3>
+    <ol class="steps">
+        <li>Go to Operations → Market.</li>
+        <li>Click Add Product.</li>
+        <li>Enter product name, category, price, unit, quantity.</li>
+        <li>Upload up to 5 photos.</li>
+        <li>Enter contact phone, WhatsApp, and email.</li>
+        <li>Select farm (auto-populates county/sub-county).</li>
+        <li>Add exact direction for buyers.</li>
+        <li>Click Add Product.</li>
+    </ol>
+
+    <h3>Product Categories</h3>
+    <ul>
+        <li>🥬 Vegetables</li>
+        <li>🍎 Fruits</li>
+        <li>🐄 Livestock</li>
+        <li>🐔 Poultry</li>
+        <li>🥛 Dairy</li>
+        <li>🌾 Grains</li>
+        <li>📦 Other</li>
+    </ul>
+
+    <h3>Product Status</h3>
+    <ul>
+        <li><strong>Active:</strong> Visible to public buyers.</li>
+        <li><strong>Sold:</strong> Marked after sale, hidden from public.</li>
+        <li><strong>Inactive:</strong> Hidden from public, can reactivate.</li>
+    </ul>
+
+    <h3>Managing Inquiries</h3>
+    <p>Buyers send inquiries from the public market page. You receive SMS and email with buyer details and message. Mark inquiries as read or delete them.</p>
+
+    <h3>Public Market Experience</h3>
+    <p>Buyers browse at <a href="https://farmvexa.hdm.co.ke/market">farmvexa.hdm.co.ke/market</a>. They can search products, filter by category, view photos, see location and contact details, and send inquiries without logging in.</p>
+</div>
+
+<!-- ============================ MODULES 16-19 ============================ -->
+<div class="page page-break">
+    <h2 id="m-reports">16. Reports</h2>
+    <p><strong>Available for:</strong> Farmer/Manager</p>
+    <p>9 report types: General, Stock, Livestock, Production, Crops, Financial, Vaccination, Inventory, Tasks. Filter by period. Print-optimized formatting with farm header and summary.</p>
+
+    <h2 id="m-chat">17. AI Chat</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <p>Chat with FarmVexa AI in English or Kiswahili. The AI knows your farm — animals, production, stock, weather, alerts, and devices. Ask questions like:</p>
+    <ul>
+        <li>"How is my farm today?"</li>
+        <li>"What is the current weather?"</li>
+        <li>"When is the next vaccination due?"</li>
+        <li>"How much milk did we produce this week?"</li>
+    </ul>
+    <p>Daily usage limits apply. The AI shows farm-specific data in responses.</p>
+
+    <h2 id="m-alerts">18. Alerts &amp; Notifications</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <p>Automatic alerts for:</p>
+    <ul>
+        <li>Low soil moisture</li>
+        <li>High temperature</li>
+        <li>Disease risk conditions</li>
+        <li>Disease detected in crops</li>
+        <li>Device offline</li>
+        <li>Low stock</li>
+        <li>Vaccination due</li>
+        <li>Equipment maintenance due</li>
+        <li>Weather warnings</li>
+        <li>Storage temperature/humidity/CO2 critical</li>
+        <li>Rat detected in storage</li>
+    </ul>
+    <p>High and critical alerts send email. Critical alerts can also send SMS. Header bell shows real-time unread count.</p>
+
+    <h2 id="m-settings">19. Settings</h2>
+    <p><strong>Available for:</strong> All roles</p>
+    <ul>
+        <li><strong>Profile:</strong> Update name, phone, county, sub-county.</li>
+        <li><strong>Password:</strong> Change password with current password verification.</li>
+        <li><strong>Support:</strong> View support contacts (phone, email, WhatsApp).</li>
+        <li><strong>Downloads:</strong> Download desktop and mobile apps.</li>
+    </ul>
+</div>
+
+<!-- ============================ MOBILE ============================ -->
+<div class="page page-break" id="mobile">
+    <h1>Mobile Access</h1>
+    <p>FarmVexa is fully responsive and works on mobile browsers. Install as PWA:</p>
+    <ol class="steps">
+        <li>Open FarmVexa in Chrome on your phone.</li>
+        <li>Tap menu (⋮) → Install App or Add to Home Screen.</li>
+        <li>FarmVexa appears on your home screen.</li>
+    </ol>
+    <p>The crop scanner uses your phone camera for instant disease detection. Android APK also available for download.</p>
+
+    <h2>Desktop Applications</h2>
+    <p>Download for Windows, macOS, or Linux from the Downloads page or Settings page in your dashboard.</p>
+</div>
+
+<!-- ============================ FAQ ============================ -->
+<div class="page page-break" id="faq">
+    <h1>Frequently Asked Questions</h1>
+
+    <h3>What is FarmVexa?</h3>
+    <p>An AI-powered farm intelligence platform combining IoT, computer vision, and AI for smarter farming.</p>
+
+    <h3>How does Field Scan work?</h3>
+    <p>Open the external camera, start the field scan from HDM Stream, and photos are auto-captured with GPS. AI analyzes them for diseases, weeds, and pests.</p>
+
+    <h3>What is Storage Monitoring?</h3>
+    <p>Sensors in your grain store detect temperature, humidity, CO2 (insects), and motion (rats). Alerts notify you when conditions become unfavourable.</p>
+
+    <h3>How does HDM Stream work?</h3>
+    <p>HDM Stream streams live video from your camera device to your viewer. It captures photos and records video. When opened from FarmVexa, photos can be sent directly for AI analysis.</p>
+
+    <h3>How do sensors send data?</h3>
+    <p>Sensors connect to WiFi and send readings to your FarmVexa dashboard automatically every minute. No manual entry needed.</p>
+
+    <h3>How does the Farmers Market work?</h3>
+    <p>Farmers list products with photos and prices. Buyers browse publicly and send inquiries. Farmers receive SMS/email and respond directly.</p>
+
+    <h3>Can I sell on the market as a worker?</h3>
+    <p>No. Only farmers (farm owners) can list products.</p>
+
+    <h3>How many photos can I upload?</h3>
+    <p>Up to 5 photos per product.</p>
+
+    <h3>Is the market always open?</h3>
+    <p>No. The platform administrator can enable or disable it.</p>
+
+    <h3>Can my team members use it?</h3>
+    <p>Yes! Add workers, managers, and vets with role-based permissions.</p>
+
+    <h3>Does it work offline?</h3>
+    <p>Web app requires internet. Desktop app caches some data.</p>
+
+    <h3>What support is available?</h3>
+    <p>Phone, email, and WhatsApp. Response within 24 hours.</p>
+
+    <h3>How does crop scanning work?</h3>
+    <p>Take a photo of a crop leaf. AI analyzes for diseases, pests, and deficiencies.</p>
+
+    <h3>How do I connect sensors?</h3>
+    <p>Connect ESP32-based IoT sensors. Register device in dashboard with zone and sensor type. Data flows automatically.</p>
+
+    <h3>What sensors detect storage pests?</h3>
+    <p>CO2 sensors detect insect respiration (weevils/beetles). PIR motion sensors detect rats. DHT sensors detect conditions that attract pests.</p>
+</div>
+
+<!-- ============================ FOOTER ============================ -->
+<div class="footer">
+    <p><strong>FarmVexa</strong> — AI-Powered Farm Intelligence Platform — User Documentation v2.0.0</p>
+    <p>© 2026 HDM. All rights reserved. · <a href="https://hdm.co.ke">hdm.co.ke</a> · <a href="https://farmvexa.hdm.co.ke">farmvexa.hdm.co.ke</a></p>
+    <p>Developer: Davis Okoth | <a href="mailto:davismcintyre5@gmail.com">davismcintyre5@gmail.com</a> | <a href="tel:+254768784909">+254 768 784 909</a></p>
+    <p style="color:var(--gold);font-weight:600;margin-top:8px;">Registered Copyright RZ104490</p>
+    <p class="services">
+        Powered by
+        <a href="https://stream.hdm.co.ke">HDM Stream</a> ·
+        <a href="https://bridge.hdm.co.ke">HDM Bridge</a> ·
+        <a href="https://ai.hdm.co.ke">HDM AI</a>
+    </p>
+</div>
+
+</body>
+</html>

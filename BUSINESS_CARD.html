@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌾 FarmVexa — Business Card</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%232d6a4f'/%3E%3Ctext x='256' y='220' text-anchor='middle' fill='white' font-size='140'%3E🌾%3C/text%3E%3C/svg%3E">
+    <meta name="description" content="FarmVexa — AI-powered farm intelligence. IoT sensors, computer vision, live camera streaming. A product of HDM.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%232d6a4f'/%3E%3Ctext x='256' y='220' text-anchor='middle' fill='white' font-size='140'%3E🌾%3C/text%3E%3C/svg%3E">
     <style>
         :root {
             --green-900: #1b5e20;
@@ -15,6 +16,7 @@
             --white: #ffffff;
             --gray-700: #374151;
             --gray-500: #6b7280;
+            --gold: #fbbf24;
         }
 
         * {
@@ -123,6 +125,31 @@
             color: var(--white);
         }
 
+        .left .contact a {
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+        }
+
+        .left .contact a:hover {
+            color: var(--green-500);
+            border-bottom-color: var(--green-500);
+        }
+
+        .left .copyright {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.55);
+            line-height: 1.6;
+        }
+
+        .left .copyright .gold {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
         /* Right Panel */
         .right {
             padding: 48px 40px;
@@ -206,6 +233,11 @@
             font-size: 10px;
         }
 
+        .cta-row {
+            display: flex;
+            gap: 10px;
+        }
+
         .url {
             display: inline-block;
             background: var(--green-700);
@@ -217,10 +249,46 @@
             text-decoration: none;
             text-align: center;
             transition: background 0.2s;
+            flex: 1;
         }
 
         .url:hover {
             background: #1b5e20;
+        }
+
+        .url.secondary {
+            background: transparent;
+            color: var(--green-700);
+            border: 1.5px solid var(--green-700);
+        }
+
+        .url.secondary:hover {
+            background: #f0fdf4;
+        }
+
+        .powered-by {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-size: 10px;
+            color: var(--gray-500);
+        }
+
+        .powered-by .chip {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: #f0fdf4;
+            color: #14532d;
+            font-weight: 600;
+            border: 1px solid #bbf7d0;
+            font-size: 10px;
+            text-decoration: none;
+        }
+
+        .powered-by .chip:hover {
+            background: #dcfce7;
         }
 
         @media (max-width: 768px) {
@@ -233,6 +301,9 @@
             .right {
                 padding: 32px 24px;
             }
+            .modules {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media print {
@@ -244,6 +315,9 @@
                 box-shadow: none;
                 max-width: 100%;
                 border-radius: 0;
+            }
+            .url:hover {
+                transform: none;
             }
         }
     </style>
@@ -265,10 +339,15 @@
         </p>
 
         <div class="contact">
-            <strong>🌐</strong> farmvexa.pxxl.click<br>
-            <strong>📧</strong> support@farmvexa.com<br>
-            <strong>📞</strong> +254 768 784 909<br>
-            <strong>©</strong> 2026 HDM — Davis Okoth
+            <strong>🌐</strong> <a href="https://farmvexa.hdm.co.ke">farmvexa.hdm.co.ke</a><br>
+            <strong>📧</strong> <a href="mailto:support@farmvexa.com">support@farmvexa.com</a><br>
+            <strong>📞</strong> <a href="tel:+254768784909">+254 768 784 909</a><br>
+            <strong>🏢</strong> <a href="https://hdm.co.ke">hdm.co.ke</a>
+
+            <div class="copyright">
+                © 2026 HDM — Davis Okoth<br>
+                <span class="gold">Registered Copyright RZ104490</span>
+            </div>
         </div>
     </div>
 
@@ -296,7 +375,7 @@
 
         <!-- Sensors -->
         <div class="section">
-            <h3>📡 Sensors & Hardware</h3>
+            <h3>📡 Sensors &amp; Hardware</h3>
             <div class="sensors">
                 <span class="sensor-chip">🌡️ DHT22 Temp/Humidity</span>
                 <span class="sensor-chip">💧 Soil Moisture</span>
@@ -333,7 +412,18 @@
         </div>
 
         <!-- CTA -->
-        <a href="https://farmvexa.pxxl.click" class="url">🚀 farmvexa.pxxl.click</a>
+        <div class="cta-row">
+            <a href="https://farmvexa.hdm.co.ke" class="url">🚀 Open FarmVexa</a>
+            <a href="https://farmvexa.hdm.co.ke/pricing" class="url secondary">💳 View Pricing</a>
+        </div>
+
+        <!-- Powered by -->
+        <div class="powered-by">
+            <span>Powered by</span>
+            <a href="https://stream.hdm.co.ke" class="chip">HDM Stream</a>
+            <a href="https://bridge.hdm.co.ke" class="chip">HDM Bridge</a>
+            <a href="https://ai.hdm.co.ke" class="chip">HDM AI</a>
+        </div>
 
     </div>
 

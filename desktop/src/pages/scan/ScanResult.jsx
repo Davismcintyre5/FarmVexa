@@ -5,7 +5,7 @@ import Card from '../../components/ui/Card';
 import Spinner from '../../components/ui/Spinner';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import { ArrowLeft, Camera, Leaf, AlertTriangle, Shield, Droplets, Trash2 } from 'lucide-react';
+import { ArrowLeft, Camera, Leaf, AlertTriangle, Shield, Droplets, Trash2, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
@@ -41,15 +41,25 @@ export default function ScanResult() {
         }
     };
 
-    if (loading) return <Spinner size="lg" className="mt-20" />;
-    if (!image) return (
-        <div className="text-center py-12 text-gray-400">
-            <Leaf className="w-12 h-12 mx-auto mb-3" />
-            <p>Image not found</p>
-        </div>
-    );
+    const handleRetry = () => {
+        navigate('/scan');
+    };
 
-    const isHealthy = image.diseaseDetected === 'Healthy';
+    if (loading) return <Spinner size="lg" className="mt-20" />;
+
+    if (!image) {
+        return (
+            <div className="text-center py-12 text-gray-400">
+                <Leaf className="w-12 h-12 mx-auto mb-3" />
+                <p>Image not found</p>
+            </div>
+        );
+    }
+
+    const isFailed = image.status === 'failed';
+    const isAnalyzing = image.status === 'analyzing' || image.status === 'uploaded';
+    const isHealthy = !isFailed && image.diseaseDetected === 'Healthy';
+
     const severityColor = {
         low: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
         moderate: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
@@ -71,51 +81,83 @@ export default function ScanResult() {
                 />
 
                 <div className="space-y-4">
-                    {/* Status Banner */}
-                    <div className={`flex items-center gap-3 p-4 rounded-xl ${isHealthy ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'}`}>
-                        {isHealthy ? (
-                            <Shield className="w-8 h-8 text-green-600" />
-                        ) : (
-                            <AlertTriangle className="w-8 h-8 text-red-600" />
-                        )}
-                        <div>
-                            <p className={`text-lg font-bold ${isHealthy ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
-                                {isHealthy ? 'Crop is Healthy' : 'Disease Detected'}
-                            </p>
-                            <p className={`text-sm font-medium ${isHealthy ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                {isHealthy ? 'No issues found' : image.diseaseDetected}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Details */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Disease</p>
-                            <p className="font-semibold text-gray-900 dark:text-gray-100">{image.diseaseDetected || 'Unknown'}</p>
-                        </div>
-                        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Severity</p>
-                            <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${severityColor[image.severity] || severityColor.low}`}>
-                                {image.severity?.charAt(0).toUpperCase() + image.severity?.slice(1) || 'Low'}
-                            </span>
-                        </div>
-                        {image.cropType && (
-                            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Crop</p>
-                                <p className="font-semibold text-gray-900 dark:text-gray-100 capitalize">{image.cropType}</p>
+                    {isFailed && (
+                        <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                            <AlertTriangle className="w-8 h-8 text-amber-600 flex-shrink-0" />
+                            <div>
+                                <p className="text-lg font-bold text-amber-700 dark:text-amber-300">
+                                    Analysis Failed
+                                </p>
+                                <p className="text-sm text-amber-600 dark:text-amber-400">
+                                    The AI engine did not respond in time. This is usually a temporary issue.
+                                </p>
+                                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                                    The photo was uploaded successfully and is stored on Cloudinary. You can retry the scan, or delete it.
+                                </p>
                             </div>
-                        )}
-                        {image.confidence && (
-                            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Confidence</p>
-                                <p className="font-semibold text-gray-900 dark:text-gray-100">{image.confidence}%</p>
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
-                    {/* Symptoms */}
-                    {image.symptoms && (
+                    {isAnalyzing && (
+                        <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                            <Spinner size="sm" />
+                            <div>
+                                <p className="text-lg font-bold text-blue-700 dark:text-blue-300">
+                                    Analysis In Progress
+                                </p>
+                                <p className="text-sm text-blue-600 dark:text-blue-400">
+                                    The AI is still analyzing this image. Refresh in a moment.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {!isFailed && !isAnalyzing && (
+                        <div className={`flex items-center gap-3 p-4 rounded-xl ${isHealthy ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'}`}>
+                            {isHealthy ? (
+                                <Shield className="w-8 h-8 text-green-600" />
+                            ) : (
+                                <AlertTriangle className="w-8 h-8 text-red-600" />
+                            )}
+                            <div>
+                                <p className={`text-lg font-bold ${isHealthy ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
+                                    {isHealthy ? 'Crop is Healthy' : 'Disease Detected'}
+                                </p>
+                                <p className={`text-sm font-medium ${isHealthy ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                    {isHealthy ? 'No issues found' : image.diseaseDetected}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {!isFailed && !isAnalyzing && (
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Disease</p>
+                                <p className="font-semibold text-gray-900 dark:text-gray-100">{image.diseaseDetected || 'Unknown'}</p>
+                            </div>
+                            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Severity</p>
+                                <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${severityColor[image.severity] || severityColor.low}`}>
+                                    {image.severity?.charAt(0).toUpperCase() + image.severity?.slice(1) || 'Low'}
+                                </span>
+                            </div>
+                            {image.cropType && (
+                                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Crop</p>
+                                    <p className="font-semibold text-gray-900 dark:text-gray-100 capitalize">{image.cropType}</p>
+                                </div>
+                            )}
+                            {image.confidence && (
+                                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Confidence</p>
+                                    <p className="font-semibold text-gray-900 dark:text-gray-100">{image.confidence}%</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {!isFailed && !isAnalyzing && image.symptoms && (
                         <div>
                             <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                                 <Droplets className="w-4 h-4" /> Symptoms
@@ -124,11 +166,10 @@ export default function ScanResult() {
                         </div>
                     )}
 
-                    {/* Recommendation */}
-                    {image.recommendation && (
+                    {!isFailed && !isAnalyzing && image.recommendation && (
                         <div className="bg-primary-50 dark:bg-primary-900/20 p-4 rounded-xl border border-primary-200 dark:border-primary-800">
                             <p className="text-sm font-semibold text-primary-700 dark:text-primary-300 mb-1">
-                                💡 Recommendation
+                                Recommendation
                             </p>
                             <p className="text-primary-600 dark:text-primary-400 text-sm leading-relaxed">
                                 {image.recommendation}
@@ -136,7 +177,6 @@ export default function ScanResult() {
                         </div>
                     )}
 
-                    {/* Timestamp */}
                     <p className="text-xs text-gray-400 text-right">
                         Scanned {new Date(image.createdAt).toLocaleString('en-KE')}
                     </p>
@@ -144,12 +184,25 @@ export default function ScanResult() {
             </Card>
 
             <div className="flex gap-3">
-                <Link to="/scan" className="flex-1">
-                    <Button className="w-full"><Camera className="w-4 h-4" /> New Scan</Button>
-                </Link>
-                <Button variant="outline" onClick={handleDelete} loading={deleting} className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20">
-                    <Trash2 className="w-4 h-4" /> Delete
-                </Button>
+                {isFailed ? (
+                    <>
+                        <Button onClick={handleRetry} className="flex-1">
+                            <RefreshCw className="w-4 h-4" /> Retry Scan
+                        </Button>
+                        <Button variant="outline" onClick={handleDelete} loading={deleting} className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20">
+                            <Trash2 className="w-4 h-4" /> Delete
+                        </Button>
+                    </>
+                ) : (
+                    <>
+                        <Link to="/scan" className="flex-1">
+                            <Button className="w-full"><Camera className="w-4 h-4" /> New Scan</Button>
+                        </Link>
+                        <Button variant="outline" onClick={handleDelete} loading={deleting} className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20">
+                            <Trash2 className="w-4 h-4" /> Delete
+                        </Button>
+                    </>
+                )}
             </div>
         </div>
     );

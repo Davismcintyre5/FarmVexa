@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌾 FarmVexa — Pricing</title>
+    <meta name="description" content="FarmVexa pricing plans — Basic, Pro, and Full Suite. AI crop scanning, IoT sensors, storage monitoring. From KES 6,000.">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%232d6a4f'/%3E%3Ctext x='256' y='220' text-anchor='middle' fill='white' font-size='140'%3E🌾%3C/text%3E%3C/svg%3E">
     <style>
         :root {
@@ -71,6 +72,20 @@
         .logo-icon { font-size: 44px; margin-bottom: 8px; }
         .header h1 { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
         .header .tagline { font-size: 14px; color: var(--green-200); margin-top: 4px; }
+        .header .live-link {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--green-200);
+            text-decoration: none;
+            border-bottom: 1px dashed rgba(187, 247, 208, 0.5);
+            padding-bottom: 1px;
+            transition: all 0.2s;
+        }
+        .header .live-link:hover {
+            color: var(--gold-light);
+            border-bottom-color: var(--gold-light);
+        }
         .plans {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -153,6 +168,22 @@
             color: var(--green-300);
             position: relative;
             z-index: 1;
+            line-height: 1.8;
+        }
+        .footer-note a { color: var(--green-300); text-decoration: underline; }
+        .footer-note a:hover { color: var(--gold-light); }
+        .footer-services {
+            margin-top: 6px;
+            font-size: 10px;
+            opacity: 0.75;
+            color: var(--green-200);
+        }
+        .footer-services a { color: var(--green-200); text-decoration: none; }
+        .footer-services a:hover { color: var(--gold-light); text-decoration: underline; }
+        .footer-copyright {
+            margin-top: 6px;
+            font-size: 11px;
+            opacity: 0.85;
         }
         @media (max-width: 700px) {
             .plans { grid-template-columns: 1fr; gap: 12px; }
@@ -171,6 +202,9 @@
         <div class="logo-icon">🌾</div>
         <h1>FarmVexa Pricing</h1>
         <p class="tagline">Choose the plan that fits your farm</p>
+        <a href="https://farmvexa.hdm.co.ke/pricing" class="live-link">
+            View full pricing → farmvexa.hdm.co.ke/pricing
+        </a>
     </div>
 
     <!-- Plans -->
@@ -196,7 +230,7 @@
                 <li class="excluded">IoT Field Sensors</li>
                 <li class="excluded">Storage Monitoring</li>
             </ul>
-            <a href="https://farmvexa.pxxl.click/pricing" class="btn btn-ghost">Get Started</a>
+            <a href="https://farmvexa.hdm.co.ke/register?plan=basic" class="btn btn-ghost">Get Started</a>
         </div>
 
         <!-- PRO -->
@@ -217,7 +251,7 @@
                 <li class="excluded">Storage Monitoring</li>
                 <li class="excluded">CO2 &amp; PIR</li>
             </ul>
-            <a href="https://farmvexa.pxxl.click/pricing" class="btn btn-solid">Get Pro</a>
+            <a href="https://farmvexa.hdm.co.ke/register?plan=pro" class="btn btn-solid">Get Pro</a>
         </div>
 
         <!-- FULL SUITE -->
@@ -237,12 +271,26 @@
                 <li class="included">All Sensors</li>
                 <li class="included">Priority Support</li>
             </ul>
-            <a href="https://farmvexa.pxxl.click/pricing" class="btn btn-ghost">Go Full Suite</a>
+            <a href="https://farmvexa.hdm.co.ke/register?plan=full_suite" class="btn btn-ghost">Go Full Suite</a>
         </div>
 
     </div>
 
-    <p class="footer-note">All plans include free updates · No hidden fees · Cancel anytime</p>
+    <!-- Footer -->
+    <div class="footer-note">
+        <p>All plans include free updates · No hidden fees · Cancel anytime</p>
+        <p class="footer-copyright">
+            A product of <a href="https://hdm.co.ke">HDM</a>
+            · <span style="color:var(--gold-light);">Registered Copyright RZ104490</span>
+            · © 2026 Davis Okoth
+        </p>
+        <p class="footer-services">
+            Powered by
+            <a href="https://stream.hdm.co.ke">HDM Stream</a> ·
+            <a href="https://bridge.hdm.co.ke">HDM Bridge</a> ·
+            <a href="https://ai.hdm.co.ke">HDM AI</a>
+        </p>
+    </div>
 
 </div>
 
